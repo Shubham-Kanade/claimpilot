@@ -1,0 +1,8 @@
+title = "ClaimPilot gitleaks config"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "A made-up persona id the MCP server tests use to prove the value never reaches a model"
+regexes = ['''ZX-PERSONA-\d+''']
