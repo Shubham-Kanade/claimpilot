@@ -3,7 +3,14 @@
 Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked · ★ must · ☆ stretch (cut first)
 Rule: milestones are listed up front. Low-level subtasks are added only when a milestone starts.
 
-**Current focus:** M2 Intelligence: DecisionEngine (Jev + LLM), policy-as-code, trust (pHash/C2PA/injection), grouping + claim state machine, MCP servers, upload→claim worker job.
+**Current focus:** M2 closing + M3 under way. Four agents are running (2026-10-08 ~16:30): **A** MCP servers/adapters, **B** trust (C2PA must become opt-in, see below), **C** policy + claims eval/tests, **F** the web app (`apps/web`). When their reports arrive: review, run the gates, commit each, then wire + verify the whole stack in Docker (compose with mcp-finance/mcp-corp) and record the demo replay data.
+
+### Resume notes (read first after a restart)
+- **Windows restarts abruptly.** Everything is on disk; agents' transcripts survive. Resume a stopped agent with SendMessage to its id. Commit coherent chunks often.
+- **Committed so far:** M0, M1, decisions (ADR-021), the API + persistence (`0e832d0`), reply/stats/boxes/CORS + OpenAPI (`ca62166`), pipeline/worker/wiring (`5559e0c`). **Not committed yet (agent work, gates must pass first):** `claimpilot/trust/*` (assess, c2pa, duplicates, forensics, injection, phash, eval), `claimpilot/policy/*` + `config/policy.yaml`, `claimpilot/claims/*`, `claimpilot/mcp/*`, `services/mcp-finance`, `services/mcp-corp`, `infra/compose.yml` + `.github/workflows/ci.yml` MCP edits, `apps/web/*` (agent F). Note `process.py` imports trust/policy/claims, so those must be committed before anything is pushed.
+- **Agent ids:** A(MCP)=acf706e619b9a11a4, B(trust)=a1ce6f46beb89dfb6, C(policy+claims)=a0703e0f866b2dcd7, F(frontend)=ab6ec34cd73e0097d.
+- **Known issue:** `c2pa-python` raises a native `access violation` (faulthandler) on Windows when reading files; B was told to make the pure-Python detector the default and the native lib opt-in (`C2PA_NATIVE=1`). Run tests with `-p no:faulthandler` until then.
+- **Shell gotcha:** the tool layer collapses `\` in heredocs; use the Edit tool for strings containing backslashes.
 **Deadline:** submit by 12 Oct 2026. Aim for the morning of the 12th.
 
 ## Submission checklist (missing ANY item means elimination; run the `submission-check` skill)
@@ -47,8 +54,13 @@ Contract frozen first (ADR-020), then four parallel streams. **Owners are workst
 - [~] **B. Trust:** pHash + field-fingerprint duplicates, EXIF/metadata forensics, C2PA / AI-generated signals, prompt-injection heuristics, `TrustReport` score *(agent)*
 - [~] **C. Policy + claims:** `policy/` (clause-cited rules, calibrated on the golden set), `claims/` grouping into trip/period/event/allowance, state machine, question generation *(agent)*
 - [x] **D. Decisions:** `DecisionEngine` protocol, `JevEngine` (retries, truststore), `LLMEngine` (Haiku 5.5, flat schema), `CascadeEngine`; Jev-vs-LLM benchmark incl. held-out seed (ADR-021). 40 tests, 99% cov. Jev = LLM accuracy at 3× speed and cost
-- [ ] **E. Pipeline (me):** Storage interface (local volume), DB models + Alembic 0002 (documents, claims, audit), worker job upload → extract → decide → trust → policy → group, Redis progress events, API (`/v1/batches`, SSE, `/v1/claims/...`), integration test with fakes
-## M3 Experience (10 Oct) [ ]
+- [x] **E. Pipeline:** Storage (atomic local volume), tables + Alembic 0002 with a drift test, typed events + SSE bus (resume, keep-alive), repository, claim actions (answer / reply / submit with explicit confirmation + idempotency / approver decision with required reason), `DbDuplicateIndex`, `process_batch` (3 phases, per-document failure isolation, idempotent), Arq worker + wiring, `/v1` API (20 endpoints) + OpenAPI contract, CORS. 1,353 API tests at 95% coverage (all modules currently on disk)
+- [ ] E2. Stack verification in Docker: compose with mcp-finance/mcp-corp, real Postgres + Redis + worker, upload → claims → submit through MCP; fix what breaks
+- [ ] E3. Demo data: record the replay cassettes (extraction + decisions for the 10 sample receipts, ~$0.01) so the hosted demo works with `LLM_MODE=replay`; `scripts/reset_demo`
+- [ ] E4. Wiring tests (`wiring.py` 0%, worker, lifespan) with monkeypatched Redis/Arq/MCP
+- [ ] M1.7 Click-to-verify boxes: `ProcessedDocument.boxes` contract exists; filling it (vision-model localisation, evaluated on dev) is optional polish
+## M3 Experience (8–10 Oct) [~]
+- [~] **F. Web app** *(agent, ~2 h)*: persona switcher, upload + camera, live SSE progress, claim review with assistant chat, click-to-verify, submit dialog, approvals, impact meter; mock API + Playwright E2E + axe
 ★ PWA drop zone + camera · streaming progress (SSE) · claim cards · click-to-verify · chat agent with question flow + approval gate · Playwright E2E
 
 ## M4 Standouts & ship (11 Oct) [ ]
@@ -69,3 +81,4 @@ Contract frozen first (ADR-020), then four parallel streams. **Owners are workst
 - 2026-10-08: M1.2 synthetic dataset committed (reviewed + GST 2.0 fix); trust GST checks; synth CI job; evals.yml
 - 2026-10-08: M1 done. Bake-off picks Haiku 5.5 ($0.42/1k receipts, 100% critical-field accuracy on dev); PDF rasterisation (ADR-016), wire schema (ADR-017), routes (ADR-018)
 - 2026-10-08: M2.D done: System One decisions + benchmark (held-out 85% category accuracy, Jev 3× faster/cheaper than LLM at equal accuracy); wiring still to do: calendar context
+- 2026-10-08: pipeline end-to-end on fixtures with fake models (9 tests): tampered + injected docs flagged, duplicates, retries; API contract exported; 4 agents in flight
