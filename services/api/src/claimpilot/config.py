@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     decision_engine: Literal["jev", "llm", "fake"] = "llm"
     jev_api_key: SecretStr | None = None
     jev_base_url: str = "https://api.typesafe.ai"
+    # Cascade: choice/score answers below this confidence are re-asked on the LLM fallback.
+    decision_min_confidence: float = 0.7
 
     # Infra
     database_url: str = "postgresql+asyncpg://claimpilot:claimpilot@localhost:5432/claimpilot"

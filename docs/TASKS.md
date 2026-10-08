@@ -46,7 +46,7 @@ Contract frozen first (ADR-020), then four parallel streams. **Owners are workst
 - [~] **A. MCP:** `services/mcp-finance` + `services/mcp-corp` (FastMCP, streamable HTTP, seed data, Dockerfiles, compose) and the API-side client bridge `claimpilot.mcp` *(agent)*
 - [~] **B. Trust:** pHash + field-fingerprint duplicates, EXIF/metadata forensics, C2PA / AI-generated signals, prompt-injection heuristics, `TrustReport` score *(agent)*
 - [~] **C. Policy + claims:** `policy/` (clause-cited rules, calibrated on the golden set), `claims/` grouping into trip/period/event/allowance, state machine, question generation *(agent)*
-- [ ] **D. Decisions (me):** `DecisionEngine` protocol; `JevEngine` (httpx + truststore + retries), `LLMEngine` (Haiku 5.5, flat schema), cache, parity + Jev-vs-LLM eval on the golden set
+- [x] **D. Decisions:** `DecisionEngine` protocol, `JevEngine` (retries, truststore), `LLMEngine` (Haiku 5.5, flat schema), `CascadeEngine`; Jev-vs-LLM benchmark incl. held-out seed (ADR-021). 40 tests, 99% cov. Jev = LLM accuracy at 3× speed and cost
 - [ ] **E. Pipeline (me):** Storage interface (local volume), DB models + Alembic 0002 (documents, claims, audit), worker job upload → extract → decide → trust → policy → group, Redis progress events, API (`/v1/batches`, SSE, `/v1/claims/...`), integration test with fakes
 ## M3 Experience (10 Oct) [ ]
 ★ PWA drop zone + camera · streaming progress (SSE) · claim cards · click-to-verify · chat agent with question flow + approval gate · Playwright E2E
@@ -68,3 +68,4 @@ Contract frozen first (ADR-020), then four parallel streams. **Owners are workst
 - 2026-10-08: M1.3/M1.4 done + eval runner; reviewer blocker (REPO_ROOT crash in Docker) fixed; 216 API tests, 98.5% cov; stack healthy with migrations
 - 2026-10-08: M1.2 synthetic dataset committed (reviewed + GST 2.0 fix); trust GST checks; synth CI job; evals.yml
 - 2026-10-08: M1 done. Bake-off picks Haiku 5.5 ($0.42/1k receipts, 100% critical-field accuracy on dev); PDF rasterisation (ADR-016), wire schema (ADR-017), routes (ADR-018)
+- 2026-10-08: M2.D done: System One decisions + benchmark (held-out 85% category accuracy, Jev 3× faster/cheaper than LLM at equal accuracy); wiring still to do: calendar context

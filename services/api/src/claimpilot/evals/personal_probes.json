@@ -1,0 +1,122 @@
+[
+  {
+    "document_type": "gst_invoice",
+    "merchant": "Fresh Basket Supermarket",
+    "items": [
+      {
+        "item": "Basmati rice 5kg",
+        "amount": 640.0
+      },
+      {
+        "item": "Toor dal 2kg",
+        "amount": 310.0
+      },
+      {
+        "item": "Detergent powder",
+        "amount": 220.0
+      },
+      {
+        "item": "Vegetables",
+        "amount": 180.0
+      }
+    ],
+    "total": 1350.0
+  },
+  {
+    "document_type": "gst_invoice",
+    "merchant": "Style Street Apparels",
+    "items": [
+      {
+        "item": "Denim jeans",
+        "amount": 2499.0
+      },
+      {
+        "item": "Cotton t-shirt x2",
+        "amount": 1198.0
+      }
+    ],
+    "total": 3697.0
+  },
+  {
+    "document_type": "gst_invoice",
+    "merchant": "Lumina Jewellers",
+    "items": [
+      {
+        "item": "Gold earrings 4g",
+        "amount": 28400.0
+      }
+    ],
+    "total": 28400.0
+  },
+  {
+    "document_type": "upi_payment",
+    "merchant": "Starlight Cinemas",
+    "items": [
+      {
+        "item": "Movie tickets x2",
+        "amount": 700.0
+      },
+      {
+        "item": "Popcorn combo",
+        "amount": 450.0
+      }
+    ],
+    "total": 1150.0
+  },
+  {
+    "document_type": "gst_invoice",
+    "merchant": "Glow Beauty Salon",
+    "items": [
+      {
+        "item": "Haircut and styling",
+        "amount": 900.0
+      },
+      {
+        "item": "Facial",
+        "amount": 1500.0
+      }
+    ],
+    "total": 2400.0
+  },
+  {
+    "document_type": "gst_invoice",
+    "merchant": "Playzone Toys",
+    "items": [
+      {
+        "item": "Building blocks set",
+        "amount": 1899.0
+      },
+      {
+        "item": "Gift wrap",
+        "amount": 60.0
+      }
+    ],
+    "total": 1959.0
+  },
+  {
+    "document_type": "upi_payment",
+    "merchant": "Peak Fitness Club",
+    "items": [
+      {
+        "item": "Annual gym membership",
+        "amount": 14000.0
+      }
+    ],
+    "total": 14000.0
+  },
+  {
+    "document_type": "gst_invoice",
+    "merchant": "Home Nest Furnishings",
+    "items": [
+      {
+        "item": "Bedsheet set",
+        "amount": 1800.0
+      },
+      {
+        "item": "Curtains",
+        "amount": 2600.0
+      }
+    ],
+    "total": 4400.0
+  }
+]

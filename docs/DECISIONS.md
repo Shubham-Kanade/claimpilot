@@ -128,3 +128,19 @@ Each entry gives the decision, the reason, and its consequences. Add new entries
 ### ADR-020: Golden dataset and persona roster committed (2026-10-08)
 - **Decision:** `data/synth/golden/` (ground-truth JSON, manifest and `personas.json` with grade and base city; no images; ~0.3 MB) is committed, so policy, grouping and decision evals run in CI without rendering anything or spending money. `claimpilot.evals.golden` loads it and builds `ProcessedDocument`s as the pipeline would with perfect extraction.
 - **Contract frozen** for parallel M2 work: `claimpilot.domain.claims` (Employee, Decisions, ProcessedDocument, Claim, ClaimMode, ClaimStatus, OpenQuestion) and the extended `Finding` (source, clause_id, clause_text, document_id).
+
+### ADR-021: System One decisions: Jev first, LLM fallback, confidence-gated (2026-10-08)
+- **Decision:** per document we ask three typed questions: `category` (choice, 14 options), `alcohol_present` and `personal_expense` (noul). `DECISION_ENGINE=jev` runs a cascade: Jev answers everything; any choice answer under 0.7 confidence is re-asked on Claude Haiku 5.5; if Jev is down, everything goes to the LLM. Answers below the gate become questions for the employee, never silent guesses. `DECISION_ENGINE=llm` runs the LLM alone.
+- **Evidence** (`evals/reports/2026-10-08-jev-vs-llm*.md`; ground-truth receipts as input, so extraction errors don't leak in):
+
+  | Set | Engine | Category acc | Acc when confident (coverage) | ECE | p50 | $/1k docs |
+  |---|---|---|---|---|---|---|
+  | seed 42, 100 docs (wording tuned here) | Jev | 90.0% | 97.8% (92%) | 0.060 | 610 ms | $0.040 |
+  | | LLM | 90.0% | 100% (80%) | 0.078 | 1,875 ms | $0.125 |
+  | **seed 7, 80 docs (held out)** | Jev | **85.0%** | 94.4% (89%) | 0.085 | 546 ms | $0.040 |
+  | | LLM | 85.0% | 97.0% (82%) | 0.087 | 1,655 ms | $0.117 |
+
+  Alcohol: 100% accuracy and recall on the seed-42 set (including the 4 `over_policy` dinners) for both engines. Personal-expense recall on 8 probes: 100% for both; false-alarm rate 9–12.5%, all on genuinely ambiguous kirana and UPI-to-person documents.
+- **What changed it:** the first run had Jev at 77% category accuracy and a 57% personal-expense false-alarm rate. Both traced to question wording, not the model: "personal purchase" made restaurant bills look personal, and my own category text put parking under fuel. Question v2 defines the yes/no answers with explicit `criteria`, and describes group dinners by their receipt signature (7+ dishes, over about ₹2,500), which took client-dinner detection from 0/9 to 9/9.
+- **Honest caveats:** the wording was tuned on seed 42, so 90% is optimistic and the held-out 85% is the number to quote. The remaining errors are documents the receipt cannot explain (a ₹120 UPI payment to a person's name; kirana bills). Those arrive with confidence under 0.7 and become questions. The real fix for client dinners is calendar context from `mcp-corp`, now an optional `document_state` input.
+- **Not built:** a decision cache. Jev costs $0.04 per 1,000 documents, so caching saves nothing (ADR-004 layer 3 dropped).
