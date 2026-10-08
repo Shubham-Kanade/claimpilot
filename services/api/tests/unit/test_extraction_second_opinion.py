@@ -148,6 +148,26 @@ async def test_the_final_read_is_what_gets_cached(llm, doc):
     assert again.cached and len(llm.requests) == 2  # the re-read is not repeated
 
 
+async def test_a_refused_second_read_keeps_the_first(llm, doc):
+    reads(llm, EDITED_HEDGING, bill())
+    result = await ReceiptExtractor(llm).extract(doc, may_reread=lambda: False)
+
+    assert not result.escalated and result.receipt.total == 520.0
+    assert [r.route for r in llm.requests] == ["extraction"]  # the stronger model was never asked
+
+
+async def test_the_permit_is_asked_only_when_a_re_read_is_wanted(llm, doc):
+    reads(llm, bill())
+    asked: list[bool] = []
+
+    def permit() -> bool:
+        asked.append(True)
+        return True
+
+    await ReceiptExtractor(llm).extract(doc, may_reread=permit)
+    assert asked == []
+
+
 # --- reconcile -----------------------------------------------------------------------------------
 
 

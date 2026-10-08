@@ -25,7 +25,7 @@ COPY src ./src
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-dev \
  && useradd --create-home --uid 10001 app \
- && mkdir -p /data/uploads && chown -R app /app /data
+ && mkdir -p /data/uploads && chown app /data
 USER app
 ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE 8000

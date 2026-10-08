@@ -16,6 +16,7 @@ from claimpilot.llm.anthropic_llm import AnthropicLLM
 from claimpilot.llm.errors import (
     LLMAPIError,
     LLMAuthError,
+    LLMBudgetError,
     LLMRateLimitError,
     LLMRefusalError,
     LLMRequestError,
@@ -243,3 +244,55 @@ def test_from_settings_builds_a_client(models_registry):
         Settings(llm_mode="live", anthropic_api_key=SecretStr("sk-test")), models_registry
     )
     assert llm.mode == "live"
+
+
+# --- the daily spend cap -------------------------------------------------------------------------
+
+
+class Spent:
+    """A ledger stand-in that reports what the last 24 hours of live calls cost."""
+
+    def __init__(self, dollars: float) -> None:
+        self.dollars = dollars
+        self.asked_since: list = []
+
+    async def live_spend_since(self, since) -> float:
+        self.asked_since.append(since)
+        return self.dollars
+
+
+def capped(registry: ModelRegistry, api: StubAPI, *, budget: float | None, spent: Spent):
+    client = anthropic.AsyncAnthropic(
+        api_key="sk-test-not-a-real-key",  # pragma: allowlist secret
+        max_retries=0,
+        http_client=anthropic.DefaultAsyncHttpxClient(transport=httpx2.MockTransport(api)),
+    )
+    return AnthropicLLM(registry, client, budget_usd=budget, spend=spent)
+
+
+async def test_a_call_under_the_daily_cap_goes_through(models_registry):
+    api, spent = StubAPI(), Spent(0.40)
+    result = await parse(capped(models_registry, api, budget=1.0, spent=spent))
+    assert result.parsed.total == 120.5 and len(api.requests) == 1
+    assert len(spent.asked_since) == 1  # the ledger was consulted before the call
+
+
+async def test_once_the_cap_is_reached_no_request_leaves_the_machine(models_registry):
+    api = StubAPI()
+    llm = capped(models_registry, api, budget=1.0, spent=Spent(1.0))
+    with pytest.raises(LLMBudgetError, match=r"\$1\.00"):
+        await parse(llm)
+    assert api.requests == []
+
+
+async def test_no_cap_means_no_ledger_query(models_registry):
+    api, spent = StubAPI(), Spent(99.0)
+    await parse(capped(models_registry, api, budget=None, spent=spent))
+    assert spent.asked_since == [] and len(api.requests) == 1
+
+
+def test_the_cap_comes_from_the_settings_and_zero_means_none(models_registry):
+    live = Settings(llm_mode="live", anthropic_api_key=SecretStr("k"), daily_llm_budget_usd=2.5)
+    assert AnthropicLLM.from_settings(live, models_registry)._budget_usd == 2.5
+    off = live.model_copy(update={"daily_llm_budget_usd": 0.0})
+    assert AnthropicLLM.from_settings(off, models_registry)._budget_usd is None

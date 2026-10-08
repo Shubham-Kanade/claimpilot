@@ -82,6 +82,8 @@ ENV RUNTIME=embedded \
     FINANCE_DB=/data/finance.db \
     SEED_DIR=/app/mcp-corp/seed \
     POLICY_PATH=/app/mcp-corp/seed/policy.yaml \
+    MAX_UPLOAD_MB=6 \
+    MAX_BATCH_FILES=20 \
     PORT=7860
 EXPOSE 7860
 HEALTHCHECK --interval=30s --timeout=5s --retries=3 --start-period=60s \

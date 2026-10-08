@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import date
 
 from claimpilot.domain import DocType, ExpenseCategory, ProcessedDocument
+from claimpilot.domain.text import plain_text
 from claimpilot.policy import format_inr
 
 EN_DASH = chr(0x2013)  # shown between the dates of a range, e.g. 12-14 Aug 2026
@@ -78,16 +79,8 @@ def date_range(start: date, end: date) -> str:
 
 
 def safe_text(value: str | None, limit: int = 40) -> str:
-    """Receipt text made safe to quote in a question: single line, no control characters, short.
-
-    Receipts are untrusted input. Anything quoted back to the employee (and shown to the chat
-    agent) goes through here so a crafted merchant name cannot smuggle in line breaks or a wall of
-    text.
-    """
-    if not value:
-        return ""
-    printable = "".join(ch if ch.isprintable() else " " for ch in value)
-    return " ".join(printable.replace('"', "'").split())[:limit].rstrip()
+    """Receipt text made safe to quote in a question: see ``claimpilot.domain.text``."""
+    return plain_text(value, limit)
 
 
 LEFT_QUOTE, RIGHT_QUOTE = chr(0x201C), chr(0x201D)

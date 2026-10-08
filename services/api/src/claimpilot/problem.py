@@ -8,6 +8,8 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
+from claimpilot.mcp.client import McpError, McpToolError, McpUnavailableError
+
 
 class Problem(BaseModel):
     """The body of every error response (``application/problem+json``)."""
@@ -39,5 +41,25 @@ def install(app: FastAPI) -> None:
         return JSONResponse(
             body.model_dump(exclude_none=True),
             status_code=exc.status_code,
+            media_type="application/problem+json",
+        )
+
+    @app.exception_handler(McpError)
+    async def _mcp(_: Request, exc: McpError) -> JSONResponse:
+        """A mocked enterprise system failed: say which one and whether to try again."""
+        system = {"finance": "finance system", "corp": "corporate systems"}.get(
+            exc.server or "", "a connected system"
+        )
+        if isinstance(exc, McpUnavailableError):
+            status, code, title = 503, "system_unavailable", f"The {system} is not reachable"
+        elif isinstance(exc, McpToolError):
+            status, code = 502, "system_rejected"
+            title = f"The {system} rejected the request: {str(exc)[:200]}"
+        else:
+            status, code, title = 502, "system_error", f"The {system} answered unexpectedly"
+        body = Problem(type=code, title=title, status=status, detail={"retryable": exc.retryable})
+        return JSONResponse(
+            body.model_dump(exclude_none=True),
+            status_code=status,
             media_type="application/problem+json",
         )

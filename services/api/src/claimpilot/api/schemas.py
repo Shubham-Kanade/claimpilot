@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, Field
+from typing import Annotated
+
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 from claimpilot.domain.claims import Employee
 from claimpilot.pipeline.views import ClaimView
@@ -23,7 +25,9 @@ class BatchCreated(BaseModel):
 class AnswersIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    answers: dict[str, str] = Field(description="open question id -> the employee's answer")
+    answers: dict[str, Annotated[str, StringConstraints(max_length=2000)]] = Field(
+        max_length=50, description="open question id -> the employee's answer"
+    )
 
 
 class SubmitIn(BaseModel):

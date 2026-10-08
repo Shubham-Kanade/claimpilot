@@ -53,6 +53,20 @@ _EXTRA = re.compile(
     r"|round[- ]?off|discount|deposit|advance|\bcab\b|transfer",
     re.IGNORECASE,
 )
+# Things a hotel often rolls into the room rate. A line that is the room plus one of these
+# ("Deluxe Room incl. breakfast") is still the room, and counting the whole line is the cautious
+# reading: it can only make a stay look dearer, never let one over the cap slip through.
+_BUNDLED = re.compile("breakfast|lunch|dinner|food|beverage|wi-?fi|internet", re.IGNORECASE)
+
+
+def _is_extra(description: str) -> bool:
+    """A charge that is not the room rate (the 4.1 cap is about the room rate only)."""
+    if not _EXTRA.search(description):
+        return False
+    only_bundled = not _EXTRA.search(_BUNDLED.sub(" ", description))
+    return not (_ROOM.search(description) and only_bundled)
+
+
 _NIGHTS = re.compile(r"(\d{1,2})\s*nights?\b", re.IGNORECASE)
 
 
@@ -85,9 +99,7 @@ def hotel_stay(receipt: ExtractedReceipt) -> HotelStay | None:
     stands for the whole stay and the nights are unknown.
     """
     candidates = [
-        item
-        for item in receipt.line_items
-        if item.amount > 0 and not _EXTRA.search(item.description)
+        item for item in receipt.line_items if item.amount > 0 and not _is_extra(item.description)
     ]
     room_lines = [item for item in candidates if _ROOM.search(item.description)] or candidates
     rates: list[float] = []

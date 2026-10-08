@@ -233,7 +233,7 @@ def test_grade_is_normalised():
 def test_unknown_grade_says_so_instead_of_skipping_silently():
     [finding] = check(hotel(rate=50000.0, city=TIER1_CITY), grade="M2")
     assert finding.code == "grade_not_in_policy"
-    assert finding.severity is Severity.info
+    assert finding.severity is Severity.warn  # a limit that could not run must not look passed
     assert finding.clause_id == "4.1"
 
 
@@ -246,7 +246,7 @@ def test_foreign_currency_hotel_is_not_compared_with_rupee_caps():
     room = room.model_copy(update={"receipt": room.receipt.model_copy(update={"currency": "USD"})})
     findings = check(room, grade="L1")
     assert codes(findings) == ["currency_not_inr"]
-    assert findings[0].severity is Severity.info
+    assert findings[0].severity is Severity.warn  # the rupee caps were skipped: finance must look
 
 
 # --- 6.1 alcohol ------------------------------------------------------------------------------
@@ -507,3 +507,41 @@ def test_a_hotel_bill_with_nothing_to_compare_is_not_flagged():
         items=[("Laundry", 900.0), ("Room Service", 4000.0)],
     )
     assert check(only_extras, grade="L4") == []
+
+
+# --- a room line that mentions something thrown in is still the room ---------------------------
+
+
+@pytest.mark.parametrize(
+    "description",
+    [
+        "Deluxe Room incl. breakfast",
+        "Room Charges with breakfast and wifi",
+        "Suite (dinner included)",
+    ],
+)
+def test_a_room_line_with_breakfast_included_still_meets_the_cap(description):
+    room = doc(
+        "h1",
+        category=ExpenseCategory.accommodation,
+        doc_type=DocType.hotel_folio,
+        items=[(description, 12000.0)],
+        total=12000.0,
+        city=TIER1_CITY,
+    )
+    assert codes(check(room, grade="L3")) == ["hotel_over_cap"]
+
+
+@pytest.mark.parametrize(
+    "description", ["Room Service", "Restaurant bill", "Breakfast buffet", "Laundry", "Spa"]
+)
+def test_charges_that_are_not_the_room_are_still_left_out_of_the_cap(description):
+    room = doc(
+        "h1",
+        category=ExpenseCategory.accommodation,
+        doc_type=DocType.hotel_folio,
+        items=[("Room Charges 10-Aug", 5000.0), (description, 9000.0)],
+        total=14000.0,
+        city=TIER1_CITY,
+    )
+    assert codes(check(room, grade="L3")) == []

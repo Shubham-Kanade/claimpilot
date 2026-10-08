@@ -134,7 +134,7 @@ async def test_submit_calls_finance_once_and_is_idempotent(http: AsyncClient, wo
         headers={**as_persona(ASHA), "Idempotency-Key": "k-1"},
     )
     assert again.status_code == 200 and again.json()["submission_reference"] == "FIN-2026-000001"
-    assert list(world.finance.submitted) == ["k-1"]  # finance saw it exactly once
+    assert list(world.finance.submitted) == ["claim-clm-1"]  # finance saw it exactly once
     actions = [e.action for e in await world.repo.audit_trail("clm-1")]
     assert actions == ["claim_submitted"]
 
@@ -154,10 +154,12 @@ async def test_only_the_owner_can_submit(http: AsyncClient, world: World):
     assert world.finance.submitted == {}
 
 
-async def test_default_idempotency_key_is_per_claim(http: AsyncClient, world: World):
+async def test_the_finance_key_is_the_claim_whatever_the_client_sends(
+    http: AsyncClient, world: World
+):
     await seed_claim(world, make_claim(answered=True))
     await http.post("/v1/claims/clm-1/submit", json={"confirmed": True}, headers=as_persona(ASHA))
-    assert list(world.finance.submitted) == ["submit-clm-1"]
+    assert list(world.finance.submitted) == ["claim-clm-1"]
 
 
 async def test_approver_flow(http: AsyncClient, world: World):
@@ -241,3 +243,122 @@ async def test_a_rejection_needs_a_reason(http: AsyncClient, world: World):
         headers=as_persona(RAVI),
     )
     assert reasoned.status_code == 200 and reasoned.json()["status"] == "rejected"
+
+
+async def test_two_submissions_with_different_keys_make_one_finance_record(
+    http: AsyncClient, world: World
+):
+    await seed_claim(world, make_claim(answered=True))
+    first = await http.post(
+        "/v1/claims/clm-1/submit",
+        json={"confirmed": True},
+        headers={**as_persona(ASHA), "Idempotency-Key": "first-try"},
+    )
+    again = await http.post(
+        "/v1/claims/clm-1/submit",
+        json={"confirmed": True},
+        headers={**as_persona(ASHA), "Idempotency-Key": "a-different-key"},
+    )
+    assert first.status_code == again.status_code == 200
+    assert first.json()["submission_reference"] == again.json()["submission_reference"]
+    assert list(world.finance.submitted) == [
+        "claim-clm-1"
+    ]  # the key is the claim, not the client's
+
+
+async def test_a_retry_after_a_half_finished_submission_finds_the_first_record(
+    http: AsyncClient, world: World
+):
+    await seed_claim(world, make_claim(answered=True))
+    # finance accepted the claim but our own record of it was lost (the key is derived from the id)
+    stored = await world.repo.get_claim("clm-1")
+    assert stored is not None
+    accepted = await world.finance.submit_claim(stored, idempotency_key="claim-clm-1")
+    resp = await http.post(
+        "/v1/claims/clm-1/submit", json={"confirmed": True}, headers=as_persona(ASHA)
+    )
+    assert resp.json()["submission_reference"] == accepted.reference
+    assert len(world.finance.submitted) == 1
+
+
+async def test_nobody_decides_their_own_claim(http: AsyncClient, world: World):
+    await seed_claim(world, make_claim(employee_id="DEMO-RAVI", answered=True))
+    await http.post("/v1/claims/clm-1/submit", json={"confirmed": True}, headers=as_persona(RAVI))
+    resp = await http.post(
+        "/v1/claims/clm-1/decision", json={"approved": True}, headers=as_persona(RAVI)
+    )
+    assert resp.status_code == 403 and resp.json()["type"] == "own_claim"
+    assert world.finance.decisions == []
+
+
+class DownFinance:
+    def __init__(self, error: Exception) -> None:
+        self.error = error
+
+    async def submit_claim(self, claim, *, idempotency_key: str):
+        raise self.error
+
+    async def decide_claim(self, reference, **kwargs):
+        raise self.error
+
+
+async def test_finance_down_is_a_503_problem_not_a_stack_trace(http: AsyncClient, world: World):
+    from claimpilot.mcp import McpUnavailableError
+
+    await seed_claim(world, make_claim(answered=True))
+    world.container.finance = DownFinance(McpUnavailableError("timeout", server="finance"))
+    resp = await http.post(
+        "/v1/claims/clm-1/submit", json={"confirmed": True}, headers=as_persona(ASHA)
+    )
+    assert resp.status_code == 503
+    assert resp.json()["type"] == "system_unavailable"
+    assert "finance system" in resp.json()["title"] and resp.json()["detail"] == {"retryable": True}
+    assert (await http.get("/v1/claims/clm-1", headers=as_persona(ASHA))).json()[
+        "status"
+    ] == "ready"
+
+
+async def test_finance_rejecting_the_claim_is_a_502_with_its_reason(
+    http: AsyncClient, world: World
+):
+    from claimpilot.mcp import McpToolError
+
+    await seed_claim(world, make_claim(answered=True))
+    world.container.finance = DownFinance(
+        McpToolError("title must be at most 200 characters", server="finance")
+    )
+    resp = await http.post(
+        "/v1/claims/clm-1/submit", json={"confirmed": True}, headers=as_persona(ASHA)
+    )
+    assert resp.status_code == 502 and resp.json()["type"] == "system_rejected"
+    assert "title must be at most 200 characters" in resp.json()["title"]
+
+
+async def test_the_corporate_directory_being_down_is_a_503_too(http: AsyncClient, world: World):
+    from claimpilot.mcp import McpUnavailableError
+
+    class DownDirectory:
+        async def get(self, employee_id: str):
+            raise McpUnavailableError("connection refused", server="corp")
+
+        async def list(self):
+            raise McpUnavailableError("connection refused", server="corp")
+
+    world.container.directory = DownDirectory()
+    resp = await http.get("/v1/claims", headers=as_persona(ASHA))
+    assert resp.status_code == 503 and "corporate systems" in resp.json()["title"]
+
+
+async def test_answers_are_bounded(http: AsyncClient, world: World):
+    await seed_claim(world, make_claim())
+    too_long = await http.post(
+        "/v1/claims/clm-1/answers",
+        json={"answers": {"q-attendees": "x" * 2001}},
+        headers=as_persona(ASHA),
+    )
+    too_many = await http.post(
+        "/v1/claims/clm-1/answers",
+        json={"answers": {f"q-{i}": "x" for i in range(51)}},
+        headers=as_persona(ASHA),
+    )
+    assert too_long.status_code == 422 and too_many.status_code == 422

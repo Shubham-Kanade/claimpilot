@@ -12,7 +12,8 @@ from __future__ import annotations
 
 import time
 from collections.abc import Mapping
-from typing import Any
+from datetime import UTC, datetime, timedelta
+from typing import Any, Protocol
 
 import anthropic
 from anthropic.types import Message
@@ -20,10 +21,18 @@ from anthropic.types.beta import BetaMessage
 
 from claimpilot.config import Settings
 from claimpilot.llm.base import BaseLLM, Ledger
-from claimpilot.llm.errors import LLMAuthError, map_sdk_error
+from claimpilot.llm.errors import LLMAuthError, LLMBudgetError, map_sdk_error
 from claimpilot.llm.params import LLMRequest
 from claimpilot.llm.registry import ModelRegistry
 from claimpilot.llm.types import Completion, TokenUsage
+
+BUDGET_WINDOW = timedelta(hours=24)
+
+
+class SpendSource(Protocol):
+    """Where the spend of the last day is read from (the cost ledger)."""
+
+    async def live_spend_since(self, since: datetime) -> float: ...
 
 
 class AnthropicLLM(BaseLLM):
@@ -34,9 +43,13 @@ class AnthropicLLM(BaseLLM):
         *,
         ledger: Ledger | None = None,
         env: Mapping[str, str] | None = None,
+        budget_usd: float | None = None,
+        spend: SpendSource | None = None,
     ) -> None:
         super().__init__(registry, mode="live", ledger=ledger, env=env)
         self._client = client
+        self._budget_usd = budget_usd
+        self._spend = spend
 
     @classmethod
     def from_settings(
@@ -46,15 +59,33 @@ class AnthropicLLM(BaseLLM):
         *,
         ledger: Ledger | None = None,
         env: Mapping[str, str] | None = None,
+        spend: SpendSource | None = None,
     ) -> AnthropicLLM:
         if settings.llm_mode != "live":
             raise LLMAuthError(f"live client refused: LLM_MODE={settings.llm_mode} (spend guard)")
         if settings.anthropic_api_key is None:
             raise LLMAuthError("LLM_MODE=live needs ANTHROPIC_API_KEY")
         client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key.get_secret_value())
-        return cls(registry, client, ledger=ledger, env=env)
+        budget = settings.daily_llm_budget_usd or None  # 0 means no cap
+        return cls(registry, client, ledger=ledger, env=env, budget_usd=budget, spend=spend)
+
+    async def _check_budget(self) -> None:
+        """Refuse a live call once the last 24 hours have cost the configured cap.
+
+        The ledger is read before each call, so concurrent calls can overshoot by a few cents,
+        never by more. Replay and fake calls never get here.
+        """
+        if self._budget_usd is None or self._spend is None:
+            return
+        spent = await self._spend.live_spend_since(datetime.now(UTC) - BUDGET_WINDOW)
+        if spent >= self._budget_usd:
+            raise LLMBudgetError(
+                f"the daily budget for live model calls (${self._budget_usd:.2f}) is used up "
+                f"(${spent:.2f} spent in the last 24 hours)"
+            )
 
     async def complete(self, request: LLMRequest) -> Completion:
+        await self._check_budget()
         started = time.perf_counter()
         try:
             message = await self._create(request)

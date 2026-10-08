@@ -10,7 +10,7 @@ from collections import defaultdict
 from datetime import datetime
 
 from pydantic import BaseModel
-from sqlalchemy import select
+from sqlalchemy import func, select
 
 from claimpilot.db import LlmCall, SessionFactory
 from claimpilot.llm.types import CallInfo, LLMMode
@@ -68,6 +68,14 @@ class CostLedger:
         async with self._sessions() as session:
             session.add(row)
             await session.commit()
+
+    async def live_spend_since(self, since: datetime) -> float:
+        """Dollars spent on live calls since ``since`` (replay and fake calls cost nothing)."""
+        query = select(func.coalesce(func.sum(LlmCall.cost_usd), 0.0)).where(
+            LlmCall.mode == "live", LlmCall.created_at >= since
+        )
+        async with self._sessions() as session:
+            return float((await session.execute(query)).scalar_one())
 
     async def summary(
         self, since: datetime | None = None, *, mode: LLMMode | None = None

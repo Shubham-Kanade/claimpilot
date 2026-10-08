@@ -19,8 +19,9 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import math
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, timedelta
 
 from claimpilot.claims import apply_calendar, build_claims, route
@@ -51,6 +52,11 @@ from claimpilot.trust import DuplicateIndex, assess_document
 logger = logging.getLogger(__name__)
 
 CALENDAR_MARGIN = timedelta(days=1)
+# A second opinion costs about twenty times a first read, and an upload of receipts crafted to look
+# suspicious could trigger it for every one of them. At most this share of a batch (never fewer
+# than MIN_REREADS) is read twice; the rest keep their first read.
+REREAD_SHARE = 0.4
+MIN_REREADS = 3
 MAX_ERROR_CHARS = 200
 
 
@@ -69,9 +75,30 @@ class PipelineDeps:
     locator: FieldLocator | None = None  # click-to-verify boxes; None: no highlights
     concurrency: int = 4
     clock: Callable[[], date] = date.today
+    # One lock per employee for the check-and-save step: the duplicate check reads the table and the
+    # save writes to it, so two batches of the same receipts must take turns or each misses the
+    # other's copy. In-process (embedded runtime, one worker process); with several worker
+    # processes a database advisory lock would take its place.
+    employee_locks: dict[str, asyncio.Lock] = field(default_factory=dict)
+
+    def lock_for(self, employee_id: str) -> asyncio.Lock:
+        return self.employee_locks.setdefault(employee_id, asyncio.Lock())
 
     def today(self) -> date:
         return self.settings.demo_today or self.clock()
+
+
+class RereadBudget:
+    """How many documents of one batch may still be read a second time."""
+
+    def __init__(self, documents: int) -> None:
+        self._left = max(MIN_REREADS, math.ceil(documents * REREAD_SHARE))
+
+    def take(self) -> bool:
+        if self._left <= 0:
+            return False
+        self._left -= 1
+        return True
 
 
 @dataclass(frozen=True)
@@ -122,7 +149,11 @@ async def process_batch(deps: PipelineDeps, batch_id: str) -> None:
         raise
     except Exception as exc:  # one bad batch must not take the worker down
         logger.exception("batch %s failed", batch_id)
-        await deps.repo.mark_batch(batch_id, "failed", error=_short(exc))
+        try:
+            await deps.repo.mark_batch(batch_id, "failed", error=_short(exc))
+        except Exception:  # the rows may be gone (a visitor pressed Start over mid-batch)
+            logger.warning("could not mark batch %s failed", batch_id)
+        # Whatever happened, the stream gets an ending: a client must never wait on it for minutes.
         await deps.events.publish(ev.BatchFailed(batch_id=batch_id, error=_short(exc)))
 
 
@@ -167,11 +198,12 @@ async def _read_all(
     deps: PipelineDeps, batch_id: str, rows: Sequence[Document]
 ) -> tuple[list[_Read], int]:
     gate = asyncio.Semaphore(deps.concurrency)
+    rereads = RereadBudget(len(rows))
 
     async def one(row: Document) -> _Read | None:
         async with gate:
             try:
-                read = await _read_one(deps, row)
+                read = await _read_one(deps, row, rereads)
             except asyncio.CancelledError:
                 raise
             except Exception as exc:
@@ -200,12 +232,12 @@ async def _read_all(
     return reads, len(rows) - len(reads)
 
 
-async def _read_one(deps: PipelineDeps, row: Document) -> _Read:
+async def _read_one(deps: PipelineDeps, row: Document, rereads: RereadBudget) -> _Read:
     raw = await deps.storage.get(row.storage_key)
     prepared = await asyncio.to_thread(
         prepare_document, raw, max_pdf_pages=deps.settings.max_pdf_pages
     )
-    extraction = await deps.extractor.extract(prepared)
+    extraction = await deps.extractor.extract(prepared, may_reread=rereads.take)
     notes = await _calendar_notes(deps, row.employee_id, extraction.receipt)
     # Deciding and locating both need only the extracted receipt, so they run together.
     (decisions, result), located = await asyncio.gather(
@@ -273,6 +305,15 @@ async def _fail(deps: PipelineDeps, batch_id: str, row: Document, exc: BaseExcep
 
 
 async def _check_all(
+    deps: PipelineDeps, batch_id: str, reads: Sequence[_Read]
+) -> tuple[list[ProcessedDocument], int]:
+    if not reads:
+        return [], 0
+    async with deps.lock_for(reads[0].row.employee_id):  # one employee's checks take turns
+        return await _check_in_turn(deps, batch_id, reads)
+
+
+async def _check_in_turn(
     deps: PipelineDeps, batch_id: str, reads: Sequence[_Read]
 ) -> tuple[list[ProcessedDocument], int]:
     documents: list[ProcessedDocument] = []

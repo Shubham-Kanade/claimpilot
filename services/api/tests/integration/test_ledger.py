@@ -118,6 +118,17 @@ async def test_summary_filters_by_mode_and_since(ledger, sessions):
     assert (await ledger.summary(since=past)).total.calls == 2
 
 
+async def test_live_spend_counts_only_live_calls_inside_the_window(ledger):
+    await ledger.record(call(mode="replay", cost_usd=0.50))
+    await ledger.record(call(mode="fake", cost_usd=0.50))
+    await ledger.record(call(mode="live", cost_usd=0.25))
+    await ledger.record(call(mode="live", cost_usd=0.125))
+
+    day_ago = datetime.now(UTC) - timedelta(hours=24)
+    assert await ledger.live_spend_since(day_ago) == pytest.approx(0.375)
+    assert await ledger.live_spend_since(datetime.now(UTC) + timedelta(minutes=1)) == 0.0
+
+
 async def test_empty_ledger_summary(ledger):
     summary = await ledger.summary()
     assert summary.total.calls == 0

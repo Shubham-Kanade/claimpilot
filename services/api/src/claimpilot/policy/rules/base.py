@@ -137,7 +137,7 @@ class RuleClause(ClauseBase):
             PolicyCode.grade_not_in_policy,
             f"Grade {ctx.employee.grade!r} is not one of the policy's grades, so the limit in "
             f"clause {self.id} ({self.title.lower()}) could not be applied.",
-            severity=Severity.info,
+            severity=Severity.warn,
         )
 
 

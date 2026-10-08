@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from claimpilot.domain import ExtractedReceipt, validate_gstin
 from claimpilot.domain.findings import Finding, Severity
+from claimpilot.domain.text import plain_text
 
 # Printed bills round the grand total to the rupee (and some print a separate round-off line the
 # schema does not capture), so totals within ₹1 are consistent.
@@ -236,8 +237,8 @@ def _check_gstin(r: ExtractedReceipt) -> list[Finding]:
         Finding(
             code=f"gstin_invalid_{reason}",
             severity=Severity.high,
-            message=f"The GSTIN {r.merchant_gstin} {detail}.",
+            message=f"The GSTIN {plain_text(r.merchant_gstin, 15)} {detail}.",
             fields=("merchant_gstin",),
-            actual=r.merchant_gstin,
+            actual=plain_text(r.merchant_gstin, 15),
         )
     ]

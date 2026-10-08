@@ -166,9 +166,9 @@ class Policy(BaseModel):
     def _not_rupees(doc: ProcessedDocument) -> Finding:
         return Finding(
             code=PolicyCode.currency_not_inr.value,
-            severity=Severity.info,
+            severity=Severity.warn,
             message=f"This document is in {doc.receipt.currency}. The policy limits are in "
-            "rupees, so the amount limits were not applied to it.",
+            "rupees, so the amount limits were not applied to it: finance needs to check it.",
             source=FindingSource.policy,
             fields=("currency",),
             actual=doc.receipt.currency,

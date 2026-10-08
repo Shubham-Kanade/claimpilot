@@ -116,6 +116,7 @@ class Harness:
     events: ev.InMemoryEventBus
     storage: InMemoryStorage
     fixtures: dict[str, Fixture]
+    llm: FakeLLM
 
     async def upload(self, files: Sequence[tuple[str, bytes]], employee: str = "P001") -> str:
         news = []
@@ -180,7 +181,7 @@ def build_harness(
         settings=settings or Settings(demo_today=TODAY),
         locator=FieldLocator(llm) if locate is not None else None,
     )
-    return Harness(deps, repo, events, storage, fixtures)
+    return Harness(deps, repo, events, storage, fixtures, llm)
 
 
 @pytest.fixture
@@ -440,3 +441,31 @@ async def test_without_a_locator_no_boxes_are_asked_for(sessions, models_registr
     view = await harness.run(await harness.upload_fixtures("s42-0005"))
     [document] = view.documents
     assert document.document is not None and document.document.boxes == {}
+
+
+async def test_a_batch_of_suspicious_receipts_cannot_buy_unlimited_second_reads(
+    sessions, models_registry, fixtures
+):
+    inconsistent = ExtractedReceipt(
+        doc_type=DocType.restaurant_bill,
+        merchant_name="Spice Route Dining",
+        date="2026-09-14",
+        line_items=[LineItem(description="Thali", amount=400.0)],
+        subtotal=400.0,
+        total=900.0,  # the bill's own figures contradict each other: every read looks suspicious
+    )
+    harness = build_harness(
+        sessions, models_registry, fixtures, responder=lambda _r: from_domain(inconsistent)
+    )
+    harness.deps.decisions.__dict__["_by_key"][("Spice Route Dining", 900.0)] = Fixture(  # type: ignore[attr-defined]
+        "synthetic",
+        b"",
+        ReceiptTruth(id="synthetic", receipt=inconsistent, category=ExpenseCategory.meals),
+    )
+    files = [(f"bill-{i}.png", unique_png(10 + i)) for i in range(8)]
+    view = await harness.run(await harness.upload(files))
+
+    routes = [r.route for r in harness.llm.requests]
+    assert view.status == "done" and view.failed == 0
+    assert routes.count("extraction") == 8
+    assert routes.count("extraction_retry") == 4  # ceil(8 * 0.4) = 4, not 8

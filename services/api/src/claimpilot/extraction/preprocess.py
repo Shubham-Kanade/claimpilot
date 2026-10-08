@@ -13,6 +13,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import io
+import threading
 from dataclasses import dataclass
 from typing import Any, Literal
 
@@ -21,6 +22,13 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 
 DEFAULT_MAX_LONG_EDGE = 1568
 JPEG_QUALITY = 85
+# A receipt photo is a few megapixels. A small PNG can declare a huge canvas and cost gigabytes of
+# memory to decode, so anything beyond this is refused from its header alone.
+MAX_PIXELS = 40_000_000
+
+# pdfium keeps global state and is not thread-safe: two renders at once corrupt each other's output
+# (and, with three at once, the process). Pages are prepared in worker threads, so serialise them.
+_PDFIUM_LOCK = threading.Lock()
 
 MediaType = Literal["image/jpeg", "image/png", "image/webp", "application/pdf"]
 
@@ -67,6 +75,15 @@ def prepare_document(
 
 
 def _prepare_pdf(data: bytes, digest: str, max_pages: int, max_long_edge: int) -> PreparedDocument:
+    with _PDFIUM_LOCK:
+        images, pages = _render_pdf(data, max_pages, max_long_edge)
+    blocks = tuple(_jpeg_block(img) for img in images)
+    return PreparedDocument(
+        digest, "application/pdf", blocks, images[0].width, images[0].height, pages=pages
+    )
+
+
+def _render_pdf(data: bytes, max_pages: int, max_long_edge: int) -> tuple[list[Image.Image], int]:
     try:
         pdf = pdfium.PdfDocument(data)
     except pdfium.PdfiumError as exc:
@@ -84,10 +101,7 @@ def _prepare_pdf(data: bytes, digest: str, max_pages: int, max_long_edge: int) -
             page.close()
     finally:
         pdf.close()
-    blocks = tuple(_jpeg_block(img) for img in images)
-    return PreparedDocument(
-        digest, "application/pdf", blocks, images[0].width, images[0].height, pages=pages
-    )
+    return images, pages
 
 
 def _prepare_image(
@@ -95,6 +109,10 @@ def _prepare_image(
 ) -> PreparedDocument:
     try:
         with Image.open(io.BytesIO(data)) as opened:
+            if opened.width * opened.height > MAX_PIXELS:  # known from the header: nothing decoded
+                raise UnsupportedDocumentError(
+                    f"image is too large ({opened.width}x{opened.height} pixels)"
+                )
             image = ImageOps.exif_transpose(opened)
             image = image.convert("RGB")  # drops alpha / palette; JPEG needs RGB
     except (UnidentifiedImageError, OSError) as exc:

@@ -12,7 +12,6 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 env:
   REGISTRY: ghcr.io
@@ -20,6 +19,9 @@ env:
 jobs:
   images:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write  # publish to ghcr.io
     strategy:
       fail-fast: false
       matrix:
@@ -62,6 +64,7 @@ jobs:
     needs: images
     if: ${{ vars.HF_SPACE != '' }}
     runs-on: ubuntu-latest
+    permissions: {}  # only calls the Hugging Face API with its own token
     steps:
       - name: Rebuild the Hugging Face Space from the tagged code
         env:

@@ -114,7 +114,9 @@ async def submit(
     view = await visible_claim(container, persona, claim_id)
     if persona.id != view.employee_id:
         raise problem(status.HTTP_403_FORBIDDEN, "not_your_claim", "Only the owner can submit")
-    key = idempotency_key or f"submit-{claim_id}"
+    # One finance key per claim, whatever the client sent: two requests for one claim can never
+    # create two finance records, and a retry after a half-finished submission finds the first.
+    key = f"claim-{claim_id}"
 
     if view.status is ClaimStatus.submitted and view.submission_reference:
         return view  # a retry of a submission that already went through: same result
@@ -163,6 +165,10 @@ async def decide_claim(
             "Say why the claim is rejected",
         )
     view = await visible_claim(container, approver, claim_id)
+    if view.employee_id == approver.id:  # separation of duties: nobody signs off their own claim
+        raise problem(
+            status.HTTP_403_FORBIDDEN, "own_claim", "You cannot approve or reject your own claim"
+        )
     already = ClaimStatus.approved if approved else ClaimStatus.rejected
     if view.status is already:
         return view  # repeating a decision that was already made is harmless

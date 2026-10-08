@@ -157,9 +157,13 @@ def test_no_attendee_answer_means_no_per_head_check():
     assert check(with_attendees(claim_of(docs), "d1", "   "), docs) == []
 
 
-def test_an_uncountable_answer_is_ignored():
+@pytest.mark.parametrize("answer", ["n/a", "unknown", "1000", "?"])
+def test_an_uncountable_answer_asks_finance_to_look_instead_of_passing(answer):
     docs = [dinner(90000.0)]
-    assert check(with_attendees(claim_of(docs), "d1", "n/a"), docs) == []
+    [finding] = check(with_attendees(claim_of(docs), "d1", answer), docs)
+    assert finding.code == "headcount_unclear" and finding.severity is Severity.warn
+    assert finding.clause_id == "5.2" and finding.document_id == "d1"
+    assert answer not in finding.message  # the answer is not echoed back
 
 
 def test_only_the_attendees_question_for_that_document_counts():

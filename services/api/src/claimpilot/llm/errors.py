@@ -37,6 +37,10 @@ class LLMOutputError(LLMError):
     """The response finished but did not validate against the requested output model."""
 
 
+class LLMBudgetError(LLMError):
+    """The cap on money spent in the last 24 hours on live calls has been reached."""
+
+
 class ReplayMissError(LLMError):
     """``LLM_MODE=replay`` and no recording exists for this exact request."""
 

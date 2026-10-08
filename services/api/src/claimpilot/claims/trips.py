@@ -15,6 +15,7 @@ from dataclasses import dataclass, field
 from datetime import date, timedelta
 
 from claimpilot.domain import DocType, ExpenseCategory, ProcessedDocument
+from claimpilot.domain.text import plain_text
 from claimpilot.policy import hotel_stay, normalise_city
 
 TICKET_TYPES = frozenset({DocType.flight_ticket, DocType.train_ticket})
@@ -166,7 +167,7 @@ def as_anchor(doc: ProcessedDocument, base: str | None, names: dict[str, str]) -
             return None
         for raw, key in ends:
             if key and key in away:
-                names.setdefault(key, (raw or key).strip())
+                names.setdefault(key, plain_text(raw or key, 40))
         return Anchor(
             doc=doc,
             start=day,
@@ -181,7 +182,7 @@ def as_anchor(doc: ProcessedDocument, base: str | None, names: dict[str, str]) -
         if city is not None and city == base:
             return None
         if city is not None:
-            names.setdefault(city, (receipt.merchant_city or city).strip())
+            names.setdefault(city, plain_text(receipt.merchant_city or city, 40))
         start = stay_start(doc) or day
         return Anchor(doc, start, day, frozenset({city} if city else ()))
     return None

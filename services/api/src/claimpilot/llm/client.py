@@ -62,7 +62,10 @@ def get_llm(
         return FakeLLM(registry, ledger=ledger)
     if settings.llm_mode == "replay":
         return RecordReplayLLM(registry, settings.replay_dir, ledger=ledger)
+    spend = ledger if hasattr(ledger, "live_spend_since") else None  # the cap reads the ledger
     if not settings.llm_record:
-        return AnthropicLLM.from_settings(settings, registry, ledger=ledger)
-    live = AnthropicLLM.from_settings(settings, registry)  # the recording wrapper does the ledger
-    return RecordReplayLLM(registry, settings.replay_dir, inner=live, ledger=ledger)
+        return AnthropicLLM.from_settings(settings, registry, ledger=ledger, spend=spend)  # type: ignore[arg-type]
+    live = AnthropicLLM.from_settings(settings, registry, spend=spend)  # type: ignore[arg-type]
+    return RecordReplayLLM(
+        registry, settings.replay_dir, inner=live, ledger=ledger
+    )  # the wrapper records

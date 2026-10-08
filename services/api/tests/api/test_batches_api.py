@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 
+import pytest
 from httpx import AsyncClient
 
 from claimpilot.pipeline.events import BatchDone, BatchStarted, DocumentExtracted
@@ -160,6 +161,22 @@ async def test_sse_resumes_after_last_event_id(http: AsyncClient, world: World):
     headers = {**as_persona(ASHA), "Last-Event-ID": "0"}
     frames = await read_sse(http, f"/v1/batches/{batch_id}/events", headers)
     assert [f["event"] for f in frames] == ["batch_done"] and frames[0]["id"] == "1"
+
+
+@pytest.mark.parametrize(
+    "last_event_id",
+    [bytes([0xB2]), b"-1", b"x", b"9" * 5000, b""],  # 0xB2 is a superscript two: "digit" to isdigit
+)
+async def test_sse_ignores_a_malformed_last_event_id_and_starts_from_the_top(
+    http: AsyncClient, world: World, last_event_id
+):
+    batch_id = (await upload(http)).json()["batch_id"]
+    bus = world.container.events
+    await bus.publish(started(batch_id))
+    await bus.publish(BatchDone(batch_id=batch_id, processed=0, failed=0, claims=0, cost_usd=0.0))
+    headers = {**as_persona(ASHA), "Last-Event-ID": last_event_id}
+    frames = await read_sse(http, f"/v1/batches/{batch_id}/events", headers)
+    assert [f["event"] for f in frames] == ["batch_started", "batch_done"]
 
 
 async def test_sse_is_private_too(http: AsyncClient):

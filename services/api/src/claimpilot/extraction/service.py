@@ -14,6 +14,7 @@ cost stays close to the cheap model's.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import cache
 from importlib.resources import files
@@ -121,7 +122,15 @@ class ReceiptExtractor:
         self._thinking: ThinkingMode = thinking
         self._prompt_version = prompt_version
 
-    async def extract(self, document: PreparedDocument) -> Extraction:
+    async def extract(
+        self, document: PreparedDocument, *, may_reread: Callable[[], bool] | None = None
+    ) -> Extraction:
+        """``may_reread`` is asked just before a second read is made; a ``False`` keeps the first.
+
+        It lets the caller cap how many documents of one upload may be re-read, because the
+        stronger model costs about twenty times more and a hostile upload can make every
+        receipt look suspicious.
+        """
         key = self._key(document, PRIMARY_ROUTE)
         if self._cache is not None and (hit := await self._cache.get(key)) is not None:
             return Extraction(receipt=hit, cached=True, escalated=False)
@@ -130,9 +139,10 @@ class ReceiptExtractor:
         calls = [first]
         receipt = to_domain(first.parsed)
         escalated = False
-        if (self._escalate and needs_escalation(receipt)) or (
+        wanted = (self._escalate and needs_escalation(receipt)) or (
             self._second_opinion and looks_suspicious(receipt)
-        ):
+        )
+        if wanted and (may_reread is None or may_reread()):
             second = await self._call(RETRY_ROUTE, document)
             calls.append(second)
             receipt, escalated = reconcile(receipt, to_domain(second.parsed)), True

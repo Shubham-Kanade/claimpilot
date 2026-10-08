@@ -27,6 +27,19 @@ EXTENSION = {
     "application/pdf": "pdf",
 }
 HEARTBEAT_S = 15.0
+MAX_EVENT_ID_DIGITS = 9
+
+
+def _resume_point(last_event_id: str | None) -> int:
+    """Where to continue a stream: after the id the client last saw, else from the beginning.
+
+    ``str.isdigit`` also accepts characters like a superscript two that ``int`` rejects, and an id
+    thousands of digits long is not an id; both would otherwise be a server error.
+    """
+    if last_event_id is None:
+        return 0
+    plain = last_event_id.isascii() and last_event_id.isdigit()
+    return int(last_event_id) + 1 if plain and len(last_event_id) <= MAX_EVENT_ID_DIGITS else 0
 
 
 def _safe_name(raw: str | None, index: int) -> str:
@@ -160,7 +173,7 @@ async def batch_events(
     last_event_id: Annotated[str | None, Header(alias="Last-Event-ID")] = None,
 ) -> StreamingResponse:
     await _visible_batch(container, persona, batch_id)
-    start = int(last_event_id) + 1 if last_event_id and last_event_id.isdigit() else 0
+    start = _resume_point(last_event_id)
 
     async def frames() -> AsyncIterator[str]:
         async for item in stream_events(

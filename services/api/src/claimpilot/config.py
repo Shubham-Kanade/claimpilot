@@ -74,7 +74,8 @@ class Settings(BaseSettings):
     locate_fields: bool = True
 
     # Guardrails
-    daily_user_token_budget: int = 200_000
+    # Most a day of LIVE model calls may cost (USD; 0 = no cap). Replay and fake calls are free.
+    daily_llm_budget_usd: float = 1.0
     max_upload_mb: int = 15
     max_pdf_pages: int = 10
     max_batch_files: int = 30

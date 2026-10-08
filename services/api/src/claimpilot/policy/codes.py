@@ -22,6 +22,8 @@ class PolicyCode(StrEnum):
     mobile_over_cap = "mobile_over_cap"  # 8.1
     preapproval_required = "preapproval_required"  # 9.1
     personal_expense_flagged = "personal_expense_flagged"  # 10.1
-    # Housekeeping notes (info severity): the policy could not be applied, which is worth saying.
+    headcount_unclear = "headcount_unclear"  # 5.2: an attendee answer that cannot be counted
+    # The policy could not be applied to this document. Said out loud and routed to a person,
+    # because a rule that cannot run must never look like a rule that passed.
     grade_not_in_policy = "grade_not_in_policy"
     currency_not_inr = "currency_not_inr"

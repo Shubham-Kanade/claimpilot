@@ -112,6 +112,15 @@ class EntertainmentClause(RuleClause):
                 None,
             )
             headcount = attendee_headcount(answer, ctx.employee.name) if answer else None
+            if answer and not headcount:  # answered, but nothing in it can be counted
+                findings.append(
+                    self.finding(
+                        PolicyCode.headcount_unclear,
+                        "How many people attended could not be worked out from the answer, so "
+                        "the per-head cap was not checked: finance needs to look at this one.",
+                        fields=("total",),
+                    ).for_document(doc.id)
+                )
             if not headcount:
                 continue
             net = doc.amount - sum(item.amount for item in alcohol_items(doc.receipt))
@@ -159,7 +168,7 @@ class AlcoholClause(RuleClause):
             noun = "line" if len(items) == 1 else "lines"
             message = (
                 f"This bill includes alcohol ({len(items)} {noun}, {format_inr(excluded)}). "
-                "Alcohol is not reimbursable, so that amount is taken out of the claim."
+                "Alcohol is not reimbursable, so that amount has to be taken out before it is paid."
             )
             return [
                 self.finding(
@@ -174,7 +183,7 @@ class AlcoholClause(RuleClause):
             self.finding(
                 PolicyCode.alcohol_not_reimbursable,
                 "This bill appears to include alcohol, which is not reimbursable. The items do "
-                "not say how much, so the alcohol amount has to be taken out by hand.",
+                "not say how much, so someone has to work out the amount to take out.",
                 fields=("line_items",),
                 actual=doc.receipt.total,
             )

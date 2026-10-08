@@ -19,6 +19,7 @@ from datetime import date
 from claimpilot import ports
 from claimpilot.config import Settings
 from claimpilot.domain.claims import Claim, Employee
+from claimpilot.mcp.client import McpError, McpToolError
 from claimpilot.mcp.corp import CorpClient, EmployeeNotFoundError, get_corp_client
 from claimpilot.mcp.finance import FinanceClient, get_finance_client
 
@@ -90,9 +91,19 @@ class McpFinance:
 
         Finance requires a ``comment`` when rejecting.
         """
-        decided = await self._finance.decide_claim(
-            reference, "approved" if approved else "rejected", approver_id, comment
-        )
+        wanted = "approved" if approved else "rejected"
+        try:
+            decided = await self._finance.decide_claim(reference, wanted, approver_id, comment)
+        except McpToolError as refusal:
+            # Decisions are final. If finance already holds this very decision, an earlier attempt
+            # got through and only our own record of it was lost: finish the job instead of failing.
+            try:
+                current = await self._finance.get_claim_status(reference)
+            except McpError:
+                raise refusal from None  # cannot tell: the original refusal is the honest answer
+            if current.status != wanted:
+                raise
+            return current.status
         return decided.status
 
 

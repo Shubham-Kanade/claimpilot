@@ -99,6 +99,10 @@ class LLMEngine:
     ) -> DecisionResult:
         model = answer_model(questions)
         state_text = state if isinstance(state, str) else json.dumps(state, ensure_ascii=False)
+        # The state holds receipt text, so it must not be able to close its own <state> tag:
+        # "<" and ">" become the six-character JSON escapes u003c and u003e (a model reads them the
+        # same and the JSON stays valid), so no receipt text can contain a tag.
+        state_text = state_text.replace("<", "\\u003c").replace(">", "\\u003e")
         prompt = (
             "<state>\n" + state_text + "\n</state>\n\nQuestions:\n"
             + "\n".join(_describe(q) for q in questions)

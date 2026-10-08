@@ -44,21 +44,26 @@ jobs:
         env:
           LLM_MODE: live
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SPLIT: ${{ inputs.split }}
+          CONFIGS: ${{ inputs.configs }}
+          MAX_USD: ${{ inputs.max_usd }}
         run: |
           uv sync --locked
           uv run python -m claimpilot.evals.run --manifest ../../data/synth/out/manifest.jsonl \
-            --split "${{ inputs.split }}" --configs "${{ inputs.configs }}" \
-            --max-usd "${{ inputs.max_usd }}" --estimate-only
+            --split "$SPLIT" --configs "$CONFIGS" --max-usd "$MAX_USD" --estimate-only
 
       - name: Run eval (paid, capped by --max-usd)
         working-directory: services/api
         env:
           LLM_MODE: live
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SPLIT: ${{ inputs.split }}
+          CONFIGS: ${{ inputs.configs }}
+          MAX_USD: ${{ inputs.max_usd }}
         run: |
           uv run python -m claimpilot.evals.run --manifest ../../data/synth/out/manifest.jsonl \
-            --split "${{ inputs.split }}" --configs "${{ inputs.configs }}" \
-            --max-usd "${{ inputs.max_usd }}" --label "ci-${{ inputs.split }}" --out ../../evals/reports
+            --split "$SPLIT" --configs "$CONFIGS" --max-usd "$MAX_USD" \
+            --label "ci-$SPLIT" --out ../../evals/reports
           cat ../../evals/reports/*.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload report

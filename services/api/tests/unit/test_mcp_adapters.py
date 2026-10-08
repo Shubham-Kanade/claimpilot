@@ -278,6 +278,26 @@ async def test_a_rejection_without_a_reason_surfaces_the_finance_error(finance_f
         )
 
 
+async def test_a_decision_finance_already_holds_is_treated_as_made(finance_fake: FakeMcpClient):
+    # an earlier attempt got through and only our own record of it was lost: do not fail the retry
+    finance_fake.add_tool("decide_claim", McpToolError("decisions are final: already approved"))
+    finance_fake.add_tool("get_claim_status", decided("approved"))
+    status = await McpFinance(FinanceClient(finance_fake)).decide_claim(
+        "FIN-2026-000001", approved=True, approver_id="DEMO-RAVI"
+    )
+    assert status == "approved"
+    assert [name for name, _ in finance_fake.calls] == ["decide_claim", "get_claim_status"]
+
+
+async def test_a_conflicting_earlier_decision_is_still_an_error(finance_fake: FakeMcpClient):
+    finance_fake.add_tool("decide_claim", McpToolError("decisions are final: already rejected"))
+    finance_fake.add_tool("get_claim_status", decided("rejected"))
+    with pytest.raises(McpToolError, match="final"):
+        await McpFinance(FinanceClient(finance_fake)).decide_claim(
+            "FIN-2026-000001", approved=True, approver_id="DEMO-RAVI"
+        )
+
+
 async def test_the_decision_arguments_are_keyword_only(finance_fake: FakeMcpClient):
     finance = McpFinance(FinanceClient(finance_fake))
     with pytest.raises(TypeError):

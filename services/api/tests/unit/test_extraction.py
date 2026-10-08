@@ -80,6 +80,41 @@ def test_corrupt_pdf_is_rejected():
         prepare_document(b"%PDF-1.4 this is not really a pdf")
 
 
+def test_pdfium_is_only_ever_used_by_one_thread_at_a_time(monkeypatch):
+    # pdfium is not thread-safe: concurrent renders corrupt each other and, with three at once,
+    # the process. Whatever else happens, the library must be entered under the lock.
+    from claimpilot.extraction import preprocess
+
+    entered_unlocked: list[bool] = []
+    real = preprocess.pdfium.PdfDocument
+
+    def spy(data):
+        entered_unlocked.append(not preprocess._PDFIUM_LOCK.locked())
+        return real(data)
+
+    monkeypatch.setattr(preprocess.pdfium, "PdfDocument", spy)
+    prepare_document(_pdf(pages=2))
+    assert entered_unlocked == [False]
+
+
+def test_many_pdfs_prepared_at_once_all_come_out_the_same():
+    import concurrent.futures
+
+    data = _pdf(pages=1)
+    reference = prepare_document(data)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+        results = list(pool.map(lambda _: prepare_document(data), range(40)))
+    assert all(r.blocks == reference.blocks for r in results)
+
+
+def test_an_image_that_declares_a_huge_canvas_is_refused_before_it_is_decoded():
+    huge = io.BytesIO()
+    Image.new("1", (7000, 7000)).save(huge, format="PNG")  # 49 megapixels, a tiny file
+    assert len(huge.getvalue()) < 200_000
+    with pytest.raises(UnsupportedDocumentError, match="too large"):
+        prepare_document(huge.getvalue())
+
+
 @pytest.mark.parametrize(
     ("data", "match"),
     [(b"", "empty"), (b"GIF89a....", "unsupported"), (b"\x89PNG\r\n\x1a\ncorrupt", "decoded")],

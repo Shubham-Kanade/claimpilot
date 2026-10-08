@@ -93,7 +93,7 @@ async def post_reply(
         409: {"model": Problem},
         422: {"model": Problem},
     },
-    summary="Confirm and submit to the finance system (idempotent)",
+    summary="Confirm and submit to the finance system (idempotent per claim)",
 )
 async def post_submit(
     claim_id: str,

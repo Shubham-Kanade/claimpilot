@@ -8,6 +8,11 @@
 }
 
 :7860 {
+	# 20 files of up to 6 MB each is the most the demo accepts; refuse bigger bodies at the door,
+	# before the API has read (and held in memory) a single byte of them
+	request_body {
+		max_size 130MB
+	}
 	handle_path /api/* {
 		reverse_proxy 127.0.0.1:8000 {
 			# the live progress stream (server-sent events) must not be buffered
