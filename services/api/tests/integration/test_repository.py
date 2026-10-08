@@ -135,6 +135,37 @@ async def test_processed_documents_skip_what_is_unknown_or_has_no_result(repo: R
     assert [d.id for d in found] == [done]
 
 
+async def test_the_cost_shown_covers_only_the_calls_since_the_oldest_remaining_batch(
+    repo: Repository, sessions: SessionFactory
+):
+    from datetime import UTC, datetime, timedelta
+
+    from claimpilot.db import LlmCall
+    from claimpilot.pipeline.repo import collect_stats
+
+    def call(when: datetime, cost: float) -> LlmCall:
+        return LlmCall(
+            created_at=when, route="extraction", model_key="haiku", model_id="m", mode="replay",
+            cost_usd=cost, request_hash="h" * 64,
+        )  # fmt: skip
+
+    long_ago = datetime.now(UTC) - timedelta(days=2)
+    async with sessions() as session:
+        session.add_all([call(long_ago, 0.5), call(long_ago, 0.5)])  # an earlier, deleted run
+        await session.commit()
+    assert (await collect_stats(sessions))["llm_calls"] == 0  # no batch left: nothing to count
+
+    batch_id, (doc_id, _) = await repo.create_batch("P001", FILES)
+    await repo.save_document(doc_id, processed(doc_id), phash=None, fingerprint=None, trust=None)
+    async with sessions() as session:
+        session.add_all([call(datetime.now(UTC) + timedelta(seconds=1), 0.25)])
+        await session.commit()
+
+    stats = await collect_stats(sessions)
+    assert stats["llm_calls"] == 1 and stats["llm_cost_usd"] == 0.25
+    assert stats["llm_cost_per_document_usd"] == 0.25 and batch_id
+
+
 async def test_unknown_ids_raise(repo: Repository):
     with pytest.raises(KeyError):
         await repo.mark_batch("nope", "done")

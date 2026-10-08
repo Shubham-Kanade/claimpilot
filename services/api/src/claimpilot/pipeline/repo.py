@@ -372,13 +372,19 @@ async def collect_stats(sessions: SessionFactory) -> dict[str, Any]:
                 )
             )
         ).all()
-        llm_calls, llm_cost = (
-            await session.execute(
-                select(func.count(), func.coalesce(func.sum(LlmCall.cost_usd), 0.0)).where(
-                    LlmCall.error.is_(None)
-                )
-            )
-        ).one()
+        # The cost of reading the receipts that are still here: calls since the oldest remaining
+        # batch. (After "Start over" the documents are gone but the ledger is not, and counting its
+        # old rows against the few receipts left would inflate the cost per receipt.)
+        since = await session.scalar(select(func.min(Batch.created_at)))
+        costs = select(func.count(), func.coalesce(func.sum(LlmCall.cost_usd), 0.0)).where(
+            LlmCall.error.is_(None)
+        )
+        if since is None:
+            llm_calls, llm_cost = 0, 0.0
+        else:
+            llm_calls, llm_cost = (
+                await session.execute(costs.where(LlmCall.created_at >= since))
+            ).one()
     seconds = [(done - created).total_seconds() for created, done in finished if done is not None]
     processed = docs.get("processed", 0)
     automated_minutes = sum(seconds) / 60
