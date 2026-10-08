@@ -62,3 +62,16 @@ Each entry gives the decision, the reason, and its consequences. Add new entries
   - The video is public or unlisted.
   - A `submission-check` skill runs nightly.
 - **Consequences:** if time runs short, cut ☆ features (A2A, ClaimPilot MCP server, impact meter). Never cut tests, the TDD, the video or hosting. The email itself stays out of the repo.
+
+### ADR-011: Claude Haiku 5.5 is the default bulk model (2026-10-08)
+- **Decision:** add `claude-haiku-5-5` as registry key `haiku`, the default for `extraction`, `question_draft` and `decision_fallback` (effort `low`). Keep Haiku 4.5 as `haiku45`, a bake-off baseline only.
+- **Why:** released 2026-10-07. It is $0.10 / $0.50 per MTok (≤100K-token prompts), 10× cheaper than Haiku 4.5. Anthropic positions it for high-volume extraction and classification. It has a 1M context window, adaptive thinking (can be disabled), `effort`, forced `tool_choice`, structured outputs, image and PDF input, and a 512-token cache minimum. Verified via the Models API and the pricing page.
+- **Consequences:**
+  - The registry models a long-context price tier (>100K-token prompts: $0.50 / $2.50) and the 50% batch discount.
+  - Sonnet 5.5 cache reads are corrected to $0.10/MTok.
+  - The bake-off still decides the final routes (ADR-005).
+  - The per-receipt cost estimate drops by about 10×.
+
+### ADR-012: Self-hosted fonts instead of Google Fonts (2026-10-08)
+- **Decision:** use the `geist` npm package (`next/font/local`) instead of `next/font/google`.
+- **Why:** the Docker build could not reach fonts.googleapis.com (corporate proxy / TLS), so the web image failed to build. Self-hosting makes builds hermetic in Docker, CI and any hosting provider.

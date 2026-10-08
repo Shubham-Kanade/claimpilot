@@ -1,18 +1,36 @@
 # Model registry: the ONLY place Claude model IDs and prices live.
-# Prices are USD per 1M tokens, taken from the claude-api skill model table (cached 2026-09-25).
-# Re-check them before every bake-off and update `pricing_checked`.
-# Runtime spend is the user's personal money: route defaults are starting guesses until the bake-off decides (ADR-005).
-pricing_checked: 2026-10-07
+# Prices are USD per 1M tokens, verified 2026-10-08 against platform.claude.com/docs/en/about-claude/pricing.
+# Capabilities verified with the Models API (client.models.retrieve). Re-check before every bake-off.
+# Runtime spend is the user's personal money: route defaults are starting guesses until the bake-off decides (ADR-005, ADR-011).
+pricing_checked: 2026-10-08
 
 models:
-  haiku:
+  haiku:                           # Claude Haiku 5.5: Anthropic's pick for high-volume extraction/classification/routing
+    id: claude-haiku-5-5
+    context_tokens: 1000000
+    max_output_tokens: 128000
+    price:
+      { input: 0.10, output: 0.50, cache_read: 0.01, cache_write_5m: 0.125,
+        long_context: { threshold_tokens: 100000, input: 0.50, output: 2.50, cache_read: 0.05, cache_write_5m: 0.625 } }
+    thinking: adaptive             # {type: adaptive} or {type: disabled}; budget_tokens is rejected
+    can_disable_thinking: true
+    effort_levels: [low, medium, high, xhigh, max]
+    default_effort: medium
+    forced_tool_choice: true
+    structured_outputs: true
+    refusal_fallbacks: false       # not confirmed for Haiku 5.5; don't send `fallbacks`
+    min_cache_prefix: 512
+    vision: true
+    pdf: true
+
+  haiku45:                         # Claude Haiku 4.5: legacy baseline for the bake-off only
     id: claude-haiku-4-5
     context_tokens: 200000
     max_output_tokens: 64000
     price: { input: 1.00, output: 5.00, cache_read: 0.10, cache_write_5m: 1.25 }
-    thinking: budget_tokens        # legacy thinking: {type: enabled, budget_tokens}; omit to disable
+    thinking: budget_tokens        # legacy {type: enabled, budget_tokens}; omit to disable
     can_disable_thinking: true
-    effort_levels: []              # `effort` param is rejected on Haiku 4.5
+    effort_levels: []              # `effort` is rejected on Haiku 4.5
     default_effort: null
     forced_tool_choice: true
     structured_outputs: true
@@ -21,12 +39,12 @@ models:
     vision: true
     pdf: true
 
-  sonnet:
+  sonnet:                          # Claude Sonnet 5.5
     id: claude-sonnet-5-5
     context_tokens: 1000000
     max_output_tokens: 128000
-    price: { input: 2.00, output: 10.00, cache_read: 0.20, cache_write_5m: 2.50 }
-    thinking: adaptive             # disable via {type: between_tools} at effort <= high
+    price: { input: 2.00, output: 10.00, cache_read: 0.10, cache_write_5m: 2.50 }
+    thinking: adaptive             # disable via {type: between_tools} at effort <= high; {type: disabled} -> 400
     can_disable_thinking: true
     effort_levels: [low, medium, high, xhigh, max]
     default_effort: high
@@ -37,7 +55,7 @@ models:
     vision: true
     pdf: true
 
-  opus:
+  opus:                            # Claude Opus 5.5
     id: claude-opus-5-5
     context_tokens: 1000000
     max_output_tokens: 128000
@@ -53,13 +71,13 @@ models:
     vision: true
     pdf: true
 
-# Route -> model assignment. Override per route via env: ROUTE_<NAME>=haiku|sonnet|opus
+# Route -> model assignment. Override per route via env: ROUTE_<NAME>=haiku|haiku45|sonnet|opus
 # and optionally ROUTE_<NAME>_EFFORT=low|medium|...
 routes:
-  extraction:        { model: haiku,  max_tokens: 4000 }
+  extraction:        { model: haiku,  effort: low,  max_tokens: 4000 }
   extraction_retry:  { model: sonnet, effort: low,  max_tokens: 6000 }
   agent_chat:        { model: sonnet, effort: low,  max_tokens: 8000 }
-  question_draft:    { model: haiku,  max_tokens: 1500 }
-  decision_fallback: { model: haiku,  max_tokens: 1000 }
+  question_draft:    { model: haiku,  effort: low,  max_tokens: 1500 }
+  decision_fallback: { model: haiku,  effort: low,  max_tokens: 1000 }
   policy_compile:    { model: opus,   effort: high, max_tokens: 16000 }
   eval_judge:        { model: sonnet, effort: low,  max_tokens: 2000 }

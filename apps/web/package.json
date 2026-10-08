@@ -13,10 +13,11 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "gen:api": "openapi-typescript ./openapi.json -o ./src/lib/api/schema.d.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "geist": "^1.7.2",
     "next": "16.4.0",
     "react": "19.3.0",
     "react-dom": "19.3.0"

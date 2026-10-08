@@ -20,7 +20,10 @@ from pydantic import BaseModel, ConfigDict, model_validator
 Effort = Literal["low", "medium", "high", "xhigh", "max"]
 
 
-class Price(BaseModel):
+BATCH_DISCOUNT = 0.5  # Message Batches API: 50% off input and output
+
+
+class PriceTier(BaseModel):
     """USD per 1M tokens."""
 
     model_config = ConfigDict(frozen=True)
@@ -29,6 +32,21 @@ class Price(BaseModel):
     output: float
     cache_read: float
     cache_write_5m: float
+
+
+class LongContextTier(PriceTier):
+    """Rates that apply once the whole prompt exceeds ``threshold_tokens`` (e.g. Haiku 5.5)."""
+
+    threshold_tokens: int
+
+
+class Price(PriceTier):
+    long_context: LongContextTier | None = None
+
+    def tier_for(self, prompt_tokens: int) -> PriceTier:
+        if self.long_context and prompt_tokens > self.long_context.threshold_tokens:
+            return self.long_context
+        return self
 
 
 class ModelSpec(BaseModel):
@@ -135,15 +153,22 @@ class ModelRegistry(BaseModel):
         output_tokens: int,
         cache_read_tokens: int = 0,
         cache_write_tokens: int = 0,
+        batch: bool = False,
     ) -> float:
-        """USD cost of one call. ``input_tokens`` excludes cached reads and writes."""
-        p = self.models[model_key].price
-        return (
+        """USD cost of one call. ``input_tokens`` excludes cached reads and writes.
+
+        The price tier is chosen by the whole prompt size (uncached + cache read + cache write),
+        and the Batch API discount is applied on top when ``batch`` is set.
+        """
+        prompt_tokens = input_tokens + cache_read_tokens + cache_write_tokens
+        p = self.models[model_key].price.tier_for(prompt_tokens)
+        cost = (
             input_tokens * p.input
             + output_tokens * p.output
             + cache_read_tokens * p.cache_read
             + cache_write_tokens * p.cache_write_5m
         ) / 1_000_000
+        return cost * BATCH_DISCOUNT if batch else cost
 
 
 def load_registry(path: Path) -> ModelRegistry:
