@@ -213,6 +213,46 @@
         'type': 'adaptive',
       }),
     }),
+    'locate/haiku': dict({
+      'betas': list([
+      ]),
+      'effort': 'low',
+      'max_tokens': 800,
+      'model': 'claude-haiku-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'locate/haiku45': dict({
+      'betas': list([
+      ]),
+      'effort': None,
+      'max_tokens': 800,
+      'model': 'claude-haiku-4-5',
+      'thinking': None,
+    }),
+    'locate/opus': dict({
+      'betas': list([
+        'server-side-fallback-2026-07-01',
+      ]),
+      'effort': 'low',
+      'max_tokens': 800,
+      'model': 'claude-opus-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'locate/sonnet': dict({
+      'betas': list([
+        'server-side-fallback-2026-07-01',
+      ]),
+      'effort': 'low',
+      'max_tokens': 800,
+      'model': 'claude-sonnet-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
     'policy_compile/haiku': dict({
       'betas': list([
       ]),

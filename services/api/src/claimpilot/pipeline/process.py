@@ -29,11 +29,13 @@ from claimpilot.db import Document
 from claimpilot.decisions import DecisionEngine, decide_document
 from claimpilot.domain import Claim, ExtractedReceipt
 from claimpilot.domain.claims import (
+    Box,
     Decisions,
     Employee,
     ProcessedDocument,
 )
 from claimpilot.extraction import ReceiptExtractor, prepare_document
+from claimpilot.extraction.locate import FieldLocator, Located
 from claimpilot.extraction.preprocess import PreparedDocument
 from claimpilot.llm.errors import ReplayMissError
 from claimpilot.pipeline import events as ev
@@ -64,6 +66,7 @@ class PipelineDeps:
     calendar: CalendarSource
     index: DuplicateIndex
     settings: Settings
+    locator: FieldLocator | None = None  # click-to-verify boxes; None: no highlights
     concurrency: int = 4
     clock: Callable[[], date] = date.today
 
@@ -80,6 +83,7 @@ class _Read:
     prepared: PreparedDocument
     receipt: ExtractedReceipt
     decisions: Decisions
+    boxes: dict[str, Box]
     cost_usd: float
 
 
@@ -203,15 +207,28 @@ async def _read_one(deps: PipelineDeps, row: Document) -> _Read:
     )
     extraction = await deps.extractor.extract(prepared)
     notes = await _calendar_notes(deps, row.employee_id, extraction.receipt)
-    decisions, result = await decide_document(deps.decisions, extraction.receipt, calendar=notes)
+    # Deciding and locating both need only the extracted receipt, so they run together.
+    (decisions, result), located = await asyncio.gather(
+        decide_document(deps.decisions, extraction.receipt, calendar=notes),
+        _locate(deps, prepared, extraction.receipt),
+    )
     return _Read(
         row=row,
         raw=raw,
         prepared=prepared,
         receipt=extraction.receipt,
         decisions=decisions,
-        cost_usd=extraction.cost_usd + result.cost_usd,
+        boxes=located.boxes,
+        cost_usd=extraction.cost_usd + result.cost_usd + located.cost_usd,
     )
+
+
+async def _locate(
+    deps: PipelineDeps, prepared: PreparedDocument, receipt: ExtractedReceipt
+) -> Located:
+    if deps.locator is None:
+        return Located()
+    return await deps.locator.locate(prepared, receipt)
 
 
 async def _calendar_notes(
@@ -279,6 +296,7 @@ async def _check_all(
                 receipt=read.receipt,
                 decisions=read.decisions,
                 findings=report.findings,
+                boxes=read.boxes,
             )
             await deps.repo.save_document(
                 row.id,

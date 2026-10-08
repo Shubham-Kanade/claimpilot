@@ -28,7 +28,9 @@ from claimpilot.decisions.types import Answer, Question
 from claimpilot.domain import DocType, ExpenseCategory, ExtractedReceipt, LineItem, ReceiptTruth
 from claimpilot.evals.golden import has_alcohol, load_employees
 from claimpilot.extraction import ReceiptExtractor, prepare_document
+from claimpilot.extraction.locate import FieldLocator, LocatedFields
 from claimpilot.extraction.schema import WireReceipt, from_domain
+from claimpilot.llm.errors import LLMError
 from claimpilot.llm.fake import FakeLLM
 from claimpilot.pipeline import events as ev
 from claimpilot.pipeline.dupindex import DbDuplicateIndex
@@ -148,6 +150,7 @@ def build_harness(
     calendar=None,
     responder=None,
     settings: Settings | None = None,
+    locate=None,
 ) -> Harness:
     by_image = {prepare_document(f.raw).blocks[0]["source"]["data"]: f for f in fixtures.values()}
 
@@ -158,6 +161,8 @@ def build_harness(
     llm = FakeLLM(models_registry, env={})
     for route in ("extraction", "extraction_retry"):  # the second opinion reads it again
         llm.register(WireReceipt, responder or read, route=route)
+    if locate is not None:
+        llm.register(LocatedFields, locate, route="locate")
     repo = Repository(sessions)
     storage = InMemoryStorage()
     events = ev.InMemoryEventBus()
@@ -173,6 +178,7 @@ def build_harness(
         calendar=calendar or StaticCalendar(),
         index=DbDuplicateIndex(sessions),
         settings=settings or Settings(demo_today=TODAY),
+        locator=FieldLocator(llm) if locate is not None else None,
     )
     return Harness(deps, repo, events, storage, fixtures)
 
@@ -393,3 +399,44 @@ async def test_attendees_from_the_calendar_reach_the_per_head_cap_on_the_first_p
     [claim] = view.claims
     assert [f.code for f in claim.findings] == ["entertainment_over_cap"]
     assert claim.route == "finance_review"
+
+
+def box_for_total(_request) -> LocatedFields:
+    empty = {name: "" for name in LocatedFields.model_fields}
+    return LocatedFields(
+        **{**empty, "total": "1,0.6,0.8,0.3,0.03", "merchant_name": "1,0.2,0.1,0.5,0.04"}
+    )
+
+
+async def test_click_to_verify_boxes_are_stored_with_the_document(
+    sessions, models_registry, fixtures
+):
+    harness = build_harness(sessions, models_registry, fixtures, locate=box_for_total)
+    view = await harness.run(await harness.upload_fixtures("s42-0005"))
+
+    [document] = view.documents
+    assert document.document is not None
+    boxes = document.document.boxes
+    assert boxes["total"].x == 0.6 and boxes["total"].y == 0.8
+    assert "merchant_name" in boxes
+
+
+async def test_a_locator_that_fails_leaves_the_document_without_highlights(
+    sessions, models_registry, fixtures
+):
+    def down(_request):
+        raise LLMError("unavailable")
+
+    harness = build_harness(sessions, models_registry, fixtures, locate=down)
+    view = await harness.run(await harness.upload_fixtures("s42-0005"))
+
+    [document] = view.documents
+    assert view.status == "done" and document.status == "processed"
+    assert document.document is not None and document.document.boxes == {}
+
+
+async def test_without_a_locator_no_boxes_are_asked_for(sessions, models_registry, fixtures):
+    harness = build_harness(sessions, models_registry, fixtures)
+    view = await harness.run(await harness.upload_fixtures("s42-0005"))
+    [document] = view.documents
+    assert document.document is not None and document.document.boxes == {}

@@ -20,6 +20,7 @@ from claimpilot.db import SessionFactory, create_engine, create_session_factory
 from claimpilot.decisions import get_engine
 from claimpilot.extraction import ReceiptExtractor
 from claimpilot.extraction.cache import RedisExtractionCache
+from claimpilot.extraction.locate import FieldLocator
 from claimpilot.llm.client import LLMClient, get_llm
 from claimpilot.llm.ledger import CostLedger
 from claimpilot.mcp.adapters import McpPorts, get_mcp_ports
@@ -104,6 +105,7 @@ def _pipeline_deps(
         calendar=infra.ports.calendar,
         index=DbDuplicateIndex(infra.sessions),
         settings=settings,
+        locator=FieldLocator(infra.llm) if settings.locate_fields else None,
     )
 
 

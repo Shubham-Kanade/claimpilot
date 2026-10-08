@@ -69,6 +69,10 @@ class Settings(BaseSettings):
     # Pins the 'current date' used by policy rules (late submission); the demo data is from 2026.
     demo_today: date | None = None
 
+    # Ask the model where each extracted value is printed, for click-to-verify (about $0.0003 a
+    # receipt). Off: no highlights, nothing else changes.
+    locate_fields: bool = True
+
     # Guardrails
     daily_user_token_budget: int = 200_000
     max_upload_mb: int = 15

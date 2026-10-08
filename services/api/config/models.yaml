@@ -80,5 +80,6 @@ routes:
   question_draft:    { model: haiku,  effort: low,  max_tokens: 1500 }
   decision_fallback: { model: haiku,  effort: low,  max_tokens: 1000 }
   reply_parse:       { model: haiku,  effort: low,  max_tokens: 1500 }   # free-text reply -> answers
+  locate:            { model: haiku,  effort: low,  max_tokens: 800 }    # where each value is printed (click-to-verify)
   policy_compile:    { model: opus,   effort: high, max_tokens: 16000 }
   eval_judge:        { model: sonnet, effort: low,  max_tokens: 2000 }

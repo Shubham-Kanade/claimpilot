@@ -103,6 +103,7 @@ async def test_build_pipeline_deps_wires_the_worker_process(fakes: FakePool, tmp
     assert deps.policy.version
     assert isinstance(deps.events, RedisEventBus)
     assert deps.extractor is not None and isinstance(deps.storage, LocalStorage)
+    assert deps.locator is not None  # click-to-verify is on by default
     assert RedisExtractionCache is not None
 
     await close()
@@ -258,3 +259,10 @@ async def test_the_embedded_container_carries_the_policy_the_pipeline_uses(
     container = await wiring.build_container(embedded(tmp_path))
     assert container.policy.version
     await container.aclose()
+
+
+async def test_click_to_verify_can_be_switched_off(fakes: FakePool, tmp_path):
+    off = settings(tmp_path).model_copy(update={"locate_fields": False})
+    deps, close = await wiring.build_pipeline_deps(off)
+    assert deps.locator is None
+    await close()

@@ -1,0 +1,20 @@
+{
+  "completion": {
+    "latency_ms": 1683,
+    "model_id": "claude-haiku-5-5",
+    "stop_category": null,
+    "stop_reason": "end_turn",
+    "text": "{\"merchant_name\": \"1,0.29,0.07,0.28,0.04\", \"date\": \"1,0.13,0.36,0.27,0.03\", \"total\": \"1,0.66,0.72,0.16,0.03\", \"subtotal\": \"1,0.72,0.61,0.12,0.03\", \"merchant_gstin\": \"1,0.30,0.21,0.39,0.03\", \"invoice_number\": \"1,0.13,0.33,0.13,0.03\"}",
+    "usage": {
+      "cache_read_tokens": 1066,
+      "cache_write_tokens": 0,
+      "input_tokens": 1396,
+      "output_tokens": 152
+    }
+  },
+  "model_id": "claude-haiku-5-5",
+  "model_key": "haiku",
+  "output_model": "LocatedFields",
+  "request_hash": "96496d64d777ce2e96aec64f028a3ce7e7d3e6c39fcf0c2f10736d80bc5bf08c",
+  "route": "locate"
+}
