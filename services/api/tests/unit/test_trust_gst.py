@@ -45,8 +45,24 @@ def test_tampered_total_is_high_severity():
     assert findings[0].expected == 420.0 and findings[0].actual == 520.0
 
 
-def test_items_not_matching_subtotal():
-    assert "items_subtotal_mismatch" in codes(bill(subtotal=450.0, total=470.0))
+def test_items_adding_up_to_more_than_the_subtotal_is_high_severity():
+    r = bill(
+        subtotal=350.0,
+        taxes=TaxBreakup(cgst=8.75, sgst=8.75, gst_rate_percent=5),
+        total=367.5,
+    )
+    findings = check_gst(r)
+    assert [f.code for f in findings] == ["items_subtotal_mismatch"]
+    assert findings[0].severity is Severity.high
+    assert findings[0].expected == 400.0 and findings[0].actual == 350.0
+
+
+def test_items_adding_up_to_less_than_the_subtotal_only_asks_for_a_look():
+    # a row the extraction skipped looks exactly like this; it must not block a genuine bill
+    findings = check_gst(bill(subtotal=450.0, total=470.0))
+    assert [f.code for f in findings] == ["items_incomplete"]
+    assert findings[0].severity is Severity.warn
+    assert "50.00 less than the subtotal" in findings[0].message
 
 
 def test_service_charge_and_discount_reconcile():
@@ -108,3 +124,95 @@ def test_no_gst_no_gstin_is_fine():
         line_items=[LineItem(description="Auto", amount=80.0)],
     )
     assert codes(r) == []
+
+
+# --- which amount the tax was charged on -------------------------------------------------------
+
+
+def ticket(items: list[tuple[str, float]], **overrides) -> ExtractedReceipt:
+    """A flight e-ticket: 5% GST on the base fare only, none on the fees."""
+    base = {
+        "doc_type": DocType.flight_ticket,
+        "merchant_gstin": VALID_GSTIN,
+        "line_items": [LineItem(description=name, amount=amount) for name, amount in items],
+        "subtotal": 8517.0,
+        "taxes": TaxBreakup(igst=358.95, gst_rate_percent=5),
+        "total": 8875.95,
+    }
+    base.update(overrides)
+    return ExtractedReceipt(**base)
+
+
+FARE_AND_FEES = [
+    ("Base Fare", 7179.0),
+    ("User Development Fee", 481.0),
+    ("Passenger Service Fee", 226.0),
+    ("Aviation Security Fee", 236.0),
+    ("Convenience Fee", 395.0),
+]
+
+
+def test_a_ticket_taxed_on_the_base_fare_only_is_consistent():
+    assert codes(ticket(FARE_AND_FEES)) == []
+
+
+def test_a_ticket_whose_fee_rows_were_not_read_is_incomplete_not_tampered():
+    assert codes(ticket(FARE_AND_FEES[:1])) == ["items_incomplete"]
+
+
+def test_tax_on_the_discounted_bill_is_consistent():
+    # 5% of (400 - 40) = 18, not 5% of 400
+    r = bill(discount=40.0, taxes=TaxBreakup(cgst=9.0, sgst=9.0, gst_rate_percent=5), total=378.0)
+    assert codes(r) == []
+
+
+def test_tax_on_the_bill_with_the_service_charge_is_consistent():
+    # 5% of (400 + 40) = 22
+    r = bill(
+        service_charge=40.0,
+        taxes=TaxBreakup(cgst=11.0, sgst=11.0, gst_rate_percent=5),
+        total=462.0,
+    )
+    assert codes(r) == []
+
+
+def test_inflated_tax_is_flagged_even_when_a_single_row_is_a_candidate_base():
+    # 60 of tax on a 400 bill is 15%, 24% of the 250 row and 40% of the 150 row, never 5%
+    r = bill(taxes=TaxBreakup(cgst=30.0, sgst=30.0, gst_rate_percent=5), total=460.0)
+    assert codes(r) == ["gst_rate_mismatch"]
+
+
+def test_a_nonstandard_rate_is_not_excused_by_matching_one_row():
+    # 7.5% of the bill, but 12% of the 250 row: the bill as a whole is what is nonstandard
+    r = bill(taxes=TaxBreakup(cgst=15.0, sgst=15.0), total=430.0)
+    assert codes(r) == ["gst_rate_nonstandard"]
+
+
+# --- figures the reader was unsure of ----------------------------------------------------------
+
+
+def test_a_mismatch_on_a_figure_the_reader_was_unsure_of_asks_for_a_check():
+    findings = check_gst(bill(total=520.0, low_confidence_fields=["total"]))
+    assert [f.code for f in findings] == ["total_mismatch"]
+    assert findings[0].severity is Severity.warn
+    assert findings[0].message.endswith("compare it with the original.")
+
+
+def test_a_mismatch_on_a_confidently_read_figure_stays_high_even_if_other_fields_were_unsure():
+    findings = check_gst(bill(total=520.0, low_confidence_fields=["date", "merchant_city"]))
+    assert [(f.code, f.severity) for f in findings] == [("total_mismatch", Severity.high)]
+
+
+def test_an_unreadable_gstin_that_fails_its_checksum_is_a_warning():
+    findings = check_gst(
+        bill(merchant_gstin="27AAPFU0939F1ZW", low_confidence_fields=["merchant_gstin"])
+    )
+    assert [(f.code, f.severity) for f in findings] == [("gstin_invalid_checksum", Severity.warn)]
+
+
+def test_line_items_the_reader_doubted_soften_the_subtotal_check():
+    r = bill(subtotal=350.0, low_confidence_fields=["line_items"],
+             taxes=TaxBreakup(cgst=8.75, sgst=8.75, gst_rate_percent=5), total=367.5)  # fmt: skip
+    assert [(f.code, f.severity) for f in check_gst(r)] == [
+        ("items_subtotal_mismatch", Severity.warn)
+    ]

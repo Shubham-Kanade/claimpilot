@@ -18,7 +18,7 @@ from claimpilot.extraction.schema import WireReceipt, to_domain
 from claimpilot.llm.client import LLMClient
 from claimpilot.llm.types import LLMResult, ThinkingMode
 
-PROMPT_VERSION = "extract_v1"
+PROMPT_VERSION = "extract_v2"
 PRIMARY_ROUTE = "extraction"
 RETRY_ROUTE = "extraction_retry"
 USER_INSTRUCTION = "Extract this document into the schema."

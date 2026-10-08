@@ -19,6 +19,7 @@ from claimpilot.evals.run import (
     render_markdown,
     run_config,
 )
+from claimpilot.extraction import PROMPT_VERSION
 from claimpilot.extraction.schema import WireReceipt, from_domain
 from claimpilot.llm.fake import FakeLLM
 from claimpilot.llm.registry import ModelRegistry
@@ -144,7 +145,7 @@ async def test_main_writes_reports(manifest, models_registry, tmp_path):
     data = json.loads(next(out.glob("*-t.json")).read_text("utf-8"))
     assert "| haiku-low |" in md and "Chosen" in md
     assert [c["config"]["name"] for c in data["configs"]] == ["haiku-low", "sonnet-low"]
-    assert data["meta"]["prompt"] == "extract_v1"
+    assert data["meta"]["prompt"] == PROMPT_VERSION
 
 
 async def test_main_no_cases(tmp_path, models_registry):

@@ -21,6 +21,9 @@ def _money(value: float) -> str:
     return f"₹{value:,.2f}"
 
 
+HARD_TO_READ = " The image was hard to read at this point, so please compare it with the original."
+
+
 def check_gst(receipt: ExtractedReceipt) -> list[Finding]:
     findings: list[Finding] = []
     findings += _check_line_items(receipt)
@@ -28,7 +31,26 @@ def check_gst(receipt: ExtractedReceipt) -> list[Finding]:
     findings += _check_tax_structure(receipt)
     findings += _check_rate(receipt)
     findings += _check_gstin(receipt)
-    return findings
+    return _soften_unsure(findings, set(receipt.low_confidence_fields))
+
+
+def _soften_unsure(findings: list[Finding], unsure: set[str]) -> list[Finding]:
+    """A finding that rests on a figure the reader itself marked unsure asks for a check.
+
+    A digit misread on a faded thermal bill breaks the arithmetic or the GSTIN checksum exactly
+    like an edited figure does. When the extraction says it was guessing at that field, the honest
+    reading is "please verify", not "this looks forged", so the finding drops from ``high`` to
+    ``warn`` (and, being no longer conclusive, no longer blocks). Figures read with confidence keep
+    their severity.
+    """
+    if not unsure:
+        return findings
+    return [
+        f.model_copy(update={"severity": Severity.warn, "message": f.message + HARD_TO_READ})
+        if f.severity is Severity.high and unsure.intersection(f.fields)
+        else f
+        for f in findings
+    ]
 
 
 def _check_line_items(r: ExtractedReceipt) -> list[Finding]:
@@ -37,7 +59,22 @@ def _check_line_items(r: ExtractedReceipt) -> list[Finding]:
     items = round(sum(i.amount for i in r.line_items), 2)
     if abs(items - r.subtotal) <= LINE_TOLERANCE:
         return []
-    return [
+    if items < r.subtotal:
+        # Fewer rupees in the rows than in the subtotal: a row (a ticket's convenience fee, a
+        # packing charge) may simply not have been read. That is a reason to look, not evidence
+        # of editing, so it must not block a genuine bill.
+        return [
+            Finding(
+                code="items_incomplete",
+                severity=Severity.warn,
+                message=f"The items read add up to {_money(items)}, {_money(r.subtotal - items)} "
+                f"less than the subtotal of {_money(r.subtotal)}; a line may be missing.",
+                fields=("line_items", "subtotal"),
+                expected=r.subtotal,
+                actual=items,
+            )
+        ]
+    return [  # more in the rows than the subtotal admits: a figure was changed
         Finding(
             code="items_subtotal_mismatch",
             severity=Severity.high,
@@ -114,6 +151,30 @@ def _check_tax_structure(r: ExtractedReceipt) -> list[Finding]:
     return findings
 
 
+def _aggregate_bases(r: ExtractedReceipt) -> list[float]:
+    """Amounts GST can be charged on when the whole bill is taxed at one rate."""
+    if not r.subtotal:
+        return []
+    discount, service = r.discount or 0.0, r.service_charge or 0.0
+    bases = (
+        r.subtotal,
+        r.subtotal - discount,
+        r.subtotal + service,
+        r.subtotal - discount + service,
+    )
+    return sorted({round(b, 2) for b in bases if b > 0})
+
+
+def _tax_bases(r: ExtractedReceipt) -> list[float]:
+    """Everything the printed tax may have been charged on.
+
+    Besides the whole bill (before or after the discount, with or without the service charge)
+    that includes any single row: a flight ticket taxes the base fare but not the fees, so its tax
+    is 5% of one row and only about 4% of the subtotal.
+    """
+    return [*_aggregate_bases(r), *(i.amount for i in r.line_items if i.amount > 0)]
+
+
 def _check_rate(r: ExtractedReceipt) -> list[Finding]:
     t = r.taxes
     tax = sum(x or 0.0 for x in (t.cgst, t.sgst, t.igst))
@@ -121,28 +182,32 @@ def _check_rate(r: ExtractedReceipt) -> list[Finding]:
         return []
     effective = 100 * tax / r.subtotal
     findings: list[Finding] = []
-    if t.gst_rate_percent is not None and abs(effective - t.gst_rate_percent) > RATE_TOLERANCE_PP:
-        findings.append(
-            Finding(
-                code="gst_rate_mismatch",
-                severity=Severity.warn,
-                message=f"Tax charged is {effective:.1f}% of the subtotal, but the bill states "
-                f"{t.gst_rate_percent:g}% GST.",
-                fields=("taxes",),
-                expected=t.gst_rate_percent,
-                actual=round(effective, 2),
+    if t.gst_rate_percent is not None:
+        stated = t.gst_rate_percent
+        if all(abs(100 * tax / base - stated) > RATE_TOLERANCE_PP for base in _tax_bases(r)):
+            findings.append(
+                Finding(
+                    code="gst_rate_mismatch",
+                    severity=Severity.warn,
+                    message=f"Tax charged is {effective:.1f}% of the subtotal, but the bill "
+                    f"states {stated:g}% GST.",
+                    fields=("taxes",),
+                    expected=stated,
+                    actual=round(effective, 2),
+                )
             )
-        )
-    elif all(abs(effective - rate) > RATE_TOLERANCE_PP for rate in STANDARD_GST_RATES):
-        findings.append(
-            Finding(
-                code="gst_rate_nonstandard",
-                severity=Severity.info,
-                message=f"Tax works out to {effective:.1f}%, which is not a standard GST rate.",
-                fields=("taxes",),
-                actual=round(effective, 2),
+    else:
+        rates = [100 * tax / base for base in _aggregate_bases(r)]
+        if all(abs(rate - std) > RATE_TOLERANCE_PP for rate in rates for std in STANDARD_GST_RATES):
+            findings.append(
+                Finding(
+                    code="gst_rate_nonstandard",
+                    severity=Severity.info,
+                    message=f"Tax works out to {effective:.1f}%, which is not a standard GST rate.",
+                    fields=("taxes",),
+                    actual=round(effective, 2),
+                )
             )
-        )
     return findings
 
 

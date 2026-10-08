@@ -1,0 +1,63 @@
+{
+  "meta": {
+    "label": "bakeoff-dev-haiku-v2",
+    "date": "2026-10-08",
+    "split": "dev",
+    "receipts": 20,
+    "prompt": "extract_v2",
+    "spend": 0.010430940000000001
+  },
+  "configs": [
+    {
+      "config": {
+        "name": "haiku-low",
+        "model_key": "haiku",
+        "effort": "low",
+        "escalate": false
+      },
+      "score": {
+        "receipts": 20,
+        "parse_failures": 0,
+        "field_accuracy": 0.96,
+        "critical_field_accuracy": 1.0,
+        "line_item_f1": 0.925,
+        "injection_recall": 1.0,
+        "injection_false_positive_rate": 0.0,
+        "errors_by_field": {
+          "subtotal": 2,
+          "travel_from": 2,
+          "travel_to": 2,
+          "upi_reference": 1,
+          "doc_type": 1
+        }
+      },
+      "cost_usd": 0.010430940000000001,
+      "cost_per_receipt": 0.000521547,
+      "latencies_ms": [
+        2436,
+        2936,
+        3457,
+        3395,
+        2241,
+        2791,
+        2855,
+        3336,
+        1805,
+        3257,
+        2915,
+        2482,
+        2750,
+        1940,
+        1686,
+        2071,
+        1939,
+        2416,
+        2280,
+        2032
+      ],
+      "escalations": 0,
+      "passes_gates": true,
+      "failures": {}
+    }
+  ]
+}

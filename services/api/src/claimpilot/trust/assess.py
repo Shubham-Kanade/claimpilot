@@ -23,8 +23,9 @@ Score and verdict (kept simple so an approver can read why)
 * The score starts at 100 and loses **40** per ``high`` finding, **15** per ``warn`` and **3** per
   ``info``, never below 0. ``c2pa_present`` (the file carries content credentials) is not
   suspicion, so it costs nothing.
-* The verdict is ``block`` when any finding is in ``BLOCKING_CODES`` or the score is below 30;
-  otherwise ``review`` when the score is below 80 or any finding is ``high``; otherwise ``clean``.
+* The verdict is ``block`` when a ``high`` finding is in ``BLOCKING_CODES`` or the score is
+  below 30; otherwise ``review`` when the score is below 80 or any finding is ``high``;
+  otherwise ``clean``.
   One warning alone (85) stays ``clean``; two warnings (70) need a look; one ``high`` always does.
 * ``BLOCKING_CODES`` are the findings that are conclusive on their own: text that talks to the AI
   reviewer, a file that declares itself AI-generated (C2PA or metadata), and a bill whose own
@@ -125,7 +126,9 @@ def score_findings(findings: list[Finding]) -> int:
 
 
 def verdict_for(findings: list[Finding], score: int) -> Verdict:
-    if score < BLOCK_BELOW or any(f.code in BLOCKING_CODES for f in findings):
+    if score < BLOCK_BELOW or any(
+        f.code in BLOCKING_CODES and f.severity is Severity.high for f in findings
+    ):
         return "block"
     if score < REVIEW_BELOW or any(f.severity is Severity.high for f in findings):
         return "review"

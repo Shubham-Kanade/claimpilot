@@ -159,7 +159,7 @@ def test_needs_escalation_only_for_critical_fields():
 
 def test_cache_key_varies_by_prompt_model_and_effort():
     base = cache_key("abc", PROMPT_VERSION, "haiku", "low")
-    assert base != cache_key("abc", "extract_v2", "haiku", "low")
+    assert base != cache_key("abc", "extract_v0", "haiku", "low")
     assert base != cache_key("abc", PROMPT_VERSION, "sonnet", "low")
     assert base != cache_key("abc", PROMPT_VERSION, "haiku", None)
 

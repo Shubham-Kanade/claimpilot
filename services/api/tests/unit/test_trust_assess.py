@@ -20,7 +20,7 @@ from test_trust_support import (
     reupload,
 )
 
-from claimpilot.domain import ExtractedReceipt
+from claimpilot.domain import ExtractedReceipt, TaxBreakup
 from claimpilot.domain.findings import Finding, Severity
 from claimpilot.trust import (
     BLOCKING_CODES,
@@ -79,7 +79,8 @@ def test_conclusive_findings_block_on_their_own(code):
     findings = [flag(code, HIGH)]
     assert score_findings(findings) == 60
     assert verdict_for(findings, 60) == "block"
-    assert verdict_for([flag(code, WARN)], 85) == "block"  # it is the code that counts
+    # a softened finding (the reader was unsure of the figure) asks for a check, it does not block
+    assert verdict_for([flag(code, WARN)], 85) == "clean"
 
 
 def test_the_blocking_set_is_small_and_explained():
@@ -376,8 +377,11 @@ async def test_a_bill_that_does_not_add_up_is_blocked():
     index = InMemoryDuplicateIndex()
     report = await run(page(1), bill(total=520.0), index=index)
     assert "total_mismatch" in codes(report) and report.verdict == "block"
-    inflated = await run(page(2), bill(subtotal=450.0, total=470.0), index=index, doc_id="d2")
-    assert "items_subtotal_mismatch" in codes(inflated) and inflated.verdict == "block"
+    # rows worth more than the subtotal: a figure was changed. (Rows worth LESS only suggests a
+    # row was not read, see test_trust_gst.)
+    inflated = bill(subtotal=350.0, taxes=TaxBreakup(cgst=8.75, sgst=8.75), total=367.5)
+    report = await run(page(2), inflated, index=index, doc_id="d2")
+    assert "items_subtotal_mismatch" in codes(report) and report.verdict == "block"
 
 
 async def test_text_addressed_to_the_reviewer_is_blocked():
