@@ -4,20 +4,25 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:mock": "node scripts/dev-mock.mjs",
+    "mock": "node mock-api/server.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "e2e": "playwright test",
+    "test:coverage": "vitest run --coverage",
+    "e2e": "node scripts/e2e.mjs",
+    "e2e:install": "playwright install chromium",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "gen:api": "openapi-typescript ./openapi.json -o ./src/lib/api/schema.d.ts",
-    "typecheck": "next typegen && tsc --noEmit",
-    "test:coverage": "vitest run --coverage"
+    "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.104.1",
     "geist": "^1.7.2",
+    "lucide-react": "^1.53.0",
     "next": "16.4.0",
     "react": "19.3.0",
     "react-dom": "19.3.0"
@@ -34,6 +39,8 @@
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6.1.2",
     "@vitest/coverage-v8": "^5.0.3",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "eslint": "^9",
     "eslint-config-next": "16.4.0",
     "jsdom": "^29.1.1",

@@ -4,3 +4,6 @@ package-lock.json
 src/lib/api/schema.d.ts
 openapi.json
 AGENTS.md
+coverage
+test-results
+playwright-report
