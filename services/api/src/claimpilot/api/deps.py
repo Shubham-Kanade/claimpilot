@@ -1,0 +1,74 @@
+"""FastAPI dependencies: the container and the acting persona.
+
+There is no real login in the demo (ADR-010: judges must not need access requests). The UI
+sends ``X-Persona: <employee id>`` and the API enforces what that persona may see. Approvers
+(``Settings.approver_ids``) see every claim; everyone else only their own.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Annotated
+
+from fastapi import Depends, Header, HTTPException, Request, status
+
+from claimpilot.container import Container
+from claimpilot.domain.claims import Employee
+from claimpilot.problem import problem
+
+
+def get_container(request: Request) -> Container:
+    return request.app.state.container
+
+
+ContainerDep = Annotated[Container, Depends(get_container)]
+
+
+@dataclass(frozen=True, slots=True)
+class Persona:
+    employee: Employee
+    is_approver: bool
+
+    @property
+    def id(self) -> str:
+        return self.employee.id
+
+    def can_see(self, employee_id: str) -> bool:
+        return self.is_approver or employee_id == self.employee.id
+
+
+async def get_persona(
+    container: ContainerDep,
+    x_persona: Annotated[str | None, Header(description="Acting persona (employee id)")] = None,
+) -> Persona:
+    if not x_persona:
+        raise problem(status.HTTP_401_UNAUTHORIZED, "missing_persona", "Send an X-Persona header")
+    employee = await container.directory.get(x_persona)
+    if employee is None:
+        raise problem(
+            status.HTTP_401_UNAUTHORIZED, "unknown_persona", f"Unknown persona {x_persona}"
+        )
+    return Persona(employee=employee, is_approver=employee.id in container.approver_ids)
+
+
+PersonaDep = Annotated[Persona, Depends(get_persona)]
+
+
+def require_approver(persona: PersonaDep) -> Persona:
+    if not persona.is_approver:
+        raise problem(status.HTTP_403_FORBIDDEN, "approver_only", "Only approvers can do this")
+    return persona
+
+
+ApproverDep = Annotated[Persona, Depends(require_approver)]
+
+__all__ = [
+    "ApproverDep",
+    "ContainerDep",
+    "HTTPException",
+    "Persona",
+    "PersonaDep",
+    "get_container",
+    "get_persona",
+    "require_approver",
+]

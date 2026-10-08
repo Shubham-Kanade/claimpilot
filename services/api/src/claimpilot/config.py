@@ -48,10 +48,14 @@ class Settings(BaseSettings):
     mcp_finance_url: str = "http://localhost:8101/mcp"
     mcp_corp_url: str = "http://localhost:8102/mcp"
 
+    # Demo personas allowed to act as approver (no real login in the demo: ADR-010).
+    approver_ids: list[str] = ["DEMO-RAVI"]
+
     # Guardrails
     daily_user_token_budget: int = 200_000
     max_upload_mb: int = 15
     max_pdf_pages: int = 10
+    max_batch_files: int = 30
 
 
 @lru_cache
