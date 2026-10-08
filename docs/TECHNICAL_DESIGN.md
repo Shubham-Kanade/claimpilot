@@ -434,7 +434,7 @@ flowchart LR
   A -- MCP --> C["mcp-corp :8102"]
   A -. "replay (no network)" .-> R[["recorded model answers<br/>services/api/replay"]]
 ```
-- **What differs from the Compose stack:** SQLite instead of Postgres, an in-memory queue and event bus instead of Redis and a separate worker, model answers replayed from recordings (`LLM_MODE=replay`), `DEMO_MODE=1` (a "Start over" button, plain messages), duplicates compared per employee, and a pinned clock. The pipeline code is identical; only `wiring.py` differs.
+- **What differs from the Compose stack:** SQLite instead of Postgres, an in-memory queue and event bus instead of Redis and a separate worker, model answers replayed from recordings (`LLM_MODE=replay`, each taking 60% of the time the recorded call took so the live progress can be watched: `REPLAY_LATENCY_SCALE`), `DEMO_MODE=1` (a "Start over" button, plain messages), duplicates compared per employee, and a pinned clock. The pipeline code is identical; only `wiring.py` differs.
 - **Deploy:** create a Docker Space and add `Dockerfile` and `README.md` from `deploy/hf-space/`; the build clones this repository. Steps in [deploy/hf-space/DEPLOY.md](../deploy/hf-space/DEPLOY.md). No secrets are needed.
 - **Verify a deployment:** `uv run --project services/api python scripts/smoke.py --api https://<space>.hf.space/api`.
 - **No login:** the persona switcher picks a synthetic employee or the approver. State resets when the Space restarts or when a visitor presses *Start over*.

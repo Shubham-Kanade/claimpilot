@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     # With llm_mode=live, also write recordings (sha256 of the request) for replay mode.
     llm_record: bool = False
     replay_dir: Path = API_ROOT / "replay"
+    # In replay mode, wait this fraction of each recorded call's latency (0 = instantly), so the
+    # hosted demo's live progress can be watched. Never affects live calls.
+    replay_latency_scale: float = 0.0
 
     # System One
     decision_engine: Literal["jev", "llm", "fake"] = "llm"

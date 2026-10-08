@@ -36,11 +36,15 @@ class RecordReplayLLM(BaseLLM):
         *,
         inner: BaseLLM | None = None,
         ledger: Ledger | None = None,
+        latency_scale: float = 0.0,
     ) -> None:
         # Replay-only, or recording around a live backend (misses go live and get recorded).
         super().__init__(registry, mode="replay" if inner is None else inner.mode, ledger=ledger)
         self.replay_dir = replay_dir
         self._inner = inner
+        # 0 replays instantly (tests, CI). The hosted demo sets a fraction so a visitor can watch
+        # the receipts being read one after another instead of everything flipping at once.
+        self._latency_scale = latency_scale
 
     async def complete(self, request: LLMRequest) -> Completion:
         path = self.replay_dir / f"{request.request_hash}.json"
@@ -50,6 +54,8 @@ class RecordReplayLLM(BaseLLM):
                 completion = Completion.model_validate(recording["completion"])
             except (KeyError, TypeError, ValidationError) as exc:
                 raise ReplayMissError(f"corrupt recording {path}: re-record it ({exc})") from exc
+            if self._latency_scale > 0:
+                await asyncio.sleep(completion.latency_ms / 1000 * self._latency_scale)
             return completion.model_copy(update={"replayed": True})
         if self._inner is None:
             raise ReplayMissError(_miss_message(request, path))

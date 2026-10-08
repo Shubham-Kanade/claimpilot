@@ -133,3 +133,28 @@ async def test_count_tokens_record_and_replay(models_registry, tmp_path):
         await RecordReplayLLM(models_registry, tmp_path).count_tokens(
             "extraction", system=SYSTEM, content="other"
         )
+
+
+async def test_replay_can_take_a_fraction_of_the_recorded_time(
+    models_registry, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    naps: list[float] = []
+
+    async def fake_sleep(seconds: float) -> None:
+        naps.append(seconds)
+
+    from claimpilot.llm import replay as replay_module
+
+    monkeypatch.setattr(replay_module.asyncio, "sleep", fake_sleep)
+
+    async def ask(client: RecordReplayLLM) -> None:
+        await client.parse(
+            "extraction", system=SYSTEM, content="Total: 120.50", output_model=ReceiptTotal
+        )
+
+    await ask(RecordReplayLLM(models_registry, tmp_path, inner=StubLive(models_registry, OK)))
+    await ask(RecordReplayLLM(models_registry, tmp_path))
+    assert naps == []  # the default replays at once
+
+    await ask(RecordReplayLLM(models_registry, tmp_path, latency_scale=0.5))
+    assert naps == [pytest.approx(0.42)]  # half of the 840 ms the call took when it was recorded

@@ -73,6 +73,7 @@ ENV RUNTIME=embedded \
     DEMO_MODE=1 \
     DUPLICATE_SCOPE=employee \
     LLM_MODE=replay \
+    REPLAY_LATENCY_SCALE=0.6 \
     DECISION_ENGINE=llm \
     DEMO_TODAY=2026-10-12 \
     DATABASE_URL=sqlite+aiosqlite:////data/claimpilot.db \
