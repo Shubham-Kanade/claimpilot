@@ -3,7 +3,7 @@
 Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked · ★ must · ☆ stretch (cut first)
 Rule: milestones are listed up front. Low-level subtasks are added only when a milestone starts.
 
-**Current focus:** M1.6, the first bake-off on the dev 20 (estimate shown to the user before any spend). Then M2.
+**Current focus:** M2 Intelligence: DecisionEngine (Jev + LLM), policy-as-code, trust (pHash/C2PA/injection), grouping + claim state machine, MCP servers, upload→claim worker job.
 **Deadline:** submit by 12 Oct 2026. Aim for the morning of the 12th.
 
 ## Submission checklist (missing ANY item means elimination; run the `submission-check` skill)
@@ -28,14 +28,14 @@ Rule: milestones are listed up front. Low-level subtasks are added only when a m
 - [x] Second email (8 Oct) folded in: ADR-010, TDD skeleton, `submission-check` skill, coverage gates in CI (+ entrypoint and page tests)
 - [ ] Deferred: `evals.yml` (lands with the eval harness in M1) and `cd.yml` (M4, with hosting)
 
-## M1 Data & extraction (8 Oct) [~]
+## M1 Data & extraction (8 Oct) [x]
 - [x] M1.0 Model registry: **Claude Haiku 5.5** added (Models API + pricing page verified), Haiku 4.5 kept as a baseline, Sonnet cache-read price fixed, long-context tier + batch pricing (ADR-011)
 - [x] M1.1 Domain contract: `ExtractedReceipt` / `ReceiptTruth` schema + GSTIN validate/generate (`claimpilot.domain`), 41 tests
 - [x] M1.2 Synthetic generator `data/synth/`: scenarios → ground truth → render (≥8 doc types incl. Hindi/handwritten/UPI) → degrade → adversarial set → manifest (dev 20 / test 80) + 10 committed fixtures. 100 docs, 10 types, 5 adversarial kinds; 80 tests; GST 2.0 rates (ADR-015)
 - [x] M1.3 Capability shim `llm/client.py` (per-model request params), `LLMClient` with live / record-replay / fake modes, cost ledger (`llm_calls` + Alembic), snapshot tests. Reviewed (request-changes → all fixed, ADR-014). Live smoke passed on all 4 models ($0.003)
 - [x] M1.4 Extraction: versioned prompt + `messages.parse(ExtractedReceipt)`, image downscale, Redis content-hash cache, injection-safe framing; Haiku→Sonnet escalation on unsure critical fields. Worker job moves to M2 (needs Storage + claims)
 - [x] M1.5 Eval harness: metrics, Pareto, dataset loader, runner with cost estimate + `--max-usd` (sync, ADR-013), `evals.yml` (manual, paid)
-- [ ] M1.6 First bake-off (dev 20): haiku · haiku45 · sonnet-low · opus-low (+ cascade), Pareto chart → routes ADR
+- [x] M1.6 First bake-off (dev 20, $0.093): Haiku 5.5 alone = 100% critical / 95% field / 100% injection recall at $0.42 per 1k receipts; cascade 10× cost for +1.9 pp → Haiku chosen (ADR-018). Wire schema fix first (ADR-017)
 - [ ] M1.7 OCR word boxes for click-to-verify (may slide to M3)
 - [ ] M1.8 TDD §3–4 + §7 numbers updated
 
@@ -62,3 +62,4 @@ Rule: milestones are listed up front. Low-level subtasks are added only when a m
 - 2026-10-08: Haiku 5.5 in registry (ADR-011); CI fixes; self-hosted fonts (ADR-012); domain contract + GSTIN (41 API tests, 96.6% cov)
 - 2026-10-08: M1.3/M1.4 done + eval runner; reviewer blocker (REPO_ROOT crash in Docker) fixed; 216 API tests, 98.5% cov; stack healthy with migrations
 - 2026-10-08: M1.2 synthetic dataset committed (reviewed + GST 2.0 fix); trust GST checks; synth CI job; evals.yml
+- 2026-10-08: M1 done. Bake-off picks Haiku 5.5 ($0.42/1k receipts, 100% critical-field accuracy on dev); PDF rasterisation (ADR-016), wire schema (ADR-017), routes (ADR-018)

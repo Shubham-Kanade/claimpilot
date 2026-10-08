@@ -107,3 +107,15 @@ Each entry gives the decision, the reason, and its consequences. Add new entries
 - **Decision:** the LLM fills `extraction.schema.WireReceipt`: every field is required, "not printed" is an empty string, and amounts are number strings, so there are no unions. `to_domain` maps it to `ExtractedReceipt`, parsing amounts and flagging unparseable values as low-confidence. A test asserts the wire schema has 0 optional and 0 union parameters.
 - **Result:** one live check on the hardest dev receipt (degraded handwritten bill with an injection) gave 100% field accuracy with the injection flagged, at $0.0009 on Haiku 5.5.
 - **Lesson:** the smoke test's one-field schema could not catch this. A wire-schema live check now precedes any bake-off.
+
+### ADR-018: Extraction runs on Haiku 5.5 alone; escalation is opt-in (2026-10-08)
+- **Evidence** (dev split, 20 receipts, prompt `extract_v1`, report `evals/reports/2026-10-08-bakeoff-dev-haiku.md`):
+
+  | Config | Critical acc | Field acc | JSON valid | Injection recall | $ / 1k receipts | p50 / p95 |
+  |---|---|---|---|---|---|---|
+  | haiku-low | 100% | 95.0% | 100% | 100% | **$0.42** | 3.1 s / 3.9 s |
+  | cascade (→ Sonnet on unsure critical fields; 7/20 escalated) | 100% | 96.9% | 100% | 100% | $4.22 | 3.3 s / 7.5 s |
+
+- **Decision:** the `extraction` route stays on `haiku` (effort low, thinking off). `ReceiptExtractor(escalate=...)` now defaults to False. The cascade costs 10× for +1.9 pp on non-critical fields only.
+- **Caveats:** 20 receipts with one injection case. Final numbers come from the 80-receipt test split in M4 (about $0.03 on Haiku). Sonnet, Opus and Haiku 4.5 were not run, by the user's choice: Haiku met every gate first. Top residual errors are `doc_type` (2), `subtotal` (2) and `travel_from`/`travel_to` (2); these are prompt-tuning candidates.
+- **Total M1 API spend so far:** about $0.10.

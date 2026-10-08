@@ -138,7 +138,7 @@ async def test_cache_hit_skips_llm(llm, doc):
 async def test_escalates_when_critical_field_is_unsure(llm, doc):
     llm.register(WireReceipt, from_domain(UNSURE), route="extraction")
     llm.register(WireReceipt, from_domain(GOOD), route="extraction_retry")
-    result = await ReceiptExtractor(llm).extract(doc)
+    result = await ReceiptExtractor(llm, escalate=True).extract(doc)
 
     assert result.escalated
     assert result.receipt.total == 189.0
@@ -146,9 +146,9 @@ async def test_escalates_when_critical_field_is_unsure(llm, doc):
     assert result.cost_usd == pytest.approx(sum(c.cost_usd for c in result.calls))
 
 
-async def test_escalation_can_be_disabled(llm, doc):
+async def test_escalation_is_off_by_default(llm, doc):
     llm.register(WireReceipt, from_domain(UNSURE), route="extraction")
-    result = await ReceiptExtractor(llm, escalate=False).extract(doc)
+    result = await ReceiptExtractor(llm).extract(doc)
     assert not result.escalated and result.receipt.total == 18.9
 
 

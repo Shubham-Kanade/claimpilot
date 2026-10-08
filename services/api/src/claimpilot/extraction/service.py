@@ -56,7 +56,7 @@ class ReceiptExtractor:
         llm: LLMClient,
         *,
         cache: ExtractionCache | None = None,
-        escalate: bool = True,
+        escalate: bool = False,  # ADR-018: Haiku alone met every gate; escalation is opt-in
         thinking: ThinkingMode = "off",
         prompt_version: str = PROMPT_VERSION,
     ) -> None:

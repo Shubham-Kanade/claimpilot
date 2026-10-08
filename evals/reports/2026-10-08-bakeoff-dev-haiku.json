@@ -1,0 +1,116 @@
+{
+  "meta": {
+    "label": "bakeoff-dev-haiku",
+    "date": "2026-10-08",
+    "split": "dev",
+    "receipts": 20,
+    "prompt": "extract_v1",
+    "spend": 0.09289890000000002
+  },
+  "configs": [
+    {
+      "config": {
+        "name": "haiku-low",
+        "model_key": "haiku",
+        "effort": "low",
+        "escalate": false
+      },
+      "score": {
+        "receipts": 20,
+        "parse_failures": 0,
+        "field_accuracy": 0.95,
+        "critical_field_accuracy": 1.0,
+        "line_item_f1": 0.95,
+        "injection_recall": 1.0,
+        "injection_false_positive_rate": 0.0,
+        "errors_by_field": {
+          "subtotal": 2,
+          "doc_type": 2,
+          "travel_from": 2,
+          "travel_to": 2,
+          "igst": 1,
+          "upi_reference": 1
+        }
+      },
+      "cost_usd": 0.008447700000000002,
+      "cost_per_receipt": 0.0004223850000000001,
+      "latencies_ms": [
+        3051,
+        3470,
+        3884,
+        3821,
+        3999,
+        3162,
+        3737,
+        3222,
+        2294,
+        2479,
+        3006,
+        3811,
+        2367,
+        2847,
+        2488,
+        2185,
+        2905,
+        2485,
+        3222,
+        3242
+      ],
+      "escalations": 0,
+      "passes_gates": true,
+      "failures": {}
+    },
+    {
+      "config": {
+        "name": "cascade",
+        "model_key": "haiku",
+        "effort": "low",
+        "escalate": true
+      },
+      "score": {
+        "receipts": 20,
+        "parse_failures": 0,
+        "field_accuracy": 0.9693877551020408,
+        "critical_field_accuracy": 1.0,
+        "line_item_f1": 0.95,
+        "injection_recall": 1.0,
+        "injection_false_positive_rate": 0.05263157894736842,
+        "errors_by_field": {
+          "doc_type": 1,
+          "payment_method": 1,
+          "igst": 1,
+          "upi_reference": 1,
+          "travel_from": 1,
+          "travel_to": 1
+        }
+      },
+      "cost_usd": 0.08445120000000002,
+      "cost_per_receipt": 0.004222560000000001,
+      "latencies_ms": [
+        3814,
+        6814,
+        3286,
+        7413,
+        7542,
+        1834,
+        1875,
+        2703,
+        2681,
+        1460,
+        7131,
+        1942,
+        7077,
+        3060,
+        2356,
+        3314,
+        2419,
+        7246,
+        7487,
+        7468
+      ],
+      "escalations": 7,
+      "passes_gates": true,
+      "failures": {}
+    }
+  ]
+}
