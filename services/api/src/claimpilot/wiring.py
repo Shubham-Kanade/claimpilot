@@ -34,6 +34,8 @@ from claimpilot.storage import LocalStorage
 
 logger = logging.getLogger(__name__)
 
+EMBEDDED_BATCHES_AT_ONCE = 2
+
 
 @dataclass
 class _Infra:
@@ -131,11 +133,23 @@ async def _embedded(settings: Settings) -> Container:
     events = InMemoryEventBus()
     deps = _pipeline_deps(settings, infra, events)
     running: set[asyncio.Task[None]] = set()
+    slots = asyncio.Semaphore(
+        EMBEDDED_BATCHES_AT_ONCE
+    )  # a burst of uploads queues up, not piles up
+
+    async def run(batch_id: str) -> None:
+        async with slots:
+            await run_pipeline(deps, batch_id)
+
+    def finished(task: asyncio.Task[None]) -> None:
+        running.discard(task)
+        if not task.cancelled() and (error := task.exception()) is not None:
+            logger.error("batch task %s died: %r", task.get_name(), error)
 
     async def enqueue(batch_id: str) -> None:
-        task = asyncio.create_task(run_pipeline(deps, batch_id), name=f"batch-{batch_id}")
+        task = asyncio.create_task(run(batch_id), name=f"batch-{batch_id}")
         running.add(task)
-        task.add_done_callback(running.discard)
+        task.add_done_callback(finished)
 
     async def drain() -> None:
         for task in list(running):

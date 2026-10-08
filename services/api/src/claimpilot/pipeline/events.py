@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import asyncio
 import time
-from collections import defaultdict
 from collections.abc import AsyncIterator
 from typing import Annotated, Any, Literal, Protocol
 
@@ -112,15 +111,24 @@ class EventBus(Protocol):
     async def read(self, batch_id: str, start: int = 0) -> list[AnyEvent]: ...
 
 
+MEMORY_BATCHES_KEPT = 200  # a long-running embedded process must not remember every batch
+
+
 class InMemoryEventBus:
-    def __init__(self) -> None:
-        self._events: dict[str, list[AnyEvent]] = defaultdict(list)
+    """Events per batch in a dict (tests and the embedded runtime). The oldest batch's events are
+    dropped once ``max_batches`` are held, so a process that runs for weeks does not grow."""
+
+    def __init__(self, max_batches: int = MEMORY_BATCHES_KEPT) -> None:
+        self._events: dict[str, list[AnyEvent]] = {}
+        self._max_batches = max_batches
 
     async def publish(self, event: AnyEvent) -> None:
-        self._events[event.batch_id].append(event)
+        if event.batch_id not in self._events and len(self._events) >= self._max_batches:
+            del self._events[next(iter(self._events))]  # dicts keep insertion order: oldest first
+        self._events.setdefault(event.batch_id, []).append(event)
 
     async def read(self, batch_id: str, start: int = 0) -> list[AnyEvent]:
-        return list(self._events[batch_id][start:])
+        return list(self._events.get(batch_id, [])[start:])
 
 
 class RedisEventBus:

@@ -266,3 +266,29 @@ async def test_click_to_verify_can_be_switched_off(fakes: FakePool, tmp_path):
     deps, close = await wiring.build_pipeline_deps(off)
     assert deps.locator is None
     await close()
+
+
+async def test_the_embedded_runtime_runs_only_a_couple_of_batches_at_once(
+    fakes: FakePool, tmp_path, monkeypatch: pytest.MonkeyPatch
+):
+    running, peak = 0, 0
+    release = asyncio.Event()
+
+    async def run_pipeline(deps: Any, batch_id: str) -> None:
+        nonlocal running, peak
+        running += 1
+        peak = max(peak, running)
+        await release.wait()
+        running -= 1
+
+    monkeypatch.setattr(wiring, "run_pipeline", run_pipeline)
+    container = await wiring.build_container(embedded(tmp_path))
+    for n in range(6):
+        await container.enqueue(f"b-{n}")
+    for _ in range(5):
+        await asyncio.sleep(0)
+
+    assert peak == wiring.EMBEDDED_BATCHES_AT_ONCE  # the rest wait their turn
+    release.set()
+    await asyncio.sleep(0.05)
+    await container.aclose()

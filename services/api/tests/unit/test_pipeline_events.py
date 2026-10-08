@@ -145,3 +145,20 @@ async def test_stream_sends_heartbeats_while_idle():
     ):
         beats.append(item)
     assert beats and all(b is None for b in beats)
+
+
+async def test_the_in_memory_bus_forgets_the_oldest_batch_beyond_its_limit():
+    bus = InMemoryEventBus(max_batches=2)
+    for batch_id in ("a", "b", "c"):
+        await bus.publish(BatchStarted(batch_id=batch_id, total=1))
+    assert await bus.read("a") == []  # dropped: the oldest of three
+    assert len(await bus.read("b")) == 1 and len(await bus.read("c")) == 1
+    await bus.publish(BatchStarted(batch_id="c", total=2))  # an existing batch never evicts
+    assert len(await bus.read("c")) == 2 and len(await bus.read("b")) == 1
+
+
+async def test_reading_an_unknown_batch_does_not_create_it():
+    bus = InMemoryEventBus(max_batches=1)
+    assert await bus.read("nobody") == []
+    await bus.publish(BatchStarted(batch_id="a", total=1))
+    assert len(await bus.read("a")) == 1  # the read above did not take the only slot
