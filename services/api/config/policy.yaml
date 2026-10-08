@@ -1,0 +1,174 @@
+# Orion Demo Corp Travel & Expense Policy v3 (synthetic).
+#
+# A FICTIONAL company policy for the ClaimPilot demo. Orion Demo Corp does not exist and none of
+# this is taken from a real employer. The wording of every clause `text` is exactly what users are
+# shown when a finding cites the clause, so keep it plain English. Numbers also appear in `params`
+# (what the code enforces); tests assert the two stay in sync.
+#
+# Calibration (see claimpilot.policy.report and tests/unit/test_policy_golden.py):
+# - Hotel caps, mobile caps and the daily meals/local travel limits are set so every legitimate
+#   receipt in the synthetic golden set passes, while the generator's `over_policy` hotel nights
+#   (Rs 10,500 and above) and alcohol bills are caught. The generator draws hotel tariffs from a
+#   grade band that does not depend on city tier (data/synth personas.HOTEL_BUDGET), so the
+#   Tier-2 caps sit just under Tier-1 instead of far below it. A production policy would widen
+#   the tier gap.
+# - Caps are compared with the room rate BEFORE GST (the folio's per-night room charge).
+#
+# Rule clauses are bound to code by `rule`; each rule appears exactly once. `info` clauses are
+# quoted for context only. Unknown keys anywhere in this file are rejected at load time.
+
+name: Orion Demo Corp Travel & Expense Policy
+version: "3"
+effective_date: 2026-04-01
+currency: INR
+synthetic: true
+grades: [L1, L2, L3, L4, L5] # junior to senior
+
+clauses:
+  - id: "1.1"
+    rule: info
+    title: Scope
+    text: >-
+      This policy covers business expenses of every Orion Demo Corp employee in grades L1 to L5.
+      All amounts are in Indian rupees (₹) and include GST unless a clause says otherwise.
+
+  - id: "1.2"
+    rule: city_tiers
+    title: City tiers
+    text: >-
+      Cities are grouped into two tiers for expense limits. Tier-1 cities are Delhi/New Delhi,
+      Mumbai, Bengaluru, Hyderabad, Chennai, Kolkata, Pune and Ahmedabad. Every other city is
+      Tier-2.
+    params:
+      tier1: [Delhi, New Delhi, Mumbai, Bengaluru, Hyderabad, Chennai, Kolkata, Pune, Ahmedabad]
+
+  - id: "2.1"
+    rule: submission_window
+    title: Submission window
+    severity: warn
+    text: >-
+      Claim an expense within 90 days of the day it was incurred. For a trip, the 90 days start on
+      the last day of the trip. Claims submitted later are sent to finance for review.
+    params:
+      window_days: 90
+
+  - id: "3.1"
+    rule: receipts
+    title: Receipts
+    severity: warn
+    text: >-
+      Every expense above ₹200 needs a receipt or tax invoice that shows the merchant, the date
+      and the amount. For local conveyance and tips of ₹200 or less, a self-declaration (the
+      route or purpose and the amount) can replace the receipt.
+    params:
+      receipt_threshold: 200
+
+  - id: "4.1"
+    rule: hotel_cap
+    title: Accommodation
+    severity: high
+    text: >-
+      Hotel rooms are reimbursed up to a nightly limit that depends on the employee's grade and
+      the city tier. The limit applies to the room rate before GST; other charges on the bill
+      are not counted against it. Limits per night for Tier-1 / Tier-2 cities are L1 ₹4,500 /
+      ₹4,200, L2 ₹6,000 / ₹5,500, L3 ₹8,000 / ₹7,500, L4 ₹9,500 / ₹8,800 and L5 ₹10,000 /
+      ₹9,800. A night above the limit needs approval from finance.
+    params:
+      nightly_cap:
+        L1: { tier1: 4500, tier2: 4200 }
+        L2: { tier1: 6000, tier2: 5500 }
+        L3: { tier1: 8000, tier2: 7500 }
+        L4: { tier1: 9500, tier2: 8800 }
+        L5: { tier1: 10000, tier2: 9800 }
+
+  - id: "5.1"
+    rule: meals_daily_limit
+    title: Meals
+    severity: warn
+    text: >-
+      Meals are reimbursed up to a daily limit per employee: ₹2,000 in Tier-1 cities and ₹1,500
+      in Tier-2 cities. The limit covers all of a day's meal bills, including GST and service
+      charge. Client entertainment is covered by clause 5.2 instead.
+    params:
+      daily_limit: { tier1: 2000, tier2: 1500 }
+
+  - id: "5.2"
+    rule: entertainment
+    title: Client entertainment
+    severity: warn
+    text: >-
+      Entertaining clients is reimbursed up to ₹2,500 per head, after removing any alcohol
+      (clause 6.1). The claim must name everyone who attended and give the business purpose.
+    params:
+      per_head_cap: 2500
+
+  - id: "6.1"
+    rule: alcohol
+    title: Alcohol
+    severity: high
+    text: >-
+      Alcohol is never reimbursable. If a bill includes alcohol, it must be taken out of the
+      claim.
+    params:
+      probability_threshold: 0.5
+
+  - id: "7.1"
+    rule: air_class
+    title: Air travel
+    severity: high
+    text: >-
+      Air travel is booked in economy class only. A ticket in any other class needs approval from
+      finance.
+    params:
+      allowed: [economy]
+
+  - id: "7.2"
+    rule: train_class
+    title: Rail travel
+    severity: warn
+    text: >-
+      Rail travel is reimbursed up to the highest class allowed for the employee's grade: 3A
+      (third AC) for L1 and L2, 2A (second AC) for L3 and L4, and 1A (first AC) for L5.
+    params:
+      class_order: [2S, SL, CC, 3E, 3A, EC, 2A, 1A]
+      max_class_by_grade: { L1: 3A, L2: 3A, L3: 2A, L4: 2A, L5: 1A }
+
+  - id: "7.3"
+    rule: trip_conveyance
+    title: Local travel on a trip
+    severity: warn
+    text: >-
+      Cabs, autos and other local travel at a trip destination are reimbursed up to ₹3,000 a day
+      in Tier-1 cities and ₹2,500 a day in Tier-2 cities. Airport and station transfers count
+      towards the daily total.
+    params:
+      daily_limit: { tier1: 3000, tier2: 2500 }
+
+  - id: "8.1"
+    rule: mobile_cap
+    title: Mobile and internet
+    severity: warn
+    text: >-
+      Mobile and internet bills are reimbursed up to a monthly limit by grade: ₹2,000 for L1 and
+      L2, ₹2,500 for L3 and L4, and ₹3,000 for L5.
+    params:
+      monthly_cap: { L1: 2000, L2: 2000, L3: 2500, L4: 2500, L5: 3000 }
+
+  - id: "9.1"
+    rule: learning_preapproval
+    title: Learning and certification
+    severity: warn
+    text: >-
+      A course, certification or similar learning expense above ₹10,000 needs your manager's
+      approval before you buy it. Attach the approval to the claim.
+    params:
+      threshold: 10000
+
+  - id: "10.1"
+    rule: personal_expense
+    title: Personal expenses
+    severity: warn
+    text: >-
+      Personal expenses are not reimbursable, even when they are paid during a business trip.
+    params:
+      probability_threshold: 0.5
