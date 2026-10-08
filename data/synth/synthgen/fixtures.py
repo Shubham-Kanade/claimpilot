@@ -14,6 +14,7 @@ from pathlib import Path
 from PIL import Image, ImageFilter
 
 from synthgen.manifest import ManifestEntry, read_manifest
+from synthgen.roster import write_roster
 from synthgen.spec import OutputLayout
 
 FIXTURE_MAX_SIDE = 1100
@@ -71,7 +72,7 @@ def compress_png(source: Path, target: Path, noisy: bool) -> None:
     palette.save(target, optimize=True)
 
 
-def export_fixtures(layout: OutputLayout, dest: Path) -> list[ManifestEntry]:
+def export_fixtures(layout: OutputLayout, dest: Path, seed: int) -> list[ManifestEntry]:
     """Copy the selected documents + truths into ``dest`` and write ``dest/manifest.jsonl``."""
     entries = select_fixtures(read_manifest(layout.manifest))
     if dest.exists():
@@ -93,9 +94,30 @@ def export_fixtures(layout: OutputLayout, dest: Path) -> list[ManifestEntry]:
         shutil.copyfile(layout.root / entry["truth_path"], dest / truth_path)
         exported.append({**entry, "path": doc_path.as_posix(), "truth_path": truth_path.as_posix()})
 
+    persona_ids = [
+        json.loads((layout.root / e["truth_path"]).read_text(encoding="utf-8")).get("persona_id")
+        for e in exported
+    ]
+    write_roster(dest / "personas.json", persona_ids, seed)
     lines = (json.dumps(entry, ensure_ascii=False) for entry in exported)
     (dest / "manifest.jsonl").write_text("\n".join(lines) + "\n", encoding="utf-8")
     total = sum(path.stat().st_size for path in dest.rglob("*") if path.is_file())
     if total > FIXTURE_BUDGET_BYTES:
         raise RuntimeError(f"fixtures are {total / 1e6:.1f} MB, over the 3 MB budget")
     return exported
+
+
+def export_golden(layout: OutputLayout, dest: Path) -> int:
+    """Ground truth only (no images): ``truth/*.json``, ``manifest.jsonl``, ``personas.json``.
+
+    Small enough to commit (~0.3 MB for 100 documents), so CI can run policy, grouping and
+    decision evals against the full 100-document truth set without rendering anything.
+    """
+    entries = read_manifest(layout.manifest)
+    shutil.rmtree(dest, ignore_errors=True)
+    (dest / "truth").mkdir(parents=True)
+    for entry in entries:
+        shutil.copyfile(layout.root / entry["truth_path"], dest / "truth" / f"{entry['id']}.json")
+    shutil.copyfile(layout.manifest, dest / "manifest.jsonl")
+    shutil.copyfile(layout.root / "personas.json", dest / "personas.json")
+    return len(entries)

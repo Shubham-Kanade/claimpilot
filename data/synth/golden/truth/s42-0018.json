@@ -1,0 +1,49 @@
+{
+  "id": "s42-0018",
+  "receipt": {
+    "doc_type": "gst_invoice",
+    "merchant_name": "SkillKaro Edutech Pvt Ltd",
+    "merchant_gstin": "07CSJJV1852I2ZK",
+    "merchant_city": "New Delhi",
+    "invoice_number": "PQP/26-27/9194",
+    "date": "2026-08-09",
+    "time": null,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Certificate in Applied Machine Learning",
+        "quantity": 1.0,
+        "unit_price": 41000.0,
+        "amount": 41000.0
+      }
+    ],
+    "subtotal": 41000.0,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": 7380.0,
+      "cess": null,
+      "gst_rate_percent": 18.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 48380.0,
+    "payment_method": "upi",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "learning",
+  "tags": [
+    "clean"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P002",
+  "trip_id": null
+}

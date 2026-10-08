@@ -1,0 +1,61 @@
+{
+  "id": "s42-0078",
+  "receipt": {
+    "doc_type": "cab_receipt",
+    "merchant_name": "ChakraGo",
+    "merchant_gstin": "30IFELJ4088Y7ZI",
+    "merchant_city": "Panaji",
+    "invoice_number": "CRN8282258645",
+    "date": "2026-08-21",
+    "time": "17:19",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Base Fare",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 65.0
+      },
+      {
+        "description": "Distance Fare (15.1 km)",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 256.7
+      },
+      {
+        "description": "Ride Time Fare (51 min)",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 76.5
+      }
+    ],
+    "subtotal": 398.2,
+    "taxes": {
+      "cgst": 8.21,
+      "sgst": 8.21,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": 70.0,
+    "total": 344.62,
+    "payment_method": "wallet",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "local_conveyance",
+  "tags": [
+    "clean"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P005",
+  "trip_id": null
+}

@@ -1,0 +1,73 @@
+{
+  "id": "s42-0004",
+  "receipt": {
+    "doc_type": "flight_ticket",
+    "merchant_name": "Megh Airways",
+    "merchant_gstin": "07CHKBW9147E2ZJ",
+    "merchant_city": "New Delhi",
+    "invoice_number": "EG3AAM",
+    "date": "2026-07-12",
+    "time": "16:30",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Base Fare",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 2978.0
+      },
+      {
+        "description": "User Development Fee",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 316.0
+      },
+      {
+        "description": "Passenger Service Fee",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 111.0
+      },
+      {
+        "description": "Aviation Security Fee",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 236.0
+      },
+      {
+        "description": "Convenience Fee",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 354.0
+      }
+    ],
+    "subtotal": 3995.0,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": 148.9,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 4143.9,
+    "payment_method": "card",
+    "upi_reference": null,
+    "travel_from": "Hyderabad",
+    "travel_to": "Bengaluru",
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "travel_domestic",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P001",
+  "trip_id": "P001-T1"
+}

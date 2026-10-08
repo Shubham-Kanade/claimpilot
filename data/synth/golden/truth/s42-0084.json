@@ -1,0 +1,88 @@
+{
+  "id": "s42-0084",
+  "receipt": {
+    "doc_type": "restaurant_bill",
+    "merchant_name": "Peepal Family Restaurant",
+    "merchant_gstin": "09HGNFT2949N9ZI",
+    "merchant_city": "Lucknow",
+    "invoice_number": "R443",
+    "date": "2026-07-19",
+    "time": "22:31",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "छोले भटूरे",
+        "quantity": 1.0,
+        "unit_price": 235.0,
+        "amount": 235.0
+      },
+      {
+        "description": "फ्रेश लाइम सोडा",
+        "quantity": 2.0,
+        "unit_price": 140.0,
+        "amount": 280.0
+      },
+      {
+        "description": "वेज थाली",
+        "quantity": 2.0,
+        "unit_price": 455.0,
+        "amount": 910.0
+      },
+      {
+        "description": "कड़ाही पनीर",
+        "quantity": 1.0,
+        "unit_price": 495.0,
+        "amount": 495.0
+      },
+      {
+        "description": "Tandoori Roti",
+        "quantity": 2.0,
+        "unit_price": 60.0,
+        "amount": 120.0
+      },
+      {
+        "description": "Draught Beer 330ml",
+        "quantity": 2.0,
+        "unit_price": 420.0,
+        "amount": 840.0
+      },
+      {
+        "description": "House Red Wine (Glass)",
+        "quantity": 2.0,
+        "unit_price": 560.0,
+        "amount": 1120.0
+      }
+    ],
+    "subtotal": 4000.0,
+    "taxes": {
+      "cgst": 51.0,
+      "sgst": 51.0,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": null
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 4102.0,
+    "payment_method": "card",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en",
+      "hi"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "client_entertainment",
+  "tags": [
+    "degraded",
+    "hindi",
+    "over_policy"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P904",
+  "trip_id": null
+}

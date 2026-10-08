@@ -1,0 +1,67 @@
+{
+  "id": "s42-0030",
+  "receipt": {
+    "doc_type": "restaurant_bill",
+    "merchant_name": "Kesar Bhojanalaya",
+    "merchant_gstin": "19VDVFU1236M7ZI",
+    "merchant_city": "Kolkata",
+    "invoice_number": "R974",
+    "date": "2026-08-18",
+    "time": "14:01",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Kadhai Paneer",
+        "quantity": 1.0,
+        "unit_price": 340.0,
+        "amount": 340.0
+      },
+      {
+        "description": "Butter Naan",
+        "quantity": 1.0,
+        "unit_price": 60.0,
+        "amount": 60.0
+      },
+      {
+        "description": "Veg Thali",
+        "quantity": 1.0,
+        "unit_price": 340.0,
+        "amount": 340.0
+      },
+      {
+        "description": "Idli Vada",
+        "quantity": 1.0,
+        "unit_price": 105.0,
+        "amount": 105.0
+      }
+    ],
+    "subtotal": 845.0,
+    "taxes": {
+      "cgst": 21.13,
+      "sgst": 21.13,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 887.26,
+    "payment_method": "card",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "meals",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P002",
+  "trip_id": "P002-T2"
+}

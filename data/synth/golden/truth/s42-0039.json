@@ -1,0 +1,58 @@
+{
+  "id": "s42-0039",
+  "receipt": {
+    "doc_type": "handwritten_bill",
+    "merchant_name": "Gupta Provision Store",
+    "merchant_gstin": null,
+    "merchant_city": "New Delhi",
+    "invoice_number": "574",
+    "date": "2026-09-07",
+    "time": null,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "कागज़ के कप",
+        "quantity": 3.0,
+        "unit_price": 40.0,
+        "amount": 120.0
+      },
+      {
+        "description": "दूध",
+        "quantity": 3.0,
+        "unit_price": 60.0,
+        "amount": 180.0
+      }
+    ],
+    "subtotal": null,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": null
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 300.0,
+    "payment_method": "cash",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en",
+      "hi"
+    ],
+    "handwritten": true,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "misc",
+  "tags": [
+    "clean",
+    "hindi",
+    "handwritten"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P003",
+  "trip_id": null
+}

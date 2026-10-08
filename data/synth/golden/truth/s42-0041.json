@@ -1,0 +1,42 @@
+{
+  "id": "s42-0041",
+  "receipt": {
+    "doc_type": "upi_payment",
+    "merchant_name": "Swad Snacks Corner",
+    "merchant_gstin": null,
+    "merchant_city": null,
+    "invoice_number": null,
+    "date": "2026-09-08",
+    "time": "14:00",
+    "currency": "INR",
+    "line_items": [],
+    "subtotal": null,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": null
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 156.0,
+    "payment_method": "upi",
+    "upi_reference": "474248884748",
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "meals",
+  "tags": [
+    "clean"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P003",
+  "trip_id": null
+}

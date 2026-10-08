@@ -1,0 +1,55 @@
+{
+  "id": "s42-0025",
+  "receipt": {
+    "doc_type": "hotel_folio",
+    "merchant_name": "Nilgiri Business Hotel",
+    "merchant_gstin": "04YNEFW4402Y3Z2",
+    "merchant_city": "Chandigarh",
+    "invoice_number": "F2670886",
+    "date": "2026-08-14",
+    "time": null,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Room Charges 12-Aug",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 7800.0
+      },
+      {
+        "description": "Room Charges 13-Aug",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 7800.0
+      }
+    ],
+    "subtotal": 15600.0,
+    "taxes": {
+      "cgst": 1404.0,
+      "sgst": 1404.0,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 18.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 18408.0,
+    "payment_method": "upi",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "accommodation",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P002",
+  "trip_id": "P002-T1"
+}

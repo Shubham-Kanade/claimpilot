@@ -1,0 +1,46 @@
+{
+  "id": "s42-0100",
+  "receipt": {
+    "doc_type": "handwritten_bill",
+    "merchant_name": "Forum Sani",
+    "merchant_gstin": null,
+    "merchant_city": null,
+    "invoice_number": null,
+    "date": null,
+    "time": null,
+    "currency": "INR",
+    "line_items": [],
+    "subtotal": null,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": null
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 100.0,
+    "payment_method": "cash",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en",
+      "hi"
+    ],
+    "handwritten": true,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "local_conveyance",
+  "tags": [
+    "degraded",
+    "hindi",
+    "handwritten",
+    "missing_date"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P920",
+  "trip_id": null
+}

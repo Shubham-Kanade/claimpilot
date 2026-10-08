@@ -1,0 +1,73 @@
+{
+  "id": "s42-0044",
+  "receipt": {
+    "doc_type": "flight_ticket",
+    "merchant_name": "Airavat Airlines",
+    "merchant_gstin": "29SLXPQ4524I7ZN",
+    "merchant_city": "Bengaluru",
+    "invoice_number": "HT4MLY",
+    "date": "2026-09-10",
+    "time": "08:21",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Base Fare",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 3328.0
+      },
+      {
+        "description": "User Development Fee",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 642.0
+      },
+      {
+        "description": "Passenger Service Fee",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 119.0
+      },
+      {
+        "description": "Aviation Security Fee",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 236.0
+      },
+      {
+        "description": "Convenience Fee",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 338.0
+      }
+    ],
+    "subtotal": 4663.0,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": 166.4,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 4829.4,
+    "payment_method": "upi",
+    "upi_reference": null,
+    "travel_from": "Nagpur",
+    "travel_to": "New Delhi",
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "travel_domestic",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P003",
+  "trip_id": "P003-T1"
+}

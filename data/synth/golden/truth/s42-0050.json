@@ -1,0 +1,43 @@
+{
+  "id": "s42-0050",
+  "receipt": {
+    "doc_type": "handwritten_bill",
+    "merchant_name": "Jatin Chaudhary",
+    "merchant_gstin": null,
+    "merchant_city": null,
+    "invoice_number": null,
+    "date": "2026-07-03",
+    "time": null,
+    "currency": "INR",
+    "line_items": [],
+    "subtotal": null,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": null
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 130.0,
+    "payment_method": "cash",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": true,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "local_conveyance",
+  "tags": [
+    "degraded",
+    "handwritten"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P004",
+  "trip_id": null
+}

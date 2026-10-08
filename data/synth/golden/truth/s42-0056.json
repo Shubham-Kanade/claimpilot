@@ -1,0 +1,61 @@
+{
+  "id": "s42-0056",
+  "receipt": {
+    "doc_type": "restaurant_bill",
+    "merchant_name": "Toran Bhojanalaya",
+    "merchant_gstin": "29UWHAZ8863O5Z9",
+    "merchant_city": "Bengaluru",
+    "invoice_number": "044",
+    "date": "2026-07-10",
+    "time": "13:28",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Masala Dosa",
+        "quantity": 1.0,
+        "unit_price": 135.0,
+        "amount": 135.0
+      },
+      {
+        "description": "Paneer Tikka",
+        "quantity": 1.0,
+        "unit_price": 320.0,
+        "amount": 320.0
+      },
+      {
+        "description": "Butter Chicken",
+        "quantity": 1.0,
+        "unit_price": 455.0,
+        "amount": 455.0
+      }
+    ],
+    "subtotal": 910.0,
+    "taxes": {
+      "cgst": 22.75,
+      "sgst": 22.75,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 955.5,
+    "payment_method": "upi",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "meals",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P004",
+  "trip_id": "P004-T1"
+}

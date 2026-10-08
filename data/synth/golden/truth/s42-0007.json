@@ -1,0 +1,63 @@
+{
+  "id": "s42-0007",
+  "receipt": {
+    "doc_type": "restaurant_bill",
+    "merchant_name": "Toran Darbar",
+    "merchant_gstin": "29ZSRFZ0842N6ZE",
+    "merchant_city": "Bengaluru",
+    "invoice_number": "46781",
+    "date": "2026-07-13",
+    "time": "18:25",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Chicken Biryani",
+        "quantity": 1.0,
+        "unit_price": 355.0,
+        "amount": 355.0
+      },
+      {
+        "description": "Masala Dosa",
+        "quantity": 1.0,
+        "unit_price": 135.0,
+        "amount": 135.0
+      },
+      {
+        "description": "Chole Bhature",
+        "quantity": 1.0,
+        "unit_price": 180.0,
+        "amount": 180.0
+      }
+    ],
+    "subtotal": 670.0,
+    "taxes": {
+      "cgst": 14.24,
+      "sgst": 14.24,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": 100.5,
+    "total": 597.98,
+    "payment_method": "card",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en",
+      "hi"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "meals",
+  "tags": [
+    "degraded",
+    "hindi"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P001",
+  "trip_id": "P001-T1"
+}

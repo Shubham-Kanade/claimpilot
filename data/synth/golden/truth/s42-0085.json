@@ -1,0 +1,50 @@
+{
+  "id": "s42-0085",
+  "receipt": {
+    "doc_type": "fuel_slip",
+    "merchant_name": "Urja Fuels - Park Street",
+    "merchant_gstin": "19HWEBA4206V6ZL",
+    "merchant_city": "Kolkata",
+    "invoice_number": "649208",
+    "date": null,
+    "time": null,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Power Petrol",
+        "quantity": 27.57,
+        "unit_price": 108.8,
+        "amount": 3000.0
+      }
+    ],
+    "subtotal": null,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": null
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 3000.0,
+    "payment_method": "upi",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "fuel_vehicle",
+  "tags": [
+    "clean",
+    "missing_date"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P905",
+  "trip_id": null
+}

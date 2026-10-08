@@ -1,0 +1,67 @@
+{
+  "id": "s42-0026",
+  "receipt": {
+    "doc_type": "flight_ticket",
+    "merchant_name": "Suryoday Air",
+    "merchant_gstin": "27RRKPU4321R8ZB",
+    "merchant_city": "Mumbai",
+    "invoice_number": "VO0KBG",
+    "date": "2026-08-14",
+    "time": "11:47",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Base Fare",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 5862.0
+      },
+      {
+        "description": "User Development Fee",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 217.0
+      },
+      {
+        "description": "Passenger Service Fee",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 99.0
+      },
+      {
+        "description": "Aviation Security Fee",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 236.0
+      }
+    ],
+    "subtotal": 6414.0,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": 293.1,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 6707.1,
+    "payment_method": "card",
+    "upi_reference": null,
+    "travel_from": "Chandigarh",
+    "travel_to": "Bhubaneswar",
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "travel_domestic",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P002",
+  "trip_id": "P002-T1"
+}

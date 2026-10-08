@@ -1,0 +1,61 @@
+{
+  "id": "s42-0029",
+  "receipt": {
+    "doc_type": "cab_receipt",
+    "merchant_name": "Raahi Cabs",
+    "merchant_gstin": "19GTTBL9488D8Z7",
+    "merchant_city": "Kolkata",
+    "invoice_number": "CRN2670639107",
+    "date": "2026-08-18",
+    "time": "08:27",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Base Fare",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 90.0
+      },
+      {
+        "description": "Distance Fare (27.6 km)",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 607.2
+      },
+      {
+        "description": "Ride Time Fare (67 min)",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 100.5
+      }
+    ],
+    "subtotal": 797.7,
+    "taxes": {
+      "cgst": 19.94,
+      "sgst": 19.94,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 837.58,
+    "payment_method": "upi",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "local_conveyance",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P002",
+  "trip_id": "P002-T2"
+}

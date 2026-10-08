@@ -1,0 +1,61 @@
+{
+  "id": "s42-0024",
+  "receipt": {
+    "doc_type": "restaurant_bill",
+    "merchant_name": "Tulsi Darbar",
+    "merchant_gstin": "04JIFJX5443W3Z9",
+    "merchant_city": "Chandigarh",
+    "invoice_number": "R744",
+    "date": "2026-08-13",
+    "time": "16:31",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Filter Coffee",
+        "quantity": 1.0,
+        "unit_price": 55.0,
+        "amount": 55.0
+      },
+      {
+        "description": "Pav Bhaji",
+        "quantity": 1.0,
+        "unit_price": 150.0,
+        "amount": 150.0
+      },
+      {
+        "description": "Jeera Rice",
+        "quantity": 1.0,
+        "unit_price": 160.0,
+        "amount": 160.0
+      }
+    ],
+    "subtotal": 365.0,
+    "taxes": {
+      "cgst": 9.13,
+      "sgst": 9.13,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 383.26,
+    "payment_method": "cash",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "meals",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P002",
+  "trip_id": "P002-T1"
+}

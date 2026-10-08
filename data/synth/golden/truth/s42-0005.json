@@ -1,0 +1,61 @@
+{
+  "id": "s42-0005",
+  "receipt": {
+    "doc_type": "cab_receipt",
+    "merchant_name": "Raahi Cabs",
+    "merchant_gstin": "29MMBPY7409A9ZE",
+    "merchant_city": "Bengaluru",
+    "invoice_number": "CRN8736011562",
+    "date": "2026-07-12",
+    "time": "20:39",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Base Fare",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 65.0
+      },
+      {
+        "description": "Distance Fare (26.1 km)",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 443.7
+      },
+      {
+        "description": "Ride Time Fare (88 min)",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 132.0
+      }
+    ],
+    "subtotal": 640.7,
+    "taxes": {
+      "cgst": 16.02,
+      "sgst": 16.02,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 672.74,
+    "payment_method": "upi",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "local_conveyance",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P001",
+  "trip_id": "P001-T1"
+}

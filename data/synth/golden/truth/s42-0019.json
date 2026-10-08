@@ -1,0 +1,68 @@
+{
+  "id": "s42-0019",
+  "receipt": {
+    "doc_type": "handwritten_bill",
+    "merchant_name": "Laxmi Kirana & Stationery",
+    "merchant_gstin": null,
+    "merchant_city": "Bhubaneswar",
+    "invoice_number": "334",
+    "date": "2026-08-11",
+    "time": null,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Notebook",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 75.0
+      },
+      {
+        "description": "Ball Pen (10 pcs)",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 65.0
+      },
+      {
+        "description": "Stapler",
+        "quantity": 2.0,
+        "unit_price": 160.0,
+        "amount": 320.0
+      },
+      {
+        "description": "Extension Board",
+        "quantity": 3.0,
+        "unit_price": 270.0,
+        "amount": 810.0
+      }
+    ],
+    "subtotal": null,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": null
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 1270.0,
+    "payment_method": "cash",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": true,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "wfh_supplies",
+  "tags": [
+    "clean",
+    "handwritten"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P002",
+  "trip_id": null
+}

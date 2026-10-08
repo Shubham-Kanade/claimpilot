@@ -1,0 +1,61 @@
+{
+  "id": "s42-0043",
+  "receipt": {
+    "doc_type": "hotel_folio",
+    "merchant_name": "Sahyadri Residency",
+    "merchant_gstin": "27RYJLC6148E9Z1",
+    "merchant_city": "Nagpur",
+    "invoice_number": "F2650122",
+    "date": "2026-09-10",
+    "time": null,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Room Charges 07-Sep",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 3350.0
+      },
+      {
+        "description": "Room Charges 08-Sep",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 3350.0
+      },
+      {
+        "description": "Room Charges 09-Sep",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 3350.0
+      }
+    ],
+    "subtotal": 10050.0,
+    "taxes": {
+      "cgst": 251.25,
+      "sgst": 251.25,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 10552.5,
+    "payment_method": "upi",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "accommodation",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P003",
+  "trip_id": "P003-T1"
+}

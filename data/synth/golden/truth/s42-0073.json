@@ -1,0 +1,67 @@
+{
+  "id": "s42-0073",
+  "receipt": {
+    "doc_type": "flight_ticket",
+    "merchant_name": "Airavat Airlines",
+    "merchant_gstin": "29CWTCR3659H2Z9",
+    "merchant_city": "Bengaluru",
+    "invoice_number": "FG5FYM",
+    "date": "2026-08-08",
+    "time": "21:44",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Base Fare",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 5254.0
+      },
+      {
+        "description": "User Development Fee",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 443.0
+      },
+      {
+        "description": "Passenger Service Fee",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 128.0
+      },
+      {
+        "description": "Aviation Security Fee",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 236.0
+      }
+    ],
+    "subtotal": 6061.0,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": 262.7,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 6323.7,
+    "payment_method": "card",
+    "upi_reference": null,
+    "travel_from": "Hyderabad",
+    "travel_to": "Panaji",
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "travel_domestic",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P005",
+  "trip_id": "P005-T1"
+}

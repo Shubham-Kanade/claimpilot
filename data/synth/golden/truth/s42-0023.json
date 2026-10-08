@@ -1,0 +1,49 @@
+{
+  "id": "s42-0023",
+  "receipt": {
+    "doc_type": "fuel_slip",
+    "merchant_name": "Agni Petroleum - Patia",
+    "merchant_gstin": "21NECAX1891E1Z3",
+    "merchant_city": "Bhubaneswar",
+    "invoice_number": "565410",
+    "date": "2026-08-12",
+    "time": "13:54",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Petrol",
+        "quantity": 4.72,
+        "unit_price": 105.87,
+        "amount": 500.0
+      }
+    ],
+    "subtotal": null,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": null
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 500.0,
+    "payment_method": "upi",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "fuel_vehicle",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P002",
+  "trip_id": null
+}

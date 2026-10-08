@@ -31,6 +31,7 @@ from claimpilot.domain import DocType
 from synthgen.adversarial import KINDS, generate_adversarial_specs
 from synthgen.builders import SUPPORTED_DOC_TYPES
 from synthgen.manifest import ManifestEntry, is_adversarial, write_manifest
+from synthgen.roster import write_roster
 from synthgen.scenarios import generate_base_specs
 from synthgen.spec import DocSpec, OutputLayout
 
@@ -111,6 +112,7 @@ def write_dataset_info(layout: OutputLayout, args: argparse.Namespace, seconds: 
         "size_on_disk_mb": round(_size(layout.root) / 1e6, 1),
     }
     (layout.root / "dataset.json").write_text(json.dumps(info, indent=2), encoding="utf-8")
+    write_roster(layout.root / "personas.json", (s.truth.persona_id for s in specs), args.seed)
     return info
 
 
@@ -132,7 +134,7 @@ def _size(root: Path) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("scenarios", "render", "degrade", "adversarial", "all", "fixtures"):
+    for name in ("scenarios", "render", "degrade", "adversarial", "all", "fixtures", "golden"):
         command = sub.add_parser(name)
         command.add_argument("--out", type=Path, default=SYNTH_DIR / "out")
         command.add_argument("--seed", type=int, default=42)
@@ -148,6 +150,8 @@ def build_parser() -> argparse.ArgumentParser:
         )
         if name == "fixtures":
             command.add_argument("--dest", type=Path, default=SYNTH_DIR / "fixtures")
+        if name == "golden":
+            command.add_argument("--dest", type=Path, default=SYNTH_DIR / "golden")
     return parser
 
 
@@ -176,10 +180,15 @@ def main(argv: list[str] | None = None) -> int:
         stage_adversarial(layout, args.seed, n_adversarial, args.only, args.browser)
         info = write_dataset_info(layout, args, time.perf_counter() - started)
         print(json.dumps(info, indent=2))
+    elif args.command == "golden":
+        from synthgen.fixtures import export_golden
+
+        count = export_golden(layout, args.dest.resolve())
+        print(f"{count} ground-truth records -> {args.dest}")
     elif args.command == "fixtures":
         from synthgen.fixtures import export_fixtures
 
-        exported = export_fixtures(layout, args.dest.resolve())
+        exported = export_fixtures(layout, args.dest.resolve(), args.seed)
         print(f"{len(exported)} fixtures -> {args.dest}")
     return 0
 

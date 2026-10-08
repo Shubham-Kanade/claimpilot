@@ -1,0 +1,70 @@
+{
+  "id": "s42-0095",
+  "receipt": {
+    "doc_type": "restaurant_bill",
+    "merchant_name": "Chulha Cafe",
+    "merchant_gstin": "07IFPLJ5809F2Z9",
+    "merchant_city": "New Delhi",
+    "invoice_number": "84297",
+    "date": null,
+    "time": null,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "मीठी लस्सी",
+        "quantity": 1.0,
+        "unit_price": 80.0,
+        "amount": 80.0
+      },
+      {
+        "description": "हरा सलाद",
+        "quantity": 1.0,
+        "unit_price": 135.0,
+        "amount": 135.0
+      },
+      {
+        "description": "मसाला चाय",
+        "quantity": 1.0,
+        "unit_price": 35.0,
+        "amount": 35.0
+      },
+      {
+        "description": "बटर चिकन",
+        "quantity": 1.0,
+        "unit_price": 370.0,
+        "amount": 370.0
+      }
+    ],
+    "subtotal": 620.0,
+    "taxes": {
+      "cgst": 15.5,
+      "sgst": 15.5,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": null
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 651.0,
+    "payment_method": "upi",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en",
+      "hi"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "meals",
+  "tags": [
+    "degraded",
+    "hindi",
+    "missing_date"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P915",
+  "trip_id": null
+}

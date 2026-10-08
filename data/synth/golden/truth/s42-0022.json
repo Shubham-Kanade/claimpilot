@@ -1,0 +1,63 @@
+{
+  "id": "s42-0022",
+  "receipt": {
+    "doc_type": "restaurant_bill",
+    "merchant_name": "Neem Tree Cafe",
+    "merchant_gstin": "04JXTFO4219E8ZJ",
+    "merchant_city": "Chandigarh",
+    "invoice_number": "INV310",
+    "date": "2026-08-12",
+    "time": "20:48",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Tandoori Roti",
+        "quantity": 1.0,
+        "unit_price": 35.0,
+        "amount": 35.0
+      },
+      {
+        "description": "Masala Dosa",
+        "quantity": 1.0,
+        "unit_price": 130.0,
+        "amount": 130.0
+      },
+      {
+        "description": "मसाला चाय",
+        "quantity": 1.0,
+        "unit_price": 45.0,
+        "amount": 45.0
+      }
+    ],
+    "subtotal": 210.0,
+    "taxes": {
+      "cgst": 5.25,
+      "sgst": 5.25,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 220.5,
+    "payment_method": "upi",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en",
+      "hi"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "meals",
+  "tags": [
+    "degraded",
+    "hindi"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P002",
+  "trip_id": "P002-T1"
+}

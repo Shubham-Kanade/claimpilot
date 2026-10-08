@@ -1,0 +1,67 @@
+{
+  "id": "s42-0040",
+  "receipt": {
+    "doc_type": "restaurant_bill",
+    "merchant_name": "Rasoi Ghar Cafe",
+    "merchant_gstin": "27YPNBS3097J9Z0",
+    "merchant_city": "Nagpur",
+    "invoice_number": "6675",
+    "date": "2026-09-08",
+    "time": "21:34",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Filter Coffee",
+        "quantity": 1.0,
+        "unit_price": 45.0,
+        "amount": 45.0
+      },
+      {
+        "description": "Gulab Jamun",
+        "quantity": 1.0,
+        "unit_price": 120.0,
+        "amount": 120.0
+      },
+      {
+        "description": "Fresh Lime Soda",
+        "quantity": 1.0,
+        "unit_price": 80.0,
+        "amount": 80.0
+      },
+      {
+        "description": "Veg Thali",
+        "quantity": 1.0,
+        "unit_price": 320.0,
+        "amount": 320.0
+      }
+    ],
+    "subtotal": 565.0,
+    "taxes": {
+      "cgst": 14.13,
+      "sgst": 14.13,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 593.26,
+    "payment_method": "unknown",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "meals",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P003",
+  "trip_id": "P003-T1"
+}

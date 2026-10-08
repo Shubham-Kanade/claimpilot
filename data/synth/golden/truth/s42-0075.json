@@ -1,0 +1,87 @@
+{
+  "id": "s42-0075",
+  "receipt": {
+    "doc_type": "restaurant_bill",
+    "merchant_name": "Coastal Tadka Grill House",
+    "merchant_gstin": "30ATVBA8722M1Z7",
+    "merchant_city": "Panaji",
+    "invoice_number": "INV908",
+    "date": "2026-08-08",
+    "time": "19:01",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Tandoori Roti",
+        "quantity": 2.0,
+        "unit_price": 55.0,
+        "amount": 110.0
+      },
+      {
+        "description": "Veg Biryani",
+        "quantity": 2.0,
+        "unit_price": 380.0,
+        "amount": 760.0
+      },
+      {
+        "description": "Idli Vada",
+        "quantity": 2.0,
+        "unit_price": 100.0,
+        "amount": 200.0
+      },
+      {
+        "description": "Butter Chicken",
+        "quantity": 1.0,
+        "unit_price": 585.0,
+        "amount": 585.0
+      },
+      {
+        "description": "Pav Bhaji",
+        "quantity": 2.0,
+        "unit_price": 235.0,
+        "amount": 470.0
+      },
+      {
+        "description": "Fish Curry",
+        "quantity": 1.0,
+        "unit_price": 500.0,
+        "amount": 500.0
+      },
+      {
+        "description": "कड़ाही पनीर",
+        "quantity": 1.0,
+        "unit_price": 445.0,
+        "amount": 445.0
+      }
+    ],
+    "subtotal": 3070.0,
+    "taxes": {
+      "cgst": 84.43,
+      "sgst": 84.43,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": null
+    },
+    "service_charge": 307.0,
+    "discount": null,
+    "total": 3545.86,
+    "payment_method": "upi",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en",
+      "hi"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "client_entertainment",
+  "tags": [
+    "degraded",
+    "hindi"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P005",
+  "trip_id": null
+}

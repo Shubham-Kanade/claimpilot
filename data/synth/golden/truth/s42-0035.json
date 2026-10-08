@@ -1,0 +1,61 @@
+{
+  "id": "s42-0035",
+  "receipt": {
+    "doc_type": "mobile_bill",
+    "merchant_name": "Tarang Telecom",
+    "merchant_gstin": "07LLTHZ5663L8ZV",
+    "merchant_city": "New Delhi",
+    "invoice_number": "MB260904264103",
+    "date": "2026-09-04",
+    "time": null,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Monthly Rental - Postpaid Plus 699",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 699.0
+      },
+      {
+        "description": "OTT Streaming Add-on",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 149.0
+      },
+      {
+        "description": "International Roaming Pack",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 299.0
+      }
+    ],
+    "subtotal": 1147.0,
+    "taxes": {
+      "cgst": 103.23,
+      "sgst": 103.23,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 18.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 1353.46,
+    "payment_method": "unknown",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "mobile_internet",
+  "tags": [
+    "clean"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P003",
+  "trip_id": null
+}

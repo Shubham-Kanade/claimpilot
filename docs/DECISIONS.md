@@ -119,3 +119,12 @@ Each entry gives the decision, the reason, and its consequences. Add new entries
 - **Decision:** the `extraction` route stays on `haiku` (effort low, thinking off). `ReceiptExtractor(escalate=...)` now defaults to False. The cascade costs 10× for +1.9 pp on non-critical fields only.
 - **Caveats:** 20 receipts with one injection case. Final numbers come from the 80-receipt test split in M4 (about $0.03 on Haiku). Sonnet, Opus and Haiku 4.5 were not run, by the user's choice: Haiku met every gate first. Top residual errors are `doc_type` (2), `subtotal` (2) and `travel_from`/`travel_to` (2); these are prompt-tuning candidates.
 - **Total M1 API spend so far:** about $0.10.
+
+### ADR-019: Jev calls use the OS trust store; Jev API shape confirmed (2026-10-08)
+- **Problem:** `api.typesafe.ai` failed TLS verification (`unable to get local issuer certificate`). The corporate proxy (Zscaler) re-signs traffic to that host, but passes `api.anthropic.com` through untouched. Python bundles its own CA list, which doesn't contain the proxy's root CA, while the OS certificate store (and so the browser) does.
+- **Decision:** `claimpilot.net.ssl_context()` verifies against the OS trust store via `truststore` on Windows and macOS, and uses the default bundle elsewhere (Linux containers, hosting). Verification is never disabled.
+- **Jev wire format** (from docs.typesafe.ai, verified live: HTTP 200 in 760 ms): `POST {base}/v1/systemone` with `Authorization: Bearer <key>`. Body `{state, model: "jev-latest", questions: {id: {type: choice|score|noul, instructions, criteria}}}`. Response `{model, answers: {id: {type, choice|score|noul, confidence, probabilities, legend}}, usage}`. Choice takes up to 255 options and Score 2 to 10 levels, with criteria as a map or a list. 429 and 529 get exponential-backoff retries.
+
+### ADR-020: Golden dataset and persona roster committed (2026-10-08)
+- **Decision:** `data/synth/golden/` (ground-truth JSON, manifest and `personas.json` with grade and base city; no images; ~0.3 MB) is committed, so policy, grouping and decision evals run in CI without rendering anything or spending money. `claimpilot.evals.golden` loads it and builds `ProcessedDocument`s as the pipeline would with perfect extraction.
+- **Contract frozen** for parallel M2 work: `claimpilot.domain.claims` (Employee, Decisions, ProcessedDocument, Claim, ClaimMode, ClaimStatus, OpenQuestion) and the extended `Finding` (source, clause_id, clause_text, document_id).

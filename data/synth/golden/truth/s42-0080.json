@@ -1,0 +1,49 @@
+{
+  "id": "s42-0080",
+  "receipt": {
+    "doc_type": "gst_invoice",
+    "merchant_name": "SkillKaro Edutech Pvt Ltd",
+    "merchant_gstin": "07CAMTA1673P8ZW",
+    "merchant_city": "New Delhi",
+    "invoice_number": "GMW/26-27/3058",
+    "date": "2026-08-25",
+    "time": null,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Business Communication Workshop",
+        "quantity": 1.0,
+        "unit_price": 6000.0,
+        "amount": 6000.0
+      }
+    ],
+    "subtotal": 6000.0,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": 1080.0,
+      "cess": null,
+      "gst_rate_percent": 18.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 7080.0,
+    "payment_method": "card",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "learning",
+  "tags": [
+    "clean"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P005",
+  "trip_id": null
+}

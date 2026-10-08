@@ -1,0 +1,91 @@
+{
+  "id": "s42-0010",
+  "receipt": {
+    "doc_type": "restaurant_bill",
+    "merchant_name": "Coastal Tadka Grill House",
+    "merchant_gstin": "36RIUJZ0632J3ZE",
+    "merchant_city": "Hyderabad",
+    "invoice_number": "68758",
+    "date": "2026-07-14",
+    "time": "21:07",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Masala Chai",
+        "quantity": 2.0,
+        "unit_price": 60.0,
+        "amount": 120.0
+      },
+      {
+        "description": "Green Salad",
+        "quantity": 1.0,
+        "unit_price": 185.0,
+        "amount": 185.0
+      },
+      {
+        "description": "Butter Naan",
+        "quantity": 3.0,
+        "unit_price": 90.0,
+        "amount": 270.0
+      },
+      {
+        "description": "Pav Bhaji",
+        "quantity": 1.0,
+        "unit_price": 270.0,
+        "amount": 270.0
+      },
+      {
+        "description": "Gulab Jamun",
+        "quantity": 2.0,
+        "unit_price": 175.0,
+        "amount": 350.0
+      },
+      {
+        "description": "Kadhai Paneer",
+        "quantity": 2.0,
+        "unit_price": 455.0,
+        "amount": 910.0
+      },
+      {
+        "description": "Paneer Tikka",
+        "quantity": 2.0,
+        "unit_price": 440.0,
+        "amount": 880.0
+      },
+      {
+        "description": "Chole Bhature",
+        "quantity": 2.0,
+        "unit_price": 285.0,
+        "amount": 570.0
+      }
+    ],
+    "subtotal": 3555.0,
+    "taxes": {
+      "cgst": 93.32,
+      "sgst": 93.32,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": 177.75,
+    "discount": null,
+    "total": 3919.39,
+    "payment_method": "card",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "client_entertainment",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P001",
+  "trip_id": null
+}

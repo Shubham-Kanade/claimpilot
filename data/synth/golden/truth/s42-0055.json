@@ -1,0 +1,61 @@
+{
+  "id": "s42-0055",
+  "receipt": {
+    "doc_type": "cab_receipt",
+    "merchant_name": "ChakraGo",
+    "merchant_gstin": "29EHMAG3798H1ZH",
+    "merchant_city": "Bengaluru",
+    "invoice_number": "CRN0144115068",
+    "date": "2026-07-10",
+    "time": "11:39",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Base Fare",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 65.0
+      },
+      {
+        "description": "Distance Fare (14.0 km)",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 238.0
+      },
+      {
+        "description": "Ride Time Fare (35 min)",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 52.5
+      }
+    ],
+    "subtotal": 355.5,
+    "taxes": {
+      "cgst": 8.89,
+      "sgst": 8.89,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 373.28,
+    "payment_method": "cash",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "local_conveyance",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P004",
+  "trip_id": "P004-T1"
+}

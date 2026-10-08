@@ -1,0 +1,62 @@
+{
+  "id": "s42-0097",
+  "receipt": {
+    "doc_type": "gst_invoice",
+    "merchant_name": "Prakash Computer World",
+    "merchant_gstin": "30AUIGE4952F7ZD",
+    "merchant_city": "Panaji",
+    "invoice_number": "VIR/26-27/0237",
+    "date": "2026-08-19",
+    "time": null,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "USB-C Hub 6-in-1",
+        "quantity": 2.0,
+        "unit_price": 1758.0,
+        "amount": 3516.0
+      },
+      {
+        "description": "Laptop Stand (Aluminium)",
+        "quantity": 2.0,
+        "unit_price": 1791.0,
+        "amount": 3582.0
+      },
+      {
+        "description": "Wireless Mouse",
+        "quantity": 2.0,
+        "unit_price": 1174.0,
+        "amount": 2348.0
+      }
+    ],
+    "subtotal": 9446.0,
+    "taxes": {
+      "cgst": 1700.28,
+      "sgst": 1700.28,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 18.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 11146.28,
+    "payment_method": "card",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "wfh_supplies",
+  "tags": [
+    "clean",
+    "tampered"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P917",
+  "trip_id": null
+}

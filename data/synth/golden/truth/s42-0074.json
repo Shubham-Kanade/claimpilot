@@ -1,0 +1,67 @@
+{
+  "id": "s42-0074",
+  "receipt": {
+    "doc_type": "cab_receipt",
+    "merchant_name": "ChakraGo",
+    "merchant_gstin": "36GCLGT2849D6ZJ",
+    "merchant_city": "Hyderabad",
+    "invoice_number": "CRN9206390116",
+    "date": "2026-08-08",
+    "time": "10:07",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Base Fare",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 30.0
+      },
+      {
+        "description": "Distance Fare (22.8 km)",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 250.8
+      },
+      {
+        "description": "Ride Time Fare (70 min)",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 105.0
+      },
+      {
+        "description": "Airport Entry Charge",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 150.0
+      }
+    ],
+    "subtotal": 535.8,
+    "taxes": {
+      "cgst": 13.4,
+      "sgst": 13.4,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 562.6,
+    "payment_method": "card",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "local_conveyance",
+  "tags": [
+    "clean"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P005",
+  "trip_id": "P005-T1"
+}

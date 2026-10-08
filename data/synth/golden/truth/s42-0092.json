@@ -1,0 +1,56 @@
+{
+  "id": "s42-0092",
+  "receipt": {
+    "doc_type": "hotel_folio",
+    "merchant_name": "Sahyadri Business Hotel",
+    "merchant_gstin": "23SHMJF0454G8ZD",
+    "merchant_city": "Indore",
+    "invoice_number": "F2621304",
+    "date": "2026-09-15",
+    "time": null,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Room Charges 13-Sep",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 8500.0
+      },
+      {
+        "description": "Room Charges 14-Sep",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 8500.0
+      }
+    ],
+    "subtotal": 17000.0,
+    "taxes": {
+      "cgst": 3060.0,
+      "sgst": 3060.0,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 18.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 20060.0,
+    "payment_method": "card",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "accommodation",
+  "tags": [
+    "degraded",
+    "tampered"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P912",
+  "trip_id": null
+}

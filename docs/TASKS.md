@@ -39,10 +39,15 @@ Rule: milestones are listed up front. Low-level subtasks are added only when a m
 - [ ] M1.7 OCR word boxes for click-to-verify (may slide to M3)
 - [ ] M1.8 TDD §3–4 + §7 numbers updated
 
-## M2 Intelligence (9 Oct) [ ]
+## M2 Intelligence (8–9 Oct) [~]
+Contract frozen first (ADR-020), then four parallel streams. **Owners are workstreams, not people.**
+- [x] M2.0 Contract: `domain.claims`, extended `Finding`, golden dataset + roster, `evals.golden`; Jev API verified, TLS via OS trust store (ADR-019)
 - [x] Trust: GST/arithmetic/GSTIN checks with evidence-carrying `Finding`s (16 tests)
-★ DecisionEngine (Jev + LLM adapters) · taxonomy + policy-as-code with citations · trust score (pHash, math, EXIF, C2PA, prompt injection) · grouping + claim state machine · `mcp-finance` + `mcp-corp` · Storage interface (local volume)
-
+- [~] **A. MCP:** `services/mcp-finance` + `services/mcp-corp` (FastMCP, streamable HTTP, seed data, Dockerfiles, compose) and the API-side client bridge `claimpilot.mcp` *(agent)*
+- [~] **B. Trust:** pHash + field-fingerprint duplicates, EXIF/metadata forensics, C2PA / AI-generated signals, prompt-injection heuristics, `TrustReport` score *(agent)*
+- [~] **C. Policy + claims:** `policy/` (clause-cited rules, calibrated on the golden set), `claims/` grouping into trip/period/event/allowance, state machine, question generation *(agent)*
+- [ ] **D. Decisions (me):** `DecisionEngine` protocol; `JevEngine` (httpx + truststore + retries), `LLMEngine` (Haiku 5.5, flat schema), cache, parity + Jev-vs-LLM eval on the golden set
+- [ ] **E. Pipeline (me):** Storage interface (local volume), DB models + Alembic 0002 (documents, claims, audit), worker job upload → extract → decide → trust → policy → group, Redis progress events, API (`/v1/batches`, SSE, `/v1/claims/...`), integration test with fakes
 ## M3 Experience (10 Oct) [ ]
 ★ PWA drop zone + camera · streaming progress (SSE) · claim cards · click-to-verify · chat agent with question flow + approval gate · Playwright E2E
 

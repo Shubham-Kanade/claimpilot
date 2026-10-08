@@ -1,0 +1,61 @@
+{
+  "id": "s42-0032",
+  "receipt": {
+    "doc_type": "train_ticket",
+    "merchant_name": "RailYatra e-Ticketing",
+    "merchant_gstin": "07HVWLO5098B4ZY",
+    "merchant_city": "New Delhi",
+    "invoice_number": "1628049685",
+    "date": "2026-08-19",
+    "time": "19:40",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Ticket Fare",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 531.0
+      },
+      {
+        "description": "Convenience Fee",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 17.7
+      },
+      {
+        "description": "Travel Insurance Premium",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 0.45
+      }
+    ],
+    "subtotal": null,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": null
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 549.15,
+    "payment_method": "card",
+    "upi_reference": null,
+    "travel_from": "Kolkata",
+    "travel_to": "Bhubaneswar",
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "travel_domestic",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P002",
+  "trip_id": "P002-T2"
+}

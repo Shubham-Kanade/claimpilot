@@ -1,0 +1,49 @@
+{
+  "id": "s42-0031",
+  "receipt": {
+    "doc_type": "hotel_folio",
+    "merchant_name": "Aravali Retreat",
+    "merchant_gstin": "19GUJAF1971X8Z2",
+    "merchant_city": "Kolkata",
+    "invoice_number": "F2624719",
+    "date": "2026-08-19",
+    "time": null,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Room Charges 18-Aug",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 6300.0
+      }
+    ],
+    "subtotal": 6300.0,
+    "taxes": {
+      "cgst": 157.5,
+      "sgst": 157.5,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 6615.0,
+    "payment_method": "card",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "accommodation",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P002",
+  "trip_id": "P002-T2"
+}

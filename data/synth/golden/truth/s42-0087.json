@@ -1,0 +1,57 @@
+{
+  "id": "s42-0087",
+  "receipt": {
+    "doc_type": "handwritten_bill",
+    "merchant_name": "Gupta Provision Store",
+    "merchant_gstin": null,
+    "merchant_city": "Lucknow",
+    "invoice_number": "104",
+    "date": "2026-07-25",
+    "time": null,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Paper Cups (50)",
+        "quantity": 2.0,
+        "unit_price": 40.0,
+        "amount": 80.0
+      },
+      {
+        "description": "Sugar 1kg",
+        "quantity": 2.0,
+        "unit_price": 45.0,
+        "amount": 90.0
+      }
+    ],
+    "subtotal": null,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": null
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 2170.0,
+    "payment_method": "cash",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": true,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "misc",
+  "tags": [
+    "degraded",
+    "handwritten",
+    "tampered"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P907",
+  "trip_id": null
+}

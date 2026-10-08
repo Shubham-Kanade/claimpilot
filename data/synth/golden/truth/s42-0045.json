@@ -1,0 +1,49 @@
+{
+  "id": "s42-0045",
+  "receipt": {
+    "doc_type": "fuel_slip",
+    "merchant_name": "Sindhu Energy - Connaught Place",
+    "merchant_gstin": null,
+    "merchant_city": "New Delhi",
+    "invoice_number": "099239",
+    "date": "2026-09-18",
+    "time": "21:12",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Diesel",
+        "quantity": 24.51,
+        "unit_price": 91.52,
+        "amount": 2243.16
+      }
+    ],
+    "subtotal": null,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": null
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 2243.16,
+    "payment_method": "cash",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "fuel_vehicle",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P003",
+  "trip_id": null
+}

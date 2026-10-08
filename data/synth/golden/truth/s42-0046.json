@@ -1,0 +1,49 @@
+{
+  "id": "s42-0046",
+  "receipt": {
+    "doc_type": "fuel_slip",
+    "merchant_name": "Sindhu Energy - Karol Bagh",
+    "merchant_gstin": "07VLVBL8640M5ZB",
+    "merchant_city": "New Delhi",
+    "invoice_number": "883071",
+    "date": "2026-09-20",
+    "time": "21:39",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Diesel",
+        "quantity": 11.19,
+        "unit_price": 89.33,
+        "amount": 1000.0
+      }
+    ],
+    "subtotal": null,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": null
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 1000.0,
+    "payment_method": "cash",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "fuel_vehicle",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P003",
+  "trip_id": null
+}

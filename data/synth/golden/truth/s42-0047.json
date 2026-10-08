@@ -1,0 +1,49 @@
+{
+  "id": "s42-0047",
+  "receipt": {
+    "doc_type": "gst_invoice",
+    "merchant_name": "Gyanpath Online Learning LLP",
+    "merchant_gstin": "27VFQJL6988B7ZG",
+    "merchant_city": "Pune",
+    "invoice_number": "NZY/26-27/7164",
+    "date": "2026-09-21",
+    "time": null,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Business Communication Workshop",
+        "quantity": 1.0,
+        "unit_price": 7000.0,
+        "amount": 7000.0
+      }
+    ],
+    "subtotal": 7000.0,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": 1260.0,
+      "cess": null,
+      "gst_rate_percent": 18.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 8260.0,
+    "payment_method": "upi",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "learning",
+  "tags": [
+    "clean"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P003",
+  "trip_id": null
+}

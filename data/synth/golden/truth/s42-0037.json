@@ -1,0 +1,61 @@
+{
+  "id": "s42-0037",
+  "receipt": {
+    "doc_type": "cab_receipt",
+    "merchant_name": "Raahi Cabs",
+    "merchant_gstin": "27SICLE1127C5ZO",
+    "merchant_city": "Nagpur",
+    "invoice_number": "CRN7128992907",
+    "date": "2026-09-07",
+    "time": "09:33",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Base Fare",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 50.0
+      },
+      {
+        "description": "Distance Fare (11.8 km)",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 165.2
+      },
+      {
+        "description": "Ride Time Fare (26 min)",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 39.0
+      }
+    ],
+    "subtotal": 254.2,
+    "taxes": {
+      "cgst": 6.36,
+      "sgst": 6.36,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 266.92,
+    "payment_method": "cash",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "local_conveyance",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P003",
+  "trip_id": "P003-T1"
+}

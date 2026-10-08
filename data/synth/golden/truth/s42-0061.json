@@ -1,0 +1,55 @@
+{
+  "id": "s42-0061",
+  "receipt": {
+    "doc_type": "train_ticket",
+    "merchant_name": "RailYatra e-Ticketing",
+    "merchant_gstin": "07ALQLD9167R5Z6",
+    "merchant_city": "New Delhi",
+    "invoice_number": "4667412945",
+    "date": "2026-07-13",
+    "time": "10:51",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Ticket Fare",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 1413.0
+      },
+      {
+        "description": "Convenience Fee",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 17.7
+      }
+    ],
+    "subtotal": null,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": 70.65,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 1501.35,
+    "payment_method": "card",
+    "upi_reference": null,
+    "travel_from": "Bengaluru",
+    "travel_to": "Kochi",
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "travel_domestic",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P004",
+  "trip_id": "P004-T1"
+}

@@ -1,0 +1,55 @@
+{
+  "id": "s42-0008",
+  "receipt": {
+    "doc_type": "hotel_folio",
+    "merchant_name": "Deccan Retreat",
+    "merchant_gstin": "29UVPJX9850S8ZE",
+    "merchant_city": "Bengaluru",
+    "invoice_number": "F2696143",
+    "date": "2026-07-14",
+    "time": null,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Room Charges 12-Jul",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 6100.0
+      },
+      {
+        "description": "Room Charges 13-Jul",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 6100.0
+      }
+    ],
+    "subtotal": 12200.0,
+    "taxes": {
+      "cgst": 305.0,
+      "sgst": 305.0,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 12810.0,
+    "payment_method": "card",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "accommodation",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P001",
+  "trip_id": "P001-T1"
+}

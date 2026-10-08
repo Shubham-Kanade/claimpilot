@@ -1,0 +1,49 @@
+{
+  "id": "s42-0059",
+  "receipt": {
+    "doc_type": "gst_invoice",
+    "merchant_name": "Gyanpath Online Learning LLP",
+    "merchant_gstin": "27AAYPO4144H2Z5",
+    "merchant_city": "Pune",
+    "invoice_number": "IOW/26-27/3181",
+    "date": "2026-07-11",
+    "time": null,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Advanced Excel & Data Visualisation",
+        "quantity": 1.0,
+        "unit_price": 8500.0,
+        "amount": 8500.0
+      }
+    ],
+    "subtotal": 8500.0,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": 1530.0,
+      "cess": null,
+      "gst_rate_percent": 18.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 10030.0,
+    "payment_method": "card",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "learning",
+  "tags": [
+    "clean"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P004",
+  "trip_id": null
+}

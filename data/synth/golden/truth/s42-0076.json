@@ -1,0 +1,61 @@
+{
+  "id": "s42-0076",
+  "receipt": {
+    "doc_type": "cab_receipt",
+    "merchant_name": "Raahi Cabs",
+    "merchant_gstin": "30UYVBP8569X1ZZ",
+    "merchant_city": "Panaji",
+    "invoice_number": "CRN5445893603",
+    "date": "2026-08-17",
+    "time": "14:32",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Base Fare",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 65.0
+      },
+      {
+        "description": "Distance Fare (27.7 km)",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 470.9
+      },
+      {
+        "description": "Ride Time Fare (77 min)",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 115.5
+      }
+    ],
+    "subtotal": 651.4,
+    "taxes": {
+      "cgst": 16.29,
+      "sgst": 16.29,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 683.98,
+    "payment_method": "upi",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "local_conveyance",
+  "tags": [
+    "clean"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P005",
+  "trip_id": null
+}
