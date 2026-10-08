@@ -29,7 +29,7 @@ What the employee sees:
 4. Answer **one** combined question in plain words ("Who attended the dinner, and why?"), only if one is really needed.
 5. Confirm, and the claim goes to the finance system. Nothing is submitted without that explicit confirmation.
 
-What the approver sees: a queue ranked by risk, each claim with its evidence (flags, the policy clause, trust signals, the original receipt with the extracted fields highlighted), and a small, clean claim is routed past human review altogether.
+What the approver sees: a queue ranked by risk, each claim with its evidence (flags, the policy clause, trust signals, the original receipt with the extracted fields highlighted), and a small, clean claim is marked auto-approvable so the approver can clear it in one click. Nothing is approved without that click: `auto_approve` is a label that says no one needs to look closely, not a skip.
 
 ### 1.4 Users
 | User | Goal |
@@ -202,10 +202,11 @@ flowchart LR
   P --> S[gitleaks]
   P --> MCP[MCP server suites]
   P --> SY[synthetic data suite]
-  B --> CD[cd.yml: GHCR → deploy 🚧 M4]
+  B --> CD[cd.yml on a tag: GHCR images, rebuild the Space]
+  B --> DM[demo image: replay smoke test]
   M[manual / label] --> EV[evals.yml: live evals + bake-off<br/>budget-capped]
 ```
-Workflows live in `.github/workflows/`: `ci.yml` (every push and PR), `evals.yml` (manual; the only workflow that can spend money, behind a `--max-usd` cap), `cd.yml` 🚧.
+Workflows live in `.github/workflows/`: `ci.yml` (every push and PR), `evals.yml` (manual; the only workflow that can spend money, behind a `--max-usd` cap), `cd.yml` (on a version tag: publishes the images to GHCR and can ask the Hugging Face Space to rebuild). The `demo` job of `ci.yml` builds the one-container hosted image and drives the sample receipts through it in replay mode.
 
 ### 2.8 Security and trust boundaries
 ```mermaid
@@ -229,7 +230,7 @@ flowchart LR
   P --> G
   G --> X --> F[(finance via MCP)]
 ```
-- **Receipts are untrusted input.** The extraction call has no tools and a prompt that frames receipt text as data. The worst a hostile receipt can do is change the *extracted text*, which is then scanned (injection heuristics), checked (arithmetic, GSTIN, metadata) and can never approve anything: routing, policy verdicts and submission depend only on rules and on the employee's explicit confirmation (ADR-022).
+- **Receipts are untrusted input.** The extraction call has no tools and a prompt that frames receipt text as data. The worst a hostile receipt can do is change what is *extracted* and what System One is asked (an unsure answer becomes a question, never a silent guess), which are then scanned (injection heuristics, a second read), checked (arithmetic, GSTIN, metadata) and can never approve anything: routing, policy verdicts and submission depend only on rules and on the employee's explicit confirmation (ADR-022).
 - **Anything quoted back to a person is sanitised** (`claims/labels.safe_text`): one line, no control characters, quotes normalised, length-capped, so a crafted merchant name cannot smuggle in a line break or a wall of text.
 - **Cost is guarded.** The live LLM client refuses to run unless `LLM_MODE=live`; the default test run ignores `.env`; the eval runner estimates cost first and aborts beyond `--max-usd` (ADR-013, ADR-014).
 - **The demo has no login.** The hosted app uses a persona switcher (an `X-Persona` header naming one of the synthetic employees), which the brief's "no access request" rule requires. It is not authentication, and the persona endpoints are the only thing it protects. Approver rights come from an allow-list in settings (`APPROVER_IDS`).
@@ -248,10 +249,10 @@ flowchart LR
 | Policy verdicts | plain code over a YAML policy | auditable, cites clauses |
 | Grouping, questions, routing, confirmation gate, finance submission | plain code | money moves here; the path must be rule-gated |
 
-The pipeline is explicit code with models at the edges, not a free-running tool-using agent (ADR-022): cost and latency are predictable (about $0.0004 and 3 s per receipt), every step is unit-testable, and a hostile receipt has no tool to hijack. MCP tools are exposed to Claude through a role-scoped bridge for a chat agent that may be added on top (§3.10).
+The pipeline is explicit code with models at the edges, not a free-running tool-using agent (ADR-022): cost and latency are predictable (about $0.0005 and 2 s for a first read; $0.0024 per receipt end to end on the demo pile, counting System One, click-to-verify and the few re-reads), every step is unit-testable, and a hostile receipt has no tool to hijack. MCP tools are exposed to Claude through a role-scoped bridge for a chat agent that may be added on top (§3.10).
 
 ### 3.2 Extraction
-- **Prompt** `extraction/prompts/extract_v1.md`, versioned; a prompt change invalidates the cache key and needs a re-evaluation.
+- **Prompt** `extraction/prompts/extract_v3.md`, versioned (v1 and v2 are kept so the reports that cite them stay reproducible); a prompt change invalidates the cache key and needs a re-evaluation.
 - **Input.** Files are validated (type sniffing, size and page caps), images downscaled to a long-edge cap, and **PDFs rasterised to page images** with pdfium. Rasterising gives one image path for extraction, cost and click-to-verify, and avoids the corporate proxy resetting PDF payloads (ADR-016).
 - **Output schema.** Claude's structured outputs allow at most 24 optional and 16 union-typed parameters, and the domain receipt has about 25 nullable fields. So the model fills a flat "wire" schema (`WireReceipt`: every field required, "not printed" is an empty string, amounts are number strings) which `to_domain` maps to the `ExtractedReceipt`, flagging unparseable values as low-confidence. A test asserts the wire schema has 0 optional and 0 union parameters (ADR-017).
 - **Cache.** Results are cached in Redis by `(document hash, prompt version, model, effort)`, so a re-upload or a re-run of the evals costs nothing.
@@ -324,7 +325,7 @@ The Pareto selection on field accuracy alone still prefers the single read; the 
 | Prompt injection | `injection.py` | text on a receipt that talks to an AI reviewer ("ignore previous instructions", "approve this claim", system-style headers), including in Hindi |
 | Arithmetic and GST | `gst.py` | line items and taxes that do not add up to the total, an invalid GSTIN checksum, a tax split inconsistent with the supplier state, a rate that matches no GST slab |
 
-Findings carry severity, the evidence (the numbers or text involved) and, for policy findings, the cited clause. A `block`-level finding forces finance review regardless of anything else, and the receipt text is never executed or obeyed: it flows only through the sanitised quoting path. **Measured** (`python -m claimpilot.trust.eval`, 100 synthetic documents, ground-truth receipts as the extraction so the numbers isolate this layer; ADR-026):
+Findings carry severity, the evidence (the numbers or text involved) and, for policy findings, the cited clause. A `block`-level finding forces finance review regardless of anything else, and the receipt text is never executed or obeyed: where it must be shown or put in a prompt (a city in a claim title, a GSTIN in a finding, the state System One is asked about) it is first cut to one clean line and defanged (`domain/text.plain_text`, escaped angle brackets). **Measured** (`python -m claimpilot.trust.eval`, 100 synthetic documents, ground-truth receipts as the extraction so the numbers isolate this layer; ADR-026):
 
 | Check | Result |
 |---|---|
@@ -349,7 +350,7 @@ Two rules keep genuine bills from being accused (ADR-028). Line items that add u
 | 8.1 / 9.1 | mobile and internet monthly cap; learning needs pre-approval |
 | 10.1 | personal expenses |
 
-Every finding quotes its clause: *"Hotel night ₹10,500 exceeds the ₹7,500 cap for grade L3 in Tier-1 cities (clause 4.1)"*. The rules were **calibrated on the golden dataset** so that every legitimate receipt passes (0 of 80 false positives) and every injected over-policy case is caught (4 of 4).
+Every finding quotes its clause: *"Hotel night ₹10,500 exceeds the ₹8,000 cap for grade L3 in Tier-1 cities (clause 4.1)"*. The rules were **calibrated on the golden dataset** so that every legitimate receipt passes (0 of 80 false positives) and every injected over-policy case is caught (4 of 4).
 
 ### 3.9 Grouping and asking once
 - **Grouping** (`claims/grouping.py`, `trips.py`) is pure and policy-free. A **trip** is anchored by tickets and hotel folios away from the employee's base city; meals, cabs and fuel join a trip only when they are dated inside its window (± 1 day) *and* bought in a trip city, or are an airport or station transfer. An **event** is one client dinner, course or conference. A **period** claim is one category in one calendar month (mobile bill, local conveyance, fuel, base-city meals). A wrongly merged trip is worse than a separate claim, so ambiguous documents stay out. Grouping recovers the generator's ground-truth trips with F1 = 1.000 on the golden set.
@@ -435,7 +436,7 @@ Backend package `services/api/src/claimpilot/`:
 | Path | Responsibility |
 |---|---|
 | `main.py`, `config.py`, `container.py`, `wiring.py` | app factory; the only place that reads environment variables; the dependency container; production wiring of Redis, Arq, MCP and the pipeline |
-| `api/` | thin HTTP routers: `batches`, `claims`, `documents`, `people`, `stats`, RFC 9457 problem responses, the persona dependency. 20 endpoints exported as OpenAPI |
+| `api/` | thin HTTP routers: `batches`, `claims`, `documents`, `people`, `stats`, RFC 9457 problem responses, the persona dependency. 21 endpoints exported as OpenAPI |
 | `domain/` | the shared contract: `ExtractedReceipt`, GSTIN validation, `Finding`, `Claim`, `ProcessedDocument`, `OpenQuestion`; the source of truth for API schemas, LLM outputs and the synthetic data |
 | `llm/` | model registry, capability shim, Anthropic client, record/replay and fake backends, cost ledger, typed errors |
 | `extraction/` | upload → page images → structured receipt (wire schema, prompt, cache) |
@@ -456,8 +457,8 @@ The layers are listed in [.claude/rules/testing.md](../.claude/rules/testing.md)
 
 | Suite | Tests | Coverage | Gate |
 |---|---|---|---|
-| API (pytest): domain, llm, extraction, decisions, trust, policy, claims, pipeline, API, MCP adapters, wiring | 1,550+ | 95% | ≥ 85% overall |
-| MCP servers (pytest, one suite each) | 86 + 130 | 100% each | enforced in CI |
+| API (pytest): domain, llm, extraction, decisions, trust, policy, claims, pipeline, API, MCP adapters, wiring | 1,737 | 98.7% | ≥ 85% overall |
+| MCP servers (pytest, one suite each) | 86 + 130 | 100% measured | ≥ 90% enforced in CI |
 | Synthetic data generator (pytest) | 80 | n/a | runs in CI |
 | Web (Vitest + React Testing Library + MSW) | 🚧 | 🚧 | ≥ 80% lines |
 | E2E (Playwright + axe) | 🚧 | n/a | must pass in CI |
@@ -488,7 +489,7 @@ cd apps/web && npm test && npm run test:e2e
 - The demo clock can be pinned (`DEMO_TODAY`) so the sample receipts stay inside the policy's submission window.
 - The auto-approval limit (₹10,000) and the confidence gate (0.7) are configuration choices, not tuned on real finance data.
 - Currency: INR only. Multi-currency and the per-diem and mileage "allowance" claim mode (which has no documents) are not built.
-- Click-to-verify highlights come from model-reported word boxes and are advisory. Uploads are deleted with the demo reset, and there is no retention policy beyond that.
+- Click-to-verify highlights are regions the model estimates (a second, cheap vision call), so they are approximate (an upright box around a tilted photo is a little loose, and a box is occasionally off); they are a convenience for checking, not evidence. Uploads are deleted with the demo reset, and there is no retention policy beyond that.
 
 ## 9. Future work
 - Real integrations behind the same ports: SAP/Oracle for finance, a corporate calendar and HRMS, SSO.
