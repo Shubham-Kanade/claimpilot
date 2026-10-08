@@ -1,9 +1,11 @@
-"""Turn uploaded bytes into a Claude content block.
+"""Turn uploaded bytes into Claude image content blocks (one per page).
 
 The file type is detected from magic bytes; the client-declared type is never trusted. Images
 are EXIF-rotated, flattened to RGB and downscaled so the long edge is at most
 ``max_long_edge`` px (larger images cost more tokens without reading better), then re-encoded
-as JPEG. PDFs are passed through as document blocks after a page-count check.
+as JPEG. PDFs are rasterised page by page with pdfium at the same resolution (ADR-016): this
+gives one uniform image path for extraction and click-to-verify, and avoids sending raw PDF
+payloads, which some corporate proxies block.
 """
 
 from __future__ import annotations
@@ -11,10 +13,10 @@ from __future__ import annotations
 import base64
 import hashlib
 import io
-import re
 from dataclasses import dataclass
 from typing import Any, Literal
 
+import pypdfium2 as pdfium
 from PIL import Image, ImageOps, UnidentifiedImageError
 
 DEFAULT_MAX_LONG_EDGE = 1568
@@ -27,7 +29,6 @@ _MAGIC: tuple[tuple[bytes, MediaType], ...] = (
     (b"\x89PNG\r\n\x1a\n", "image/png"),
     (b"%PDF-", "application/pdf"),
 )
-_PDF_PAGE = re.compile(rb"/Type\s*/Page(?!s)")
 
 
 class UnsupportedDocumentError(ValueError):
@@ -37,11 +38,11 @@ class UnsupportedDocumentError(ValueError):
 @dataclass(frozen=True, slots=True)
 class PreparedDocument:
     sha256: str  # of the ORIGINAL bytes: the identity used for caching and duplicate checks
-    media_type: MediaType
-    block: dict[str, Any]  # Claude content block (image or document)
-    width: int | None = None  # after downscaling (images only)
-    height: int | None = None
-    pages: int | None = None  # PDFs only
+    media_type: MediaType  # of the upload (a PDF stays "application/pdf" here)
+    blocks: tuple[dict[str, Any], ...]  # Claude image blocks, one per page
+    width: int  # of the first page, after downscaling
+    height: int
+    pages: int = 1
 
 
 def sniff_media_type(data: bytes) -> MediaType:
@@ -61,37 +62,51 @@ def prepare_document(
     digest = hashlib.sha256(data).hexdigest()
     media_type = sniff_media_type(data)
     if media_type == "application/pdf":
-        return _prepare_pdf(data, digest, max_pdf_pages)
-    return _prepare_image(data, digest, max_long_edge)
+        return _prepare_pdf(data, digest, max_pdf_pages, max_long_edge)
+    return _prepare_image(data, digest, media_type, max_long_edge)
 
 
-def _prepare_pdf(data: bytes, digest: str, max_pages: int) -> PreparedDocument:
-    pages = len(_PDF_PAGE.findall(data)) or 1  # approximation; Claude reads the PDF itself
-    if pages > max_pages:
-        raise UnsupportedDocumentError(f"PDF has {pages} pages; the limit is {max_pages}")
-    block = {
-        "type": "document",
-        "source": {
-            "type": "base64",
-            "media_type": "application/pdf",
-            "data": base64.b64encode(data).decode("ascii"),
-        },
-    }
-    return PreparedDocument(digest, "application/pdf", block, pages=pages)
+def _prepare_pdf(data: bytes, digest: str, max_pages: int, max_long_edge: int) -> PreparedDocument:
+    try:
+        pdf = pdfium.PdfDocument(data)
+    except pdfium.PdfiumError as exc:
+        raise UnsupportedDocumentError("PDF could not be opened") from exc
+    try:
+        pages = len(pdf)
+        if pages == 0:
+            raise UnsupportedDocumentError("PDF has no pages")
+        if pages > max_pages:
+            raise UnsupportedDocumentError(f"PDF has {pages} pages; the limit is {max_pages}")
+        images = []
+        for page in pdf:
+            scale = max_long_edge / max(page.get_size())  # PDF points -> pixels
+            images.append(page.render(scale=scale).to_pil())
+            page.close()
+    finally:
+        pdf.close()
+    blocks = tuple(_jpeg_block(img) for img in images)
+    return PreparedDocument(
+        digest, "application/pdf", blocks, images[0].width, images[0].height, pages=pages
+    )
 
 
-def _prepare_image(data: bytes, digest: str, max_long_edge: int) -> PreparedDocument:
+def _prepare_image(
+    data: bytes, digest: str, media_type: MediaType, max_long_edge: int
+) -> PreparedDocument:
     try:
         with Image.open(io.BytesIO(data)) as opened:
             image = ImageOps.exif_transpose(opened)
             image = image.convert("RGB")  # drops alpha / palette; JPEG needs RGB
     except (UnidentifiedImageError, OSError) as exc:
         raise UnsupportedDocumentError("image could not be decoded") from exc
-
     image.thumbnail((max_long_edge, max_long_edge), Image.Resampling.LANCZOS)
+    return PreparedDocument(digest, media_type, (_jpeg_block(image),), image.width, image.height)
+
+
+def _jpeg_block(image: Image.Image) -> dict[str, Any]:
     buffer = io.BytesIO()
-    image.save(buffer, format="JPEG", quality=JPEG_QUALITY, optimize=True)
-    block = {
+    image.convert("RGB").save(buffer, format="JPEG", quality=JPEG_QUALITY, optimize=True)
+    return {
         "type": "image",
         "source": {
             "type": "base64",
@@ -99,4 +114,3 @@ def _prepare_image(data: bytes, digest: str, max_long_edge: int) -> PreparedDocu
             "data": base64.b64encode(buffer.getvalue()).decode("ascii"),
         },
     }
-    return PreparedDocument(digest, "image/jpeg", block, width=image.width, height=image.height)

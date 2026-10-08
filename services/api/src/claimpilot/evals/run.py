@@ -124,7 +124,7 @@ async def estimate_cost(
             await llm.count_tokens(
                 "extraction",
                 system=system_prompt(),
-                content=[doc.block, {"type": "text", "text": USER_INSTRUCTION}],
+                content=[*doc.blocks, {"type": "text", "text": USER_INSTRUCTION}],
                 output_model=ExtractedReceipt,
                 thinking="off",
             )

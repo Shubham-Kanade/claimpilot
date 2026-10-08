@@ -25,6 +25,13 @@ def _png(width: int, height: int, mode: str = "RGB") -> bytes:
     return buf.getvalue()
 
 
+def _pdf(pages: int = 1, size: tuple[int, int] = (595, 842)) -> bytes:
+    buf = io.BytesIO()
+    imgs = [Image.new("RGB", size, "white") for _ in range(pages)]
+    imgs[0].save(buf, format="PDF", save_all=True, append_images=imgs[1:])
+    return buf.getvalue()
+
+
 def _decoded_size(block: dict) -> tuple[int, int]:
     raw = base64.b64decode(block["source"]["data"])
     with Image.open(io.BytesIO(raw)) as img:
@@ -36,9 +43,10 @@ def _decoded_size(block: dict) -> tuple[int, int]:
 
 def test_large_image_is_downscaled_keeping_aspect_ratio():
     doc = prepare_document(_png(1000, 4000), max_long_edge=1568)
-    assert doc.media_type == "image/jpeg"
+    assert doc.media_type == "image/png"  # the upload's type; the block is always JPEG
+    assert doc.blocks[0]["source"]["media_type"] == "image/jpeg"
     assert (doc.width, doc.height) == (392, 1568)
-    assert _decoded_size(doc.block) == (392, 1568)
+    assert _decoded_size(doc.blocks[0]) == (392, 1568)
 
 
 def test_small_image_is_not_upscaled_and_alpha_is_flattened():
@@ -52,17 +60,23 @@ def test_hash_is_of_original_bytes():
     assert prepare_document(data).sha256 != prepare_document(_png(11, 10)).sha256
 
 
-def test_pdf_is_passed_through_as_document_block():
-    pdf = b"%PDF-1.4\n1 0 obj << /Type /Pages >> endobj\n2 0 obj << /Type /Page >> endobj\n%%EOF"
-    doc = prepare_document(pdf)
-    assert doc.block["type"] == "document"
-    assert doc.pages == 1
+def test_pdf_pages_are_rasterised_to_image_blocks():
+    doc = prepare_document(_pdf(pages=2), max_long_edge=1000)
+    assert doc.media_type == "application/pdf"
+    assert doc.pages == 2 and len(doc.blocks) == 2
+    assert all(b["type"] == "image" for b in doc.blocks)
+    assert max(_decoded_size(doc.blocks[0])) == 1000
+    assert (doc.width, doc.height) == _decoded_size(doc.blocks[0])
 
 
 def test_pdf_page_limit():
-    pdf = b"%PDF-1.4\n" + b"<< /Type /Page >>\n" * 3
     with pytest.raises(UnsupportedDocumentError, match="3 pages"):
-        prepare_document(pdf, max_pdf_pages=2)
+        prepare_document(_pdf(pages=3), max_pdf_pages=2)
+
+
+def test_corrupt_pdf_is_rejected():
+    with pytest.raises(UnsupportedDocumentError, match="PDF could not be opened"):
+        prepare_document(b"%PDF-1.4 this is not really a pdf")
 
 
 @pytest.mark.parametrize(
@@ -103,7 +117,7 @@ async def test_extracts_with_prompt_and_document(llm, doc):
     assert result.model_key == "haiku"
     request = llm.requests[0]
     assert request.body["system"][0]["text"] == system_prompt()
-    assert request.body["messages"][0]["content"][0] == doc.block  # document first, then text
+    assert request.body["messages"][0]["content"][0] == doc.blocks[0]  # pages first, then text
     assert "thinking" in request.body  # Haiku 5.5 thinking off is sent as {type: disabled}
     assert request.body["thinking"] == {"type": "disabled"}
 

@@ -96,3 +96,8 @@ Each entry gives the decision, the reason, and its consequences. Add new entries
   - `opencv-python` instead of the headless build, because Augraphy needs it
   - Augraphy fold noise disabled because it can't be seeded
   - phone photos saved as JPEG
+
+### ADR-016: PDFs are rasterised to page images before extraction (2026-10-08)
+- **Decision:** `prepare_document` renders each PDF page with pdfium (`pypdfium2`) at the same long-edge cap as photos and sends image blocks only. Raw `document` blocks are no longer sent.
+- **Why:** the corporate network resets connections whose body contains a PDF (a 48 KB PDF fails with `ConnectError` while a 227 KB image succeeds). Rasterising also gives one uniform image path for extraction, cost and click-to-verify, and exact page counts.
+- **Measured:** dev-split receipts are about 4.7–6.5K input tokens each, so the per-receipt estimates are Haiku 5.5 about $0.0009, Haiku 4.5 $0.008, Sonnet 5.5 $0.019 and Opus 5.5 $0.037.

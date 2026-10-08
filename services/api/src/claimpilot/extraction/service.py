@@ -87,7 +87,7 @@ class ReceiptExtractor:
         return await self._llm.parse(
             route,
             system=system_prompt(self._prompt_version),
-            content=[document.block, {"type": "text", "text": USER_INSTRUCTION}],
+            content=[*document.blocks, {"type": "text", "text": USER_INSTRUCTION}],
             output_model=ExtractedReceipt,
             thinking=self._thinking,
         )
