@@ -89,3 +89,6 @@ Contract frozen first (ADR-020), then four parallel streams. **Owners are workst
 - 2026-10-08: M1 done. Bake-off picks Haiku 5.5 ($0.42/1k receipts, 100% critical-field accuracy on dev); PDF rasterisation (ADR-016), wire schema (ADR-017), routes (ADR-018)
 - 2026-10-08: M2.D done: System One decisions + benchmark (held-out 85% category accuracy, Jev 3× faster/cheaper than LLM at equal accuracy); wiring still to do: calendar context
 - 2026-10-08: pipeline end-to-end on fixtures with fake models (9 tests): tampered + injected docs flagged, duplicates, retries; API contract exported; 4 agents in flight
+
+## Done log
+- **2026-10-08 (night), submission-check, automatable items:** gitleaks over the full history: no leaks (one allowlisted fake persona sentinel); no brief files in history; hosted image built from a clean clone of HEAD and `scripts/smoke.py` printed SMOKE OK; API 1,742 tests 98.66%; web 539 tests 97.98% lines, lint/types/format/build clean; Playwright 100 passed + 9 phone-only skipped on desktop, 1 console-error race once under load; MCP servers 86 + 130 + 350 tests, synth 111; demo video recorded (3 min 5 s, `docs/demo/claimpilot-demo.webm`, git-ignored); TDD PDF rebuilt. **Not checkable by me (user):** repo public and pushed, CI green on GitHub, Space URL logged-out, YouTube link logged-out, links in README/TDD header.
