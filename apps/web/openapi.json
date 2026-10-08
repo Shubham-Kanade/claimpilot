@@ -6,9 +6,11 @@
         "properties": {
           "answers": {
             "additionalProperties": {
+              "maxLength": 2000,
               "type": "string"
             },
             "description": "open question id -> the employee's answer",
+            "maxProperties": 50,
             "title": "Answers",
             "type": "object"
           }
@@ -2977,7 +2979,7 @@
             "description": "Unprocessable Content"
           }
         },
-        "summary": "Confirm and submit to the finance system (idempotent)",
+        "summary": "Confirm and submit to the finance system (idempotent per claim)",
         "tags": [
           "claims"
         ]

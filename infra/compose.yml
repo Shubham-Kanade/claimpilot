@@ -80,6 +80,20 @@ services:
       api: { condition: service_healthy }  # migrations run in the api container first
       redis: { condition: service_healthy }
 
+  # ClaimPilot itself as an MCP server (streamable HTTP; stdio is for local use). It acts as one demo
+  # persona and has no authentication: loopback only. It reads no host files unless
+  # CLAIMPILOT_UPLOAD_ROOT names a mounted folder. Start it with: --profile mcp up --build mcp-claimpilot
+  mcp-claimpilot:
+    profiles: ["mcp"]
+    build: { context: ../services/mcp-claimpilot }
+    image: claimpilot-mcp-claimpilot:local
+    environment:
+      CLAIMPILOT_API_URL: http://api:8000
+      CLAIMPILOT_PERSONA: DEMO-ASHA
+    ports: ["127.0.0.1:8103:8103"]  # loopback only: no authentication
+    depends_on:
+      api: { condition: service_healthy }
+
   web:
     build:
       context: ../apps/web

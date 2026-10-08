@@ -96,7 +96,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        service: [mcp-finance, mcp-corp]
+        service: [mcp-finance, mcp-corp, mcp-claimpilot]
     defaults:
       run:
         working-directory: services/${{ matrix.service }}
@@ -120,7 +120,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build images
-        run: docker compose -f infra/compose.yml build
+        run: docker compose -f infra/compose.yml --profile mcp build  # includes the optional MCP server
       - name: Boot stack and probe
         run: |
           docker compose -f infra/compose.yml up -d --wait postgres redis api

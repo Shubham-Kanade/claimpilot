@@ -10,7 +10,7 @@ Built for **AI Innovation Lab, Season 2** (Business Case 1: Expense & Reimbursem
 | **Demo video** | _YouTube link: added at submission_ |
 | **Live demo** | _Hugging Face Space link: added at submission_ (no login; pick a demo persona) |
 | **Technical design document** | [docs/TECHNICAL_DESIGN.md](docs/TECHNICAL_DESIGN.md) (architecture and flow diagrams, AI design, setup, code walkthrough, assumptions) |
-| **Decisions** | [docs/DECISIONS.md](docs/DECISIONS.md) (30 short ADRs with the evidence behind each choice) |
+| **Decisions** | [docs/DECISIONS.md](docs/DECISIONS.md) (32 short ADRs with the evidence behind each choice) |
 
 ## What it does
 
@@ -86,6 +86,7 @@ The layers (unit, LLM record/replay, request-shape snapshots for every model, pi
 |---|---|
 | `services/api` | FastAPI backend and worker: extraction, decisions, trust, policy, claims, pipeline, MCP clients, evals |
 | `services/mcp-finance`, `services/mcp-corp` | the mocked finance system and corporate systems (HR directory, calendar, policy) as MCP servers |
+| `services/mcp-claimpilot` | ClaimPilot itself as an MCP server: file, answer, submit and approve claims from Claude Desktop ([README](services/mcp-claimpilot/README.md)) |
 | `apps/web` | Next.js web app (upload, live progress, claim review, approvals, impact) |
 | `data/synth` | the synthetic Indian receipt generator, the golden set and the demo pile |
 | `deploy/hf-space` | the single-container hosted demo |

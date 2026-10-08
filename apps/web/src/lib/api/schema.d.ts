@@ -234,7 +234,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Confirm and submit to the finance system (idempotent) */
+        /** Confirm and submit to the finance system (idempotent per claim) */
         post: operations["post_submit_v1_claims__claim_id__submit_post"];
         delete?: never;
         options?: never;

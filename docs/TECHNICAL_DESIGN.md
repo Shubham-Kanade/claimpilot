@@ -376,6 +376,8 @@ The mocked enterprise systems are real **Model Context Protocol** servers (strea
 
 The API side (`claimpilot.mcp`) has typed clients (every failure is an `McpError` subclass), port adapters (`McpDirectory`, `McpCalendar`, `McpFinance`) that implement the pipeline's small protocols (`claimpilot.ports`), and a **bridge that exposes MCP tools to Claude as strict tool definitions with a per-role allow-list** (`EMPLOYEE_AGENT_TOOLS`: an employee agent can read the calendar and submit, but cannot decide a claim). The pipeline does not know whether finance is an MCP server, a REST API or a test double.
 
+**The other direction: ClaimPilot as an MCP server.** `services/mcp-claimpilot` (`claimpilot-mcp`) exposes ClaimPilot itself to any MCP client: a person files and tracks claims from Claude Desktop over stdio, and an approver decides them. A streamable-HTTP flavour (:8103, `/mcp`, `/healthz`, `/readyz`) runs in Compose under the `mcp` profile (ADR-032). Its eight tools (`list_claims`, `get_claim`, `upload_receipts`, `get_batch`, `answer_question`, `submit_claim`, `list_approvals`, `decide_claim`) and the prompt `file_expenses` are a thin adapter over the public REST API; the package imports nothing from the API, so visibility, the explicit-confirmation gate, per-claim idempotent submission and separation of duties are enforced by the API and never re-implemented. `submit_claim` with `confirmed=false` (the default) returns a summary and sends nothing; `confirmed=true` submits with a stable `Idempotency-Key`; approver tools check `GET /v1/me` first. Receipt-derived text (titles, merchants, finding messages, questions) is untrusted: it is cleaned on its way out (one line, no control characters, `<` and `>` defanged, length-capped), confined to named fields that the server instructions and every tool description call data, and the guidance sentences are fixed. RFC 9457 problems become tool errors (`<title>: <detail>`); the persona header, traces and response bodies never reach the model. A unit test holds every call and response field against `apps/web/openapi.json`, so an API change breaks a test, not a tool.
+
 ## 4. Data
 Synthetic Indian receipts are generated **from ground truth first, then rendered**, so every label is exact. All merchants, brands, apps, banks and people are fictional; GSTINs have valid checksums but random PAN parts. No real data is used anywhere.
 
@@ -459,7 +461,19 @@ Backend package `services/api/src/claimpilot/`:
 | `db/` | SQLAlchemy 2 async models, Alembic migrations (drift-tested against the models) |
 | `ports.py`, `storage.py`, `net.py`, `problem.py` | small protocols for the enterprise systems and blob storage; OS-trust-store TLS; one error shape |
 
-Other packages: `services/mcp-finance` and `services/mcp-corp` (the mocked systems), `data/synth` (the generator), `evals/` (committed reports), `apps/web` (the Next.js app: `src/lib/api` is the typed client generated from OpenAPI, `src/lib/batch` the live progress stream, `src/lib/claims` claim view logic), `infra/` (Compose), `.github/workflows` (CI/CD), `.claude/` (the rules, skills, agents and hooks that let a new session resume the work).
+Web app `apps/web` (Next.js 16, React 19, TypeScript strict, Tailwind v4, TanStack Query; screens: upload, live batch progress, claims, claim review, approvals, impact):
+
+| Path | Responsibility |
+|---|---|
+| `src/app/` | routes: server components that give the shell and metadata, each wrapping one client screen |
+| `src/components/` | one folder per screen area (`upload`, `batch`, `claims`, `evidence`, `approvals`, `impact`, `demo`, `layout`) and a small design system in `ui/` (Button, Dialog with focus trap, Tabs, badges, feedback) |
+| `src/lib/api/` | the typed client; `schema.d.ts` is generated from the exported OpenAPI (CI fails on drift), `problems.ts` turns every RFC 9457 problem type into friendly copy, `sse.ts` reads the live event stream |
+| `src/lib/batch/`, `src/lib/claims/` | pure logic: the batch progress reducer, severities, finding values, extracted-field rows, click-to-verify boxes |
+| `src/lib/hooks/` | React Query hooks keyed by persona; `hydration.ts` makes the first client render match the server HTML |
+| `e2e/` | Playwright + axe suite that drives the real one-container demo (desktop and phone) |
+| `mock-api/` | an in-memory mock of the API for `npm run dev:mock` and a contract test that keeps it honest |
+
+Other packages: `services/mcp-finance` and `services/mcp-corp` (the mocked systems), `data/synth` (the generator), `evals/` (committed reports), `infra/` (Compose), `.github/workflows` (CI/CD), `.claude/` (the rules, skills, agents and hooks that let a new session resume the work).
 
 ## 7. Testing strategy & results
 The layers are listed in [.claude/rules/testing.md](../.claude/rules/testing.md): unit, LLM replay, contract, model switching, pipeline, API, frontend unit, E2E, and evals. No unit test calls a live API; tests marked `live` are skipped unless `LLM_MODE=live`, and the default run ignores the developer's `.env`.
@@ -502,7 +516,7 @@ cd apps/web && npm test && npm run test:e2e
 
 ## 9. Future work
 - Real integrations behind the same ports: SAP/Oracle for finance, a corporate calendar and HRMS, SSO.
-- A tool-using chat agent on top of the role-scoped MCP bridge; ClaimPilot itself as an MCP server for use from Claude Desktop or Teams; A2A hand-off from a travel-desk agent.
+- A tool-using chat agent on top of the role-scoped MCP bridge; A2A hand-off from a travel-desk agent.
 - Policy compilation from a PDF policy document by a larger model (the `policy_compile` route is reserved), with human review of the generated clauses.
 - Learning from approver decisions to tune the routing limit and the confidence gate.
 - Multi-currency with FX at the transaction date, and per-diem and mileage claims.
