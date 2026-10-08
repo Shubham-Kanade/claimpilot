@@ -1,0 +1,86 @@
+{
+  "id": "15-dinner-mumbai-10-oct",
+  "receipt": {
+    "doc_type": "restaurant_bill",
+    "merchant_name": "Kesar Grill House",
+    "merchant_gstin": "27FKQJA8563L8ZJ",
+    "merchant_city": "Mumbai",
+    "invoice_number": "K9218",
+    "date": "2026-10-10",
+    "time": "19:32",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Chicken Biryani",
+        "quantity": 1.0,
+        "unit_price": 460.0,
+        "amount": 460.0
+      },
+      {
+        "description": "Butter Chicken",
+        "quantity": 1.0,
+        "unit_price": 520.0,
+        "amount": 520.0
+      },
+      {
+        "description": "Butter Naan",
+        "quantity": 3.0,
+        "unit_price": 80.0,
+        "amount": 240.0
+      },
+      {
+        "description": "Green Salad",
+        "quantity": 1.0,
+        "unit_price": 150.0,
+        "amount": 150.0
+      },
+      {
+        "description": "Fresh Lime Soda",
+        "quantity": 2.0,
+        "unit_price": 95.0,
+        "amount": 190.0
+      },
+      {
+        "description": "Draught Beer 330ml",
+        "quantity": 2.0,
+        "unit_price": 420.0,
+        "amount": 840.0
+      },
+      {
+        "description": "Whisky 60ml",
+        "quantity": 1.0,
+        "unit_price": 700.0,
+        "amount": 700.0
+      }
+    ],
+    "subtotal": 3100.0,
+    "taxes": {
+      "cgst": 39.0,
+      "sgst": 39.0,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": null
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 3178.0,
+    "payment_method": "upi",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "meals",
+  "tags": [
+    "degraded",
+    "over_policy"
+  ],
+  "duplicate_of": null,
+  "persona_id": "DEMO-ASHA",
+  "trip_id": "DEMO-ASHA-T1"
+}

@@ -1,0 +1,62 @@
+{
+  "id": "13-cab-pune-shivajinagar-to-baner",
+  "receipt": {
+    "doc_type": "cab_receipt",
+    "merchant_name": "Sawari Rides",
+    "merchant_gstin": "27ZIEJF3469V3Z0",
+    "merchant_city": "Pune",
+    "invoice_number": "CRN2610081206",
+    "date": "2026-10-08",
+    "time": "19:36",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Base Fare",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 90.0
+      },
+      {
+        "description": "Distance Fare (8.6 km)",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 189.2
+      },
+      {
+        "description": "Ride Time Fare (24 min)",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 36.0
+      }
+    ],
+    "subtotal": 315.2,
+    "taxes": {
+      "cgst": 7.88,
+      "sgst": 7.88,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 830.96,
+    "payment_method": "upi",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "local_conveyance",
+  "tags": [
+    "degraded",
+    "tampered"
+  ],
+  "duplicate_of": null,
+  "persona_id": "DEMO-ASHA",
+  "trip_id": null
+}

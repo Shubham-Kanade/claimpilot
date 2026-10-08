@@ -1,0 +1,55 @@
+{
+  "id": "10-mobile-bill-october",
+  "receipt": {
+    "doc_type": "mobile_bill",
+    "merchant_name": "Nakshatra Mobile",
+    "merchant_gstin": "27PEDTZ4739C7ZG",
+    "merchant_city": "Pune",
+    "invoice_number": "MB261038412907",
+    "date": "2026-10-04",
+    "time": null,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Monthly Rental - Postpaid Plus 699",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 699.0
+      },
+      {
+        "description": "Extra 25 GB Data Booster",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 199.0
+      }
+    ],
+    "subtotal": 898.0,
+    "taxes": {
+      "cgst": 80.82,
+      "sgst": 80.82,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 18.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 1059.64,
+    "payment_method": "unknown",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "mobile_internet",
+  "tags": [
+    "clean"
+  ],
+  "duplicate_of": null,
+  "persona_id": "DEMO-ASHA",
+  "trip_id": null
+}

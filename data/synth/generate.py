@@ -4,6 +4,7 @@ Usage (from data/synth):
     uv run generate.py all --count 100 --seed 42
     uv run generate.py all --count 20 --seed 7 --only restaurant_bill,upi_payment
     uv run generate.py scenarios|render|degrade|adversarial|fixtures [options]
+    uv run generate.py demo [--out demo] [--seed 42]
 
 Stages:
     scenarios    personas + "a month of life" -> specs/ and truth/ (starts a fresh dataset)
@@ -12,6 +13,8 @@ Stages:
     adversarial  (re)create adversarial docs on top of the scenario docs, render + degrade them
     all          everything above; --count is the total, ~20% of it adversarial
     fixtures     export a small committed subset of out/ into fixtures/
+    golden       export the ground truth of out/ (no images) into golden/
+    demo         the hand-built demo pile (Asha Menon's week, 15 documents) into demo/
 
 Same arguments + same seed => identical truths, renders and degradations.
 Bump DATASET_VERSION whenever templates, builders or degradations change.
@@ -152,6 +155,10 @@ def build_parser() -> argparse.ArgumentParser:
             command.add_argument("--dest", type=Path, default=SYNTH_DIR / "fixtures")
         if name == "golden":
             command.add_argument("--dest", type=Path, default=SYNTH_DIR / "golden")
+    demo = sub.add_parser("demo", help="the hand-built demo pile (Asha Menon's week)")
+    demo.add_argument("--out", type=Path, default=SYNTH_DIR / "demo")
+    demo.add_argument("--seed", type=int, default=42, help="changes only how photos look")
+    demo.add_argument("--browser", default="auto", choices=("auto", "chromium", "msedge", "chrome"))
     return parser
 
 
@@ -190,6 +197,11 @@ def main(argv: list[str] | None = None) -> int:
 
         exported = export_fixtures(layout, args.dest.resolve(), args.seed)
         print(f"{len(exported)} fixtures -> {args.dest}")
+    elif args.command == "demo":
+        from synthgen.demo.export import generate_demo  # Playwright and augraphy load here
+
+        pile = generate_demo(args.out.resolve(), args.seed, args.browser)
+        print(f"{len(pile)} demo documents -> {args.out} in {time.perf_counter() - started:.0f}s")
     return 0
 
 

@@ -1,0 +1,43 @@
+{
+  "id": "11-upi-payment-120",
+  "receipt": {
+    "doc_type": "upi_payment",
+    "merchant_name": "SUNIL BHOSALE",
+    "merchant_gstin": null,
+    "merchant_city": null,
+    "invoice_number": null,
+    "date": "2026-10-07",
+    "time": "08:42",
+    "currency": "INR",
+    "line_items": [],
+    "subtotal": null,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": null
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 120.0,
+    "payment_method": "upi",
+    "upi_reference": "528413907266",
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "local_conveyance",
+  "tags": [
+    "clean",
+    "ambiguous"
+  ],
+  "duplicate_of": null,
+  "persona_id": "DEMO-ASHA",
+  "trip_id": null
+}

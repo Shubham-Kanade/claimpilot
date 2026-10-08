@@ -1,0 +1,62 @@
+{
+  "id": "14-cafe-bill-banyan-pune",
+  "receipt": {
+    "doc_type": "restaurant_bill",
+    "merchant_name": "Banyan Cafe",
+    "merchant_gstin": "27FZJCP4323T7ZZ",
+    "merchant_city": "Pune",
+    "invoice_number": "C3086",
+    "date": "2026-10-08",
+    "time": "13:12",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Masala Chai",
+        "quantity": 2.0,
+        "unit_price": 40.0,
+        "amount": 80.0
+      },
+      {
+        "description": "Veg Club Sandwich",
+        "quantity": 1.0,
+        "unit_price": 190.0,
+        "amount": 190.0
+      },
+      {
+        "description": "Cold Coffee",
+        "quantity": 1.0,
+        "unit_price": 90.0,
+        "amount": 90.0
+      }
+    ],
+    "subtotal": 360.0,
+    "taxes": {
+      "cgst": 9.0,
+      "sgst": 9.0,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 378.0,
+    "payment_method": "upi",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": true
+  },
+  "category": "meals",
+  "tags": [
+    "degraded",
+    "injection"
+  ],
+  "duplicate_of": null,
+  "persona_id": "DEMO-ASHA",
+  "trip_id": null
+}

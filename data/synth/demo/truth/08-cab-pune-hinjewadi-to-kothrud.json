@@ -1,0 +1,61 @@
+{
+  "id": "08-cab-pune-hinjewadi-to-kothrud",
+  "receipt": {
+    "doc_type": "cab_receipt",
+    "merchant_name": "Raahi Cabs",
+    "merchant_gstin": "27USWHV6336K9ZC",
+    "merchant_city": "Pune",
+    "invoice_number": "CRN2610071954",
+    "date": "2026-10-07",
+    "time": "18:05",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Base Fare",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 65.0
+      },
+      {
+        "description": "Distance Fare (7.8 km)",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 132.6
+      },
+      {
+        "description": "Ride Time Fare (26 min)",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 39.0
+      }
+    ],
+    "subtotal": 236.6,
+    "taxes": {
+      "cgst": 5.92,
+      "sgst": 5.92,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 248.44,
+    "payment_method": "upi",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "local_conveyance",
+  "tags": [
+    "clean"
+  ],
+  "duplicate_of": null,
+  "persona_id": "DEMO-ASHA",
+  "trip_id": null
+}

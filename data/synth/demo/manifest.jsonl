@@ -1,0 +1,15 @@
+{"id": "01-client-dinner-saffron-terrace", "path": "docs/01-client-dinner-saffron-terrace.jpg", "truth_path": "truth/01-client-dinner-saffron-terrace.json", "doc_type": "restaurant_bill", "tags": ["degraded"], "split": "demo"}
+{"id": "02-train-pune-to-mumbai", "path": "docs/02-train-pune-to-mumbai.jpg", "truth_path": "truth/02-train-pune-to-mumbai.json", "doc_type": "train_ticket", "tags": ["degraded"], "split": "demo"}
+{"id": "03-cab-mumbai-station-to-hotel", "path": "docs/03-cab-mumbai-station-to-hotel.png", "truth_path": "truth/03-cab-mumbai-station-to-hotel.json", "doc_type": "cab_receipt", "tags": ["clean"], "split": "demo"}
+{"id": "04-dinner-mumbai-9-oct", "path": "docs/04-dinner-mumbai-9-oct.jpg", "truth_path": "truth/04-dinner-mumbai-9-oct.json", "doc_type": "restaurant_bill", "tags": ["degraded"], "split": "demo"}
+{"id": "05-hotel-folio-mumbai", "path": "docs/05-hotel-folio-mumbai.pdf", "truth_path": "truth/05-hotel-folio-mumbai.json", "doc_type": "hotel_folio", "tags": ["clean"], "split": "demo"}
+{"id": "06-train-mumbai-to-pune", "path": "docs/06-train-mumbai-to-pune.jpg", "truth_path": "truth/06-train-mumbai-to-pune.json", "doc_type": "train_ticket", "tags": ["degraded"], "split": "demo"}
+{"id": "07-cab-pune-to-kestrel-office", "path": "docs/07-cab-pune-to-kestrel-office.jpg", "truth_path": "truth/07-cab-pune-to-kestrel-office.json", "doc_type": "cab_receipt", "tags": ["degraded"], "split": "demo"}
+{"id": "08-cab-pune-hinjewadi-to-kothrud", "path": "docs/08-cab-pune-hinjewadi-to-kothrud.png", "truth_path": "truth/08-cab-pune-hinjewadi-to-kothrud.json", "doc_type": "cab_receipt", "tags": ["clean"], "split": "demo"}
+{"id": "09-auto-slip-pune", "path": "docs/09-auto-slip-pune.jpg", "truth_path": "truth/09-auto-slip-pune.json", "doc_type": "handwritten_bill", "tags": ["degraded", "hindi", "handwritten"], "split": "demo"}
+{"id": "10-mobile-bill-october", "path": "docs/10-mobile-bill-october.pdf", "truth_path": "truth/10-mobile-bill-october.json", "doc_type": "mobile_bill", "tags": ["clean"], "split": "demo"}
+{"id": "11-upi-payment-120", "path": "docs/11-upi-payment-120.png", "truth_path": "truth/11-upi-payment-120.json", "doc_type": "upi_payment", "tags": ["clean", "ambiguous"], "split": "demo"}
+{"id": "12-client-dinner-saffron-terrace-copy", "path": "docs/12-client-dinner-saffron-terrace-copy.jpg", "truth_path": "truth/12-client-dinner-saffron-terrace-copy.json", "doc_type": "restaurant_bill", "tags": ["degraded", "duplicate"], "split": "demo"}
+{"id": "13-cab-pune-shivajinagar-to-baner", "path": "docs/13-cab-pune-shivajinagar-to-baner.jpg", "truth_path": "truth/13-cab-pune-shivajinagar-to-baner.json", "doc_type": "cab_receipt", "tags": ["degraded", "tampered"], "split": "demo"}
+{"id": "14-cafe-bill-banyan-pune", "path": "docs/14-cafe-bill-banyan-pune.jpg", "truth_path": "truth/14-cafe-bill-banyan-pune.json", "doc_type": "restaurant_bill", "tags": ["degraded", "injection"], "split": "demo"}
+{"id": "15-dinner-mumbai-10-oct", "path": "docs/15-dinner-mumbai-10-oct.jpg", "truth_path": "truth/15-dinner-mumbai-10-oct.json", "doc_type": "restaurant_bill", "tags": ["degraded", "over_policy"], "split": "demo"}

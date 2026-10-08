@@ -27,11 +27,14 @@ uv run ruff check . && uv run ruff format --check . && uv run pytest
 | `adversarial` | Regenerates the adversarial documents on top of the scenario documents, then renders and degrades them |
 | `all` | Runs every stage. `--count` is the total; about 20% of it is adversarial |
 | `fixtures` | Copies a small subset of `out/` into the committed `fixtures/` folder |
+| `golden` | Copies the ground truth of `out/` (no images) into the committed `golden/` folder |
+| `demo` | Renders the hand-built demo pile (Asha Menon's week, 15 documents) into the committed `demo/` folder; see below |
 
 Flags:
 - `--count N`, `--seed S` and `--out PATH` (default `out/`).
 - `--only a,b` takes `DocType` values. The aliases `thermal_bill` and `upi` also work.
 - `--browser auto|chromium|msedge|chrome`.
+- `demo` takes only `--out` (default `demo/`), `--seed` (default 42) and `--browser`.
 
 The same arguments and seed give identical truths and byte-identical images. PDFs differ only in
 their embedded timestamp. Bump `DATASET_VERSION` in `generate.py` whenever builders, templates or
@@ -96,6 +99,29 @@ to 2 decimal places.
 - `missing_date`: no date printed, so `date` is null.
 
 AI-generated images are added by hand to `ai_generated/`.
+
+## The demo pile (`demo/`, committed)
+
+The hosted demo and the 3-minute video need one pile that tells one story, not a random month.
+`uv run generate.py demo` writes it: 15 documents for Asha Menon (`DEMO-ASHA`, grade L3, base city
+Pune): a client dinner that her calendar knows, a Mumbai trip, local rides, a mobile bill, an
+ambiguous UPI payment, and four traps (a duplicate, an edited total, a prompt injection, an
+alcohol bill). `demo/README.md` lists every document with what it is, why it is there and what
+ClaimPilot should do with it.
+
+```text
+synthgen/demo/   persona.py   the cast and the demo clock (2026-10-12)
+                 builders.py  how a restaurant bill, cab receipt or rail ticket is printed
+                 story.py     the 15 documents, written out by hand (merchant, date, items, GST)
+                 export.py    render, degrade, write docs/ truth/ manifest.jsonl persona.json README.md
+```
+
+It reuses the generator's templates, renderer, `degrade_image` and `make_duplicate`, but nothing is
+drawn at random: truths never change with `--seed`, only the look of photos and scans does. The
+same seed gives the same bytes, PDFs included (their timestamps are pinned). Photos and scans are
+exported as downscaled JPEG and the whole folder stays under 3 MB. The hotel folio is a PDF like
+the mobile bill, as hotels email it. `services/api/tests/unit/test_demo_pile.py` runs the real
+grouping, policy, trust and calendar code over the committed folder.
 
 ## Output (`out/`, gitignored)
 

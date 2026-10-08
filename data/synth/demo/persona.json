@@ -1,0 +1,10 @@
+{
+  "id": "DEMO-ASHA",
+  "name": "Asha Menon",
+  "employee_id": "EMP90001",
+  "grade": "L3",
+  "base_city": "Pune",
+  "base_state_code": "27",
+  "manager_id": "DEMO-RAVI",
+  "email": "asha.menon@example.com"
+}

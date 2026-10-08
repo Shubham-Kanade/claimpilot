@@ -1,0 +1,55 @@
+{
+  "id": "02-train-pune-to-mumbai",
+  "receipt": {
+    "doc_type": "train_ticket",
+    "merchant_name": "RailYatra e-Ticketing",
+    "merchant_gstin": "07COKFX4725M6ZK",
+    "merchant_city": "New Delhi",
+    "invoice_number": "2418830571",
+    "date": "2026-10-09",
+    "time": "09:15",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Ticket Fare",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 895.0
+      },
+      {
+        "description": "Convenience Fee",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 17.7
+      }
+    ],
+    "subtotal": null,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": 44.75,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 957.45,
+    "payment_method": "upi",
+    "upi_reference": null,
+    "travel_from": "Pune",
+    "travel_to": "Mumbai",
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "travel_domestic",
+  "tags": [
+    "degraded"
+  ],
+  "duplicate_of": null,
+  "persona_id": "DEMO-ASHA",
+  "trip_id": "DEMO-ASHA-T1"
+}

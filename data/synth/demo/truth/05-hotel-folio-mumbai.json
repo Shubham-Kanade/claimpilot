@@ -1,0 +1,49 @@
+{
+  "id": "05-hotel-folio-mumbai",
+  "receipt": {
+    "doc_type": "hotel_folio",
+    "merchant_name": "Lotus Bay Residency",
+    "merchant_gstin": "27CCKBG5464G7Z2",
+    "merchant_city": "Mumbai",
+    "invoice_number": "F2610842",
+    "date": "2026-10-10",
+    "time": null,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Room Charges 09-Oct",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 5800.0
+      }
+    ],
+    "subtotal": 5800.0,
+    "taxes": {
+      "cgst": 145.0,
+      "sgst": 145.0,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 6090.0,
+    "payment_method": "card",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "accommodation",
+  "tags": [
+    "clean"
+  ],
+  "duplicate_of": null,
+  "persona_id": "DEMO-ASHA",
+  "trip_id": "DEMO-ASHA-T1"
+}

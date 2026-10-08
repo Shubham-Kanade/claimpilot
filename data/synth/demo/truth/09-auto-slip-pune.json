@@ -1,0 +1,45 @@
+{
+  "id": "09-auto-slip-pune",
+  "receipt": {
+    "doc_type": "handwritten_bill",
+    "merchant_name": "Ramesh Jadhav",
+    "merchant_gstin": null,
+    "merchant_city": null,
+    "invoice_number": null,
+    "date": "2026-10-05",
+    "time": null,
+    "currency": "INR",
+    "line_items": [],
+    "subtotal": null,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": null
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 260.0,
+    "payment_method": "cash",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en",
+      "hi"
+    ],
+    "handwritten": true,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "local_conveyance",
+  "tags": [
+    "degraded",
+    "hindi",
+    "handwritten"
+  ],
+  "duplicate_of": null,
+  "persona_id": "DEMO-ASHA",
+  "trip_id": null
+}
