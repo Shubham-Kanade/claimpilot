@@ -22,11 +22,11 @@ from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 
-from claimpilot.domain import ExtractedReceipt
 from claimpilot.evals.dataset import EvalCase, load_cases
 from claimpilot.evals.metrics import AggregateScore, ReceiptScore, aggregate, score_receipt
 from claimpilot.evals.pareto import ConfigResult, choose, p95, pareto_frontier
 from claimpilot.extraction import ReceiptExtractor, prepare_document
+from claimpilot.extraction.schema import WireReceipt
 from claimpilot.extraction.service import PROMPT_VERSION, USER_INSTRUCTION, system_prompt
 from claimpilot.llm.client import LLMClient
 from claimpilot.llm.errors import LLMError
@@ -125,7 +125,7 @@ async def estimate_cost(
                 "extraction",
                 system=system_prompt(),
                 content=[*doc.blocks, {"type": "text", "text": USER_INSTRUCTION}],
-                output_model=ExtractedReceipt,
+                output_model=WireReceipt,
                 thinking="off",
             )
             for doc in sample

@@ -101,3 +101,9 @@ Each entry gives the decision, the reason, and its consequences. Add new entries
 - **Decision:** `prepare_document` renders each PDF page with pdfium (`pypdfium2`) at the same long-edge cap as photos and sends image blocks only. Raw `document` blocks are no longer sent.
 - **Why:** the corporate network resets connections whose body contains a PDF (a 48 KB PDF fails with `ConnectError` while a 227 KB image succeeds). Rasterising also gives one uniform image path for extraction, cost and click-to-verify, and exact page counts.
 - **Measured:** dev-split receipts are about 4.7–6.5K input tokens each, so the per-receipt estimates are Haiku 5.5 about $0.0009, Haiku 4.5 $0.008, Sonnet 5.5 $0.019 and Opus 5.5 $0.037.
+
+### ADR-017: A flat "wire" schema for structured outputs (2026-10-08)
+- **Context:** the first bake-off failed 40/40 with `400 Schema is too complex` / `Grammar compilation timed out`, at $0 cost. Claude structured outputs allow at most 24 optional and 16 union-typed parameters per request. `ExtractedReceipt` has about 25 nullable fields.
+- **Decision:** the LLM fills `extraction.schema.WireReceipt`: every field is required, "not printed" is an empty string, and amounts are number strings, so there are no unions. `to_domain` maps it to `ExtractedReceipt`, parsing amounts and flagging unparseable values as low-confidence. A test asserts the wire schema has 0 optional and 0 union parameters.
+- **Result:** one live check on the hardest dev receipt (degraded handwritten bill with an injection) gave 100% field accuracy with the injection flagged, at $0.0009 on Haiku 5.5.
+- **Lesson:** the smoke test's one-field schema could not catch this. A wire-schema live check now precedes any bake-off.

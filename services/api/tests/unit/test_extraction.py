@@ -15,6 +15,7 @@ from claimpilot.extraction import (
 )
 from claimpilot.extraction.cache import InMemoryExtractionCache, cache_key
 from claimpilot.extraction.preprocess import sniff_media_type
+from claimpilot.extraction.schema import WireReceipt, from_domain
 from claimpilot.extraction.service import needs_escalation, system_prompt
 from claimpilot.llm.fake import FakeLLM
 
@@ -109,7 +110,7 @@ def llm(models_registry):
 
 
 async def test_extracts_with_prompt_and_document(llm, doc):
-    llm.register(ExtractedReceipt, GOOD, route="extraction")
+    llm.register(WireReceipt, from_domain(GOOD), route="extraction")
     result = await ReceiptExtractor(llm).extract(doc)
 
     assert result.receipt == GOOD
@@ -123,7 +124,7 @@ async def test_extracts_with_prompt_and_document(llm, doc):
 
 
 async def test_cache_hit_skips_llm(llm, doc):
-    llm.register(ExtractedReceipt, GOOD, route="extraction")
+    llm.register(WireReceipt, from_domain(GOOD), route="extraction")
     extractor = ReceiptExtractor(llm, cache=InMemoryExtractionCache())
     first = await extractor.extract(doc)
     second = await extractor.extract(doc)
@@ -135,8 +136,8 @@ async def test_cache_hit_skips_llm(llm, doc):
 
 
 async def test_escalates_when_critical_field_is_unsure(llm, doc):
-    llm.register(ExtractedReceipt, UNSURE, route="extraction")
-    llm.register(ExtractedReceipt, GOOD, route="extraction_retry")
+    llm.register(WireReceipt, from_domain(UNSURE), route="extraction")
+    llm.register(WireReceipt, from_domain(GOOD), route="extraction_retry")
     result = await ReceiptExtractor(llm).extract(doc)
 
     assert result.escalated
@@ -146,7 +147,7 @@ async def test_escalates_when_critical_field_is_unsure(llm, doc):
 
 
 async def test_escalation_can_be_disabled(llm, doc):
-    llm.register(ExtractedReceipt, UNSURE, route="extraction")
+    llm.register(WireReceipt, from_domain(UNSURE), route="extraction")
     result = await ReceiptExtractor(llm, escalate=False).extract(doc)
     assert not result.escalated and result.receipt.total == 18.9
 

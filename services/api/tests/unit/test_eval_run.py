@@ -19,6 +19,7 @@ from claimpilot.evals.run import (
     render_markdown,
     run_config,
 )
+from claimpilot.extraction.schema import WireReceipt, from_domain
 from claimpilot.llm.fake import FakeLLM
 from claimpilot.llm.registry import ModelRegistry
 from claimpilot.llm.types import Completion
@@ -61,7 +62,10 @@ def manifest(tmp_path: Path) -> Path:
 def factory(registry: ModelRegistry, response: ExtractedReceipt | Completion = TRUTH):
     def llm_for(config: RunConfig) -> FakeLLM:
         llm = FakeLLM(registry, env=config.env())
-        llm.register(ExtractedReceipt, response)
+        llm.register(
+            WireReceipt,
+            from_domain(response) if isinstance(response, ExtractedReceipt) else response,
+        )
         return llm
 
     return llm_for

@@ -14,6 +14,7 @@ from importlib.resources import files
 from claimpilot.domain import CRITICAL_FIELDS, ExtractedReceipt
 from claimpilot.extraction.cache import ExtractionCache, cache_key
 from claimpilot.extraction.preprocess import PreparedDocument
+from claimpilot.extraction.schema import WireReceipt, to_domain
 from claimpilot.llm.client import LLMClient
 from claimpilot.llm.types import LLMResult, ThinkingMode
 
@@ -33,7 +34,7 @@ class Extraction:
     receipt: ExtractedReceipt
     cached: bool
     escalated: bool
-    calls: tuple[LLMResult[ExtractedReceipt], ...] = ()
+    calls: tuple[LLMResult[WireReceipt], ...] = ()
 
     @property
     def cost_usd(self) -> float:
@@ -72,23 +73,23 @@ class ReceiptExtractor:
 
         first = await self._call(PRIMARY_ROUTE, document)
         calls = [first]
-        receipt = first.parsed
+        receipt = to_domain(first.parsed)
         escalated = False
         if self._escalate and needs_escalation(receipt):
             second = await self._call(RETRY_ROUTE, document)
             calls.append(second)
-            receipt, escalated = second.parsed, True
+            receipt, escalated = to_domain(second.parsed), True
 
         if self._cache is not None:
             await self._cache.set(key, receipt)
         return Extraction(receipt=receipt, cached=False, escalated=escalated, calls=tuple(calls))
 
-    async def _call(self, route: str, document: PreparedDocument) -> LLMResult[ExtractedReceipt]:
+    async def _call(self, route: str, document: PreparedDocument) -> LLMResult[WireReceipt]:
         return await self._llm.parse(
             route,
             system=system_prompt(self._prompt_version),
             content=[*document.blocks, {"type": "text", "text": USER_INSTRUCTION}],
-            output_model=ExtractedReceipt,
+            output_model=WireReceipt,
             thinking=self._thinking,
         )
 
