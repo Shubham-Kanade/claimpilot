@@ -31,8 +31,11 @@ All four parts the organisers require must be present and filled in, with no ðŸš
 - [ ] The link is in the README and the TDD header.
 
 ## 5. Hosting (when hosted)
-- [ ] The hosted URL loads logged-out, with **no login or access request** (demo personas instead).
-- [ ] `/readyz` is green. The demo data has been reset. A spend cap is confirmed on the Claude Console.
+The demo is a Hugging Face Space built from `deploy/hf-space` (ADR-030).
+- [ ] The Space URL loads **logged out**, with no login or access request (demo personas instead).
+- [ ] `https://<space>.hf.space/api/readyz` is green and `uv run --project services/api python scripts/smoke.py --api https://<space>.hf.space/api` prints `SMOKE OK` (it replays the recordings: every model answer must hit).
+- [ ] No API key is configured on the Space (replay only, so a visitor can never spend money); the Space is public.
+- [ ] The Space's `Dockerfile` has `REF=main` (or the tag you submit) and the GitHub repo is public with that ref pushed.
 - [ ] The URL is in the README and the TDD header.
 
 ## 6. Final submission
