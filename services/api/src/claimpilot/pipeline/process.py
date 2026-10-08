@@ -202,7 +202,8 @@ async def _read_one(deps: PipelineDeps, row: Document) -> _Read:
         prepare_document, raw, max_pdf_pages=deps.settings.max_pdf_pages
     )
     extraction = await deps.extractor.extract(prepared)
-    decisions, result = await decide_document(deps.decisions, extraction.receipt)
+    notes = await _calendar_notes(deps, row.employee_id, extraction.receipt)
+    decisions, result = await decide_document(deps.decisions, extraction.receipt, calendar=notes)
     return _Read(
         row=row,
         raw=raw,
@@ -211,6 +212,33 @@ async def _read_one(deps: PipelineDeps, row: Document) -> _Read:
         decisions=decisions,
         cost_usd=extraction.cost_usd + result.cost_usd,
     )
+
+
+async def _calendar_notes(
+    deps: PipelineDeps, employee_id: str, receipt: ExtractedReceipt
+) -> list[str] | None:
+    """What the employee's calendar shows on the receipt's date, as words without names.
+
+    System One needs it to tell hosting clients from an ordinary meal. Best effort: ``None`` when
+    the receipt has no readable date or the calendar cannot be reached (the question is then asked
+    without it, never failed).
+    """
+    try:
+        day = date.fromisoformat(receipt.date) if receipt.date else None
+    except ValueError:
+        day = None
+    if day is None:
+        return None
+    try:
+        events = await deps.calendar.events(employee_id, day, day)
+    except Exception as exc:  # the calendar is a convenience
+        logger.warning("calendar unavailable for %s: %s", employee_id, _short(exc))
+        return None
+    notes = []
+    for event in events:
+        guests = f" with {len(event.attendees)} guests" if event.attendees else ""
+        notes.append(f"{event.kind.replace('_', ' ')}{guests}")
+    return notes
 
 
 async def _fail(deps: PipelineDeps, batch_id: str, row: Document, exc: BaseException) -> None:

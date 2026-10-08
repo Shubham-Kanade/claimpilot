@@ -21,7 +21,7 @@ from claimpilot.decisions.types import Answer, DecisionResult, Question
 from claimpilot.llm.client import LLMClient
 
 ROUTE = "decision_fallback"
-PROMPT_VERSION = "decide_v1"
+PROMPT_VERSION = "decide_v2"
 
 _MODELS: dict[tuple[Any, ...], type[BaseModel]] = {}
 

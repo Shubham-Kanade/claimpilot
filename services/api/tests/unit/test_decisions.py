@@ -83,6 +83,18 @@ def test_state_notes_instructions_and_route():
     assert state["route"] == "Pune to Delhi" and "ignore it" in state["note"]
 
 
+def test_state_carries_the_calendar_of_the_day_when_it_is_known():
+    assert "calendar_that_day" not in document_state(RECEIPT)  # unknown: say nothing
+    assert document_state(RECEIPT, [])["calendar_that_day"] == ["nothing relevant"]
+    busy = document_state(RECEIPT, ["client dinner with 3 guests", "travel"])
+    assert busy["calendar_that_day"] == ["client dinner with 3 guests", "travel"]
+
+
+def test_the_category_question_is_versioned_with_what_it_is_asked_over():
+    # the state grew a calendar field, so recorded and cached answers to v2 must not be reused
+    assert DOCUMENT_QUESTIONS[0].version == 3
+
+
 # --- Jev engine -----------------------------------------------------------------------------
 
 JEV_OK = {

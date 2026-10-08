@@ -108,3 +108,30 @@ def test_aggregate_empty():
     assert agg.field_accuracy == 0.0
     assert agg.injection_recall is None
     assert agg.json_validity == 0.0
+
+
+# --- false alarms: a misread figure that would make the trust checks accuse a genuine receipt ----
+
+
+def test_a_misread_total_is_a_false_alarm_when_the_document_itself_adds_up():
+    genuine = _truth()  # 240 + 12 = 252
+    s = score_receipt("r1", genuine, _truth(total=2520.0))
+    assert s.false_alarm
+
+
+def test_a_genuine_mismatch_the_reader_reproduced_is_not_a_false_alarm():
+    edited = _truth(total=752.0)  # printed that way: the document's own figures contradict
+    assert not score_receipt("r1", edited, edited.model_copy()).false_alarm
+
+
+def test_an_exact_read_is_not_a_false_alarm():
+    assert not score_receipt("r1", _truth(), _truth()).false_alarm
+
+
+def test_aggregate_counts_false_alarms():
+    scores = [
+        score_receipt("r1", _truth(), _truth()),
+        score_receipt("r2", _truth(), _truth(total=2520.0)),
+        score_receipt("r3", _truth(), _truth(subtotal=2400.0)),
+    ]
+    assert aggregate(scores).false_alarms == 2

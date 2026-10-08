@@ -156,7 +156,8 @@ def build_harness(
         return from_domain(by_image[data].truth.receipt)
 
     llm = FakeLLM(models_registry, env={})
-    llm.register(WireReceipt, responder or read, route="extraction")
+    for route in ("extraction", "extraction_retry"):  # the second opinion reads it again
+        llm.register(WireReceipt, responder or read, route=route)
     repo = Repository(sessions)
     storage = InMemoryStorage()
     events = ev.InMemoryEventBus()

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 from claimpilot.config import Settings
 from claimpilot.decisions.cascade import CascadeEngine
 from claimpilot.decisions.jev import JevEngine
@@ -33,9 +35,9 @@ def to_decisions(result: DecisionResult) -> Decisions:
 
 
 async def decide_document(
-    engine: DecisionEngine, receipt: ExtractedReceipt
+    engine: DecisionEngine, receipt: ExtractedReceipt, *, calendar: Sequence[str] | None = None
 ) -> tuple[Decisions, DecisionResult]:
-    result = await engine.decide(document_state(receipt), DOCUMENT_QUESTIONS)
+    result = await engine.decide(document_state(receipt, calendar), DOCUMENT_QUESTIONS)
     return to_decisions(result), result
 
 

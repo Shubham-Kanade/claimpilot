@@ -43,6 +43,7 @@ class RunConfig:
     model_key: str
     effort: str | None = None
     escalate: bool = False  # cascade: escalate low-confidence critical fields to extraction_retry
+    second_opinion: bool = False  # production default: re-read what looks suspicious (ADR-031)
 
     def env(self) -> dict[str, str]:
         env = {"ROUTE_EXTRACTION": self.model_key}
@@ -53,6 +54,7 @@ class RunConfig:
 
 PRESETS: dict[str, RunConfig] = {
     "haiku-low": RunConfig("haiku-low", "haiku", "low"),
+    "haiku-2nd": RunConfig("haiku-2nd", "haiku", "low", second_opinion=True),
     "haiku-medium": RunConfig("haiku-medium", "haiku", "medium"),
     "haiku45": RunConfig("haiku45", "haiku45"),
     "sonnet-low": RunConfig("sonnet-low", "sonnet", "low"),
@@ -136,7 +138,7 @@ async def estimate_cost(
             input_tokens=mean_input,
             output_tokens=ASSUMED_OUTPUT_TOKENS,
         )
-        allowance = ESCALATION_ALLOWANCE if config.escalate else 1.0
+        allowance = ESCALATION_ALLOWANCE if (config.escalate or config.second_opinion) else 1.0
         estimates[config.name] = per_receipt * len(cases) * allowance
     return estimates
 
@@ -149,7 +151,9 @@ async def run_config(
     budget_left: float,
     concurrency: int = 4,
 ) -> ConfigReport:
-    extractor = ReceiptExtractor(llm, escalate=config.escalate)
+    extractor = ReceiptExtractor(
+        llm, escalate=config.escalate, second_opinion=config.second_opinion
+    )
     gate = asyncio.Semaphore(concurrency)
     scores: list[ReceiptScore] = []
     latencies: list[int] = []
@@ -196,17 +200,22 @@ def render_markdown(reports: Sequence[ConfigReport], meta: dict[str, object]) ->
         f" · prompt: `{meta['prompt']}` · total spend: ${meta['spend']:.4f}",
         "",
         "| Config | Critical acc | Field acc | Line-item F1 | JSON valid | Injection recall"
-        " | $/receipt | $/1k | p50 ms | p95 ms | Gates | Pareto |",
-        "|---|---|---|---|---|---|---|---|---|---|---|---|",
+        " | Injection false alarms | Arithmetic false alarms | Re-read | $/receipt | $/1k"
+        " | p50 ms | p95 ms | Gates | Pareto |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for r in reports:
         s, res = r.score, r.as_result()
         inj = "n/a" if s.injection_recall is None else f"{s.injection_recall:.0%}"
+        fp = s.injection_false_positive_rate
+        false_alarms = "n/a" if fp is None else f"{fp:.0%}"
         p50 = statistics.median(r.latencies_ms) if r.latencies_ms else 0
         lines.append(
             f"| {r.config.name} | {s.critical_field_accuracy:.1%} | {s.field_accuracy:.1%}"
-            f" | {s.line_item_f1:.2f} | {s.json_validity:.0%} | {inj}"
-            f" | ${res.cost_per_receipt:.5f} | ${res.cost_per_1k:.2f} | {p50:.0f}"
+            f" | {s.line_item_f1:.2f} | {s.json_validity:.0%} | {inj} | {false_alarms}"
+            f" | {s.false_alarms}/{s.receipts} | {r.escalations}/{len(r.latencies_ms)}"
+            f" | ${res.cost_per_receipt:.5f}"
+            f" | ${res.cost_per_1k:.2f} | {p50:.0f}"
             f" | {res.p95_latency_ms:.0f} | {'✅' if r.passes_gates else '❌'}"
             f" | {'★' if res.name in frontier else ''} |"
         )

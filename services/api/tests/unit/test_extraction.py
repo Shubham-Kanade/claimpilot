@@ -146,10 +146,20 @@ async def test_escalates_when_critical_field_is_unsure(llm, doc):
     assert result.cost_usd == pytest.approx(sum(c.cost_usd for c in result.calls))
 
 
-async def test_escalation_is_off_by_default(llm, doc):
-    llm.register(WireReceipt, from_domain(UNSURE), route="extraction")
+async def test_unsure_critical_fields_alone_do_not_escalate_by_default(llm, doc):
+    # an unsure date or merchant proves nothing; only the total, an AI-addressed note or
+    # inconsistent figures earn a second read (test_extraction_second_opinion)
+    unsure_date = GOOD.model_copy(update={"low_confidence_fields": ["date"]})
+    llm.register(WireReceipt, from_domain(unsure_date), route="extraction")
     result = await ReceiptExtractor(llm).extract(doc)
-    assert not result.escalated and result.receipt.total == 18.9
+    assert not result.escalated and len(llm.requests) == 1
+
+
+async def test_an_unsure_total_is_re_read_by_default(llm, doc):
+    llm.register(WireReceipt, from_domain(UNSURE), route="extraction")
+    llm.register(WireReceipt, from_domain(GOOD), route="extraction_retry")
+    result = await ReceiptExtractor(llm).extract(doc)
+    assert result.escalated and result.receipt.total == 189.0
 
 
 def test_needs_escalation_only_for_critical_fields():

@@ -12,7 +12,8 @@ from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass, field
 from difflib import SequenceMatcher
 
-from claimpilot.domain import CRITICAL_FIELDS, ExtractedReceipt
+from claimpilot.domain import CRITICAL_FIELDS, ExtractedReceipt, Severity
+from claimpilot.trust.gst import check_gst
 
 AMOUNT_TOLERANCE = 0.01  # rupees; truth and prediction are both rounded to 2dp
 MERCHANT_MIN_SIMILARITY = 0.9
@@ -102,6 +103,9 @@ class ReceiptScore:
     line_item_f1: float = 1.0
     injection_expected: bool = False
     injection_flagged: bool = False
+    # The read makes the trust checks complain (arithmetic, GST, GSTIN) where the document's own
+    # printed figures do not: a misread or swapped figure that would accuse a genuine receipt.
+    false_alarm: bool = False
 
     @property
     def errors(self) -> list[FieldResult]:
@@ -133,6 +137,15 @@ def line_item_f1(truth: Sequence[float], predicted: Sequence[float]) -> float:
     return 2 * precision * recall / (precision + recall)
 
 
+def _complaints(receipt: ExtractedReceipt) -> set[str]:
+    """Codes of the reading-dependent trust findings (the ones a second opinion can remove)."""
+    return {
+        f.code
+        for f in check_gst(receipt)
+        if f.severity is not Severity.info and f.code != "gstin_missing"
+    }
+
+
 def score_receipt(
     receipt_id: str, truth: ExtractedReceipt, predicted: ExtractedReceipt
 ) -> ReceiptScore:
@@ -143,6 +156,7 @@ def score_receipt(
         ),
         injection_expected=truth.contains_instructions,
         injection_flagged=predicted.contains_instructions,
+        false_alarm=bool(_complaints(predicted) - _complaints(truth)),
     )
     for name, (get, same) in FIELDS.items():
         t, p = get(truth), get(predicted)
@@ -163,6 +177,7 @@ class AggregateScore:
     injection_recall: float | None
     injection_false_positive_rate: float | None
     errors_by_field: dict[str, int]
+    false_alarms: int = 0
 
     @property
     def json_validity(self) -> float:
@@ -210,4 +225,5 @@ def aggregate(scores: Sequence[ReceiptScore], parse_failures: int = 0) -> Aggreg
         injection_recall=_rate(sum(s.injection_flagged for s in expected), len(expected)),
         injection_false_positive_rate=_rate(sum(s.injection_flagged for s in clean), len(clean)),
         errors_by_field=dict(sorted(errors_by_field.items(), key=lambda kv: -kv[1])),
+        false_alarms=sum(s.false_alarm for s in scores),
     )
