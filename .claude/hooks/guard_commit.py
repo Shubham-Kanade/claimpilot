@@ -31,8 +31,10 @@ GIT_WRITE = re.compile(r"\bgit\b(\s+-C\s+\S+)?\s+(commit|push)\b")
 
 
 def git(*args: str) -> str:
-    result = subprocess.run(["git", *args], capture_output=True, text=True, check=False)
-    return result.stdout
+    result = subprocess.run(
+        ["git", *args], capture_output=True, encoding="utf-8", errors="replace", check=False
+    )
+    return result.stdout or ""
 
 
 def main() -> int:
@@ -63,7 +65,8 @@ def main() -> int:
         leak = subprocess.run(
             ["gitleaks", "git", "--staged", "--no-banner", "--redact"],
             capture_output=True,
-            text=True,
+            encoding="utf-8",
+            errors="replace",
             check=False,
         )
         if leak.returncode == 1:
@@ -80,4 +83,8 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except Exception as exc:  # fail closed: a crashed guard must not let a commit through
+        sys.stderr.write(f"guard_commit.py failed ({type(exc).__name__}: {exc}); blocking.\n")
+        sys.exit(2)
