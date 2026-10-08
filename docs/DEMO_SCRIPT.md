@@ -8,6 +8,28 @@ Private) and put the link in the README and the design document.
 Before recording: open the app, press **Start over** (clean state), keep persona *Asha Menon*.
 For the Jev segment run the stack locally with `DECISION_ENGINE=jev` and a key in `.env`.
 
+## Two ways to make the video
+
+**1. Let the capture tool drive the browser.** It plays the whole story below (upload, findings,
+the one question, submit, the approver rejecting the trip with a reason and approving the clean
+phone bill, impact), draws a caption on screen for each step and writes a 1920×1080 `.webm`. It
+empties the demo first, so every run starts from the same pile.
+
+```bash
+docker build -f deploy/hf-space/Dockerfile --build-arg SOURCE=fetch-local -t claimpilot-demo .
+docker run -d --name cpdemo -p 7860:7860 claimpilot-demo
+cd apps/web && npm ci && node scripts/record-demo.mjs   # writes docs/demo/claimpilot-demo.webm
+```
+
+`--pace 1.4` slows every pause, `--base`/`--api` point it at another stack, `--shots <dir>` also
+saves one screenshot per caption (a quick way to check a change without watching the video). On a
+machine without Edge, `npx playwright install chromium` and set `BROWSER_CHANNEL=chromium`.
+Record your own voice over it with the words in the table, or leave the captions to speak, then
+upload the file to YouTube (Public or Unlisted).
+
+**2. Record the screen yourself** and follow the table. Use this if you want to show the Jev
+segment or the architecture and test slides in one take.
+
 | Time | On screen | Say (about) |
 |---|---|---|
 | 0:00 | Upload screen, persona *Asha Menon* | "Asha just got back from a client trip. She has fifteen receipts: photos, PDFs, a UPI screenshot, a handwritten auto fare. Expense reports cost people hours and finance teams even more. ClaimPilot does it in about thirty seconds." |
@@ -19,7 +41,7 @@ For the Jev segment run the stack locally with `DECISION_ENGINE=jev` and a key i
 | 1:45 | Open the **alcohol dinner**; show the policy clause | "Alcohol is never reimbursed. Every finding quotes the policy clause behind it: 6.1." |
 | 2:00 | Trip claim shows ONE question; type a one-line reply | "It asks only what it cannot work out. The dinner needed nothing because the calendar already had who attended and why. For the trip, one question, answered in a sentence." |
 | 2:20 | **Submit** dialog, confirm | "Nothing is submitted without an explicit confirmation. It goes to the finance system over MCP, and gets a reference." |
-| 2:35 | Switch persona to *Ravi Iyer*; approvals queue | "The approver sees a risk-ranked queue with the evidence. Clean small claims need no review; the flagged ones do. Rejecting needs a reason." |
+| 2:35 | Switch persona to *Ravi Iyer*; approvals queue; open the trip, type a reason, **Reject**; open the phone bill, **Approve** | "The approver sees a risk-ranked queue with the evidence. The trip has alcohol, so Ravi rejects it, and a reason is required because finance keeps it on record. The phone bill has no flags: one click." |
 | 2:55 | Impact page | "Documents, claims, what the AI cost, minutes saved." |
 | 3:05 | Architecture slide (README diagram) | "Under the hood: Claude reads, Jev decides, deterministic code checks and routes. The mock finance and corporate systems are real MCP servers. Models are chosen by a bake-off on cost, accuracy and speed: Haiku 5.5 reads a receipt for about five hundredths of a cent." |
 | 3:25 | Test and metrics slide | "More than sixteen hundred tests at ninety-eight percent coverage, a typed contract between backend and frontend, CI on every push, and a design document with every decision and its evidence." |

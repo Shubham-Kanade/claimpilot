@@ -66,7 +66,7 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run format:check
-      - name: Tests + coverage gate (thresholds in vitest.config.ts)
+      - name: Tests + coverage gate (thresholds in vitest.config.mts)
         run: npm run test:coverage
       - name: Upload coverage
         if: always()
@@ -135,8 +135,10 @@ jobs:
 
   demo:
     # The hosted demo is one image (ADR-030). Build it, start it and drive the sample receipts to
-    # an approved claim through the public port. Every model answer must come from the committed
-    # recordings, so this also catches recordings that stop matching on another machine.
+    # an approved claim through the public port, first by API (smoke.py), then through the browser
+    # (the Playwright suite in apps/web/e2e: upload, review, answer, submit, approve, accessibility,
+    # phone layout). Every model answer must come from the committed recordings, so this also
+    # catches recordings that stop matching on another machine.
     runs-on: ubuntu-latest
     needs: [api, web]
     steps:
@@ -144,6 +146,11 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
       - name: Build the hosted-demo image
         run: docker build -f deploy/hf-space/Dockerfile --build-arg SOURCE=fetch-local -t claimpilot-demo .
       - name: Start it
@@ -153,6 +160,22 @@ jobs:
           docker logs demo; exit 1
       - name: Drive the sample receipts through it (replay mode, no model calls)
         run: uv run --project services/api python scripts/smoke.py --api http://localhost:7860/api
+      - name: Browser tests (Playwright, desktop and phone)
+        working-directory: apps/web
+        env:
+          E2E_BASE_URL: http://localhost:7860
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npm run e2e
+      - name: Upload the Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            apps/web/playwright-report/
+            apps/web/test-results/
       - name: Logs on failure
         if: failure()
         run: docker logs demo

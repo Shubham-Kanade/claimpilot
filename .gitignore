@@ -26,6 +26,9 @@ node_modules/
 out/
 apps/web/test-results/
 apps/web/playwright-report/
+# the demo video goes to YouTube, not into git (apps/web/scripts/record-demo.mjs writes it here)
+docs/demo/
+*.webm
 *.tsbuildinfo
 next-env.d.ts
 
