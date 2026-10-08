@@ -197,10 +197,15 @@ try {
   await back();
 
   await open(/Mumbai trip/i);
-  await say("Alcohol is never reimbursed. Every finding quotes the policy clause behind it.", 4500);
-  await page.mouse.wheel(0, 900);
-  await sleep(3500);
-  await page.mouse.wheel(0, -900);
+  await sleep(1500);
+  // The alcohol finding sits on the dinner receipt, below the fold: bring it to the middle
+  await page.getByText(/Policy clause 6\.1/).first()
+    .evaluate((el) => el.scrollIntoView({ block: "center", behavior: "smooth" }), null, { timeout: 5000 })
+    .catch(() => {}); // a missing scroll must never lose the recording
+  await sleep(900);
+  await say("Alcohol is never reimbursed. Every finding quotes the policy clause behind it.", 5500);
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
+  await sleep(900);
 
   // 5. One question, one answer
   await say(

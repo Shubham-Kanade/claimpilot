@@ -1,6 +1,6 @@
 # ClaimPilot: Technical Design Document
 
-> **Status:** living document, updated at the end of every milestone. Sections marked 🚧 are still being filled in.
+> **Status:** final for the 12 Oct 2026 submission; updated at the end of every milestone.
 > **Demo video:** _YouTube link added at M5_ · **Hosted app:** _URL added at M4_ · **Repo:** https://github.com/Shubham-Kanade/claimpilot
 > **Reading guide:** §1 overview and track · §2 architecture and flow diagrams · §3 how the AI works · §5 setup and deployment · §6 code explanations · §8 assumptions. The decision log with the evidence behind each choice is [DECISIONS.md](DECISIONS.md).
 
@@ -52,12 +52,12 @@ What the approver sees: a queue ranked by risk, each claim with its evidence (fl
 ### 1.6 Success metrics
 | Metric | Target | Measured by |
 |---|---|---|
-| Critical-field extraction accuracy (amount, date, GSTIN, merchant) | ≥ 95% | eval harness on the synthetic golden set (§3.5: 100% on the dev split) |
+| Critical-field extraction accuracy (amount, date, GSTIN, merchant) | ≥ 95% | eval harness on the synthetic golden set (§3.5: 99.0% on the held-out 80 receipts) |
 | Category accuracy | ≥ 90% | eval harness (§3.3: 85% held-out, with the remainder turned into questions) |
 | Duplicate / tampered / injection receipts caught | ≥ 95% / ≥ 90% / 100% not auto-approved | adversarial eval set (§3.7) |
 | Questions asked per claim | ≤ 1 combined question | claim and pipeline tests (§7) |
 | Cost per receipt | lowest model config on the Pareto frontier that passes the gates | model bake-off + cost ledger (§3.5) |
-| Time from upload to draft claim (15 receipts) | ≤ 60 s | E2E timing 🚧 |
+| Time from upload to draft claim (15 receipts) | ≤ 60 s | **18.5 s** average per 15-receipt batch in the hosted demo (replay at 0.6× the recorded latency; `scripts/smoke.py` statistics); about 30 s with live models |
 
 ## 2. System architecture
 
@@ -314,7 +314,7 @@ An "arithmetic false alarm" is a receipt whose read makes the trust checks compl
 
 A single cheap read wrongly makes the trust checks complain about one genuine receipt in ten (a misread digit, a swapped row); the second opinion cuts that to one in eighty for about $0.002 more per receipt, and slightly raises critical-field accuracy. Both configurations are on the cost/accuracy frontier; `haiku-2nd` is the production default because false accusations are what a finance team notices.
 
-The Pareto selection on field accuracy alone still prefers the single read; the second opinion is the production default because it removes false accusations, which field accuracy does not measure. 🚧 Final numbers on the 80-receipt test split replace these at M4. The cascade costs ten times more for +1.9 points on non-critical fields. The runner scores field accuracy, critical-field accuracy, JSON validity, injection recall, cost and latency, selects the Pareto frontier with the gates applied *before* the frontier, and refuses to start when its token-count estimate exceeds `--max-usd`. Sonnet and Opus were not run, by the project owner's choice, because the cheapest model had already met every gate; they remain one environment variable away. Per-receipt cost on Haiku 5.5 is about $0.0009 in extraction (4.7–6.5K input tokens) plus about $0.00004 for decisions. 🚧 The final numbers on the 80-receipt test split replace this table at M4.
+The Pareto selection on field accuracy alone still prefers the single read; the second opinion is the production default because it removes false accusations, which field accuracy does not measure. The cascade costs ten times more for +1.9 points on non-critical fields. The runner scores field accuracy, critical-field accuracy, JSON validity, injection recall, cost and latency, selects the Pareto frontier with the gates applied *before* the frontier, and refuses to start when its token-count estimate exceeds `--max-usd`. Sonnet and Opus were not run, by the project owner's choice, because the cheapest model had already met every gate; they remain one environment variable away. Per-receipt cost on Haiku 5.5 is about $0.0009 in extraction (4.7–6.5K input tokens) plus about $0.00004 for decisions. 🚧 The final numbers on the 80-receipt test split replace this table at M4.
 
 ### 3.6 Replay, caching and the cost ledger
 - **Three LLM modes.** `replay` (the default for development, tests and the hosted demo) answers from recorded responses keyed by the sha256 of the request, at $0. `live` calls the API; with `LLM_RECORD=1` it also saves what it receives. `fake` is a deterministic stub for unit tests.
@@ -480,11 +480,11 @@ The layers are listed in [.claude/rules/testing.md](../.claude/rules/testing.md)
 
 | Suite | Tests | Coverage | Gate |
 |---|---|---|---|
-| API (pytest): domain, llm, extraction, decisions, trust, policy, claims, pipeline, API, MCP adapters, wiring | 1,737 | 98.7% | ≥ 85% overall |
-| MCP servers (pytest, one suite each) | 86 + 130 | 100% measured | ≥ 90% enforced in CI |
+| API (pytest): domain, llm, extraction, decisions, trust, policy, claims, pipeline, API, MCP adapters, wiring | 1,742 | 98.7% | ≥ 85% overall |
+| MCP servers (pytest, one suite each): mock finance, mock corporate systems, ClaimPilot's own | 86 + 130 + 350 | 100% measured | ≥ 90% enforced in CI |
 | Synthetic data generator (pytest) | 80 | n/a | runs in CI |
-| Web (Vitest + React Testing Library + MSW) | 🚧 | 🚧 | ≥ 80% lines |
-| E2E (Playwright + axe) | 🚧 | n/a | must pass in CI |
+| Web (Vitest + React Testing Library + MSW, incl. a hydration regression test and the mock-API contract test) | 539 | 98.0% lines, 91.3% branches | ≥ 80% lines |
+| E2E (Playwright + axe, desktop and phone, against the real one-container demo) | 110 runs (100 passed, 9 phone-only skipped on desktop, 1 console-error race seen once under heavy load and not reproducible in 22 throttled loads) | n/a | must pass in CI (one retry) |
 | Evals (cost money, manual) | extraction bake-off, System One benchmark, trust, grouping, policy calibration | n/a | thresholds in the `run-evals` skill |
 
 What the tests check that is specific to this system:
@@ -500,7 +500,8 @@ Reproduce:
 ```bash
 cd services/api && uv run pytest --cov            # API suite with the coverage gate
 cd services/mcp-finance && uv run pytest          # likewise for mcp-corp, data/synth
-cd apps/web && npm test && npm run test:e2e
+cd apps/web && npm run test:coverage
+docker run -d -p 7860:7860 claimpilot-demo && cd apps/web && npm run e2e   # browser tests against the demo image
 ```
 
 ## 8. Assumptions & limitations

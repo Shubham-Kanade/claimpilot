@@ -50,7 +50,7 @@ flowchart LR
 | Duplicates, injection, tampered totals | 4/4, 4/4, 4/4 caught; 0 false positives on 88 clean documents | ADR-026 |
 | Policy rules on the golden set | 0 of 80 legitimate receipts flagged, 4 of 4 over-policy cases caught | ADR-024 |
 | Claim grouping against ground-truth trips | F1 = 1.000 | ADR-025 |
-| Tests | **1,737 API tests at 98.7% coverage**, plus MCP servers (100%), synthetic-data generator and web (see below) | CI |
+| Tests | **1,742 API tests at 98.7% coverage**, 539 web tests at 98% (plus 110 browser runs on desktop and phone with accessibility checks), 566 MCP-server tests at 100%, synthetic-data generator | CI |
 
 ## Run it
 
@@ -76,7 +76,7 @@ cd apps/web && npm install && npm run dev
 cd services/api && uv run pytest --cov     # unit, API, pipeline, replay; never calls a paid API by default
 cd services/mcp-finance && uv run pytest   # likewise services/mcp-corp and data/synth
 cd apps/web && npm run test:coverage       # Vitest + React Testing Library + MSW
-cd apps/web && npm run e2e                 # Playwright + axe against a mock API
+cd apps/web && npm run e2e                 # Playwright + axe against the running demo image (see apps/web/README.md)
 ```
 The layers (unit, LLM record/replay, request-shape snapshots for every model, pipeline end to end, API, contract drift, evals) are described in [docs/TECHNICAL_DESIGN.md](docs/TECHNICAL_DESIGN.md#7-testing-strategy--results).
 
