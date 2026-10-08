@@ -42,14 +42,15 @@ flowchart LR
 
 | What | Result | Where |
 |---|---|---|
-| Field extraction on the dev split (Claude Haiku 5.5) | critical fields 100%, all fields 96.0% | [evals/reports](evals/reports) |
-| Cost of reading a receipt | about **$0.0005** (Haiku 5.5), p50 2.5 s | [ADR-018](docs/DECISIONS.md), [ADR-028](docs/DECISIONS.md) |
-| Model choice | cascade to Sonnet costs 10× for +1.9 points on non-critical fields, so Haiku alone | bake-off, ADR-018 |
+| Field extraction on a held-out set of 80 receipts (Claude Haiku 5.5 with a second opinion) | critical fields 99.0%, all fields 95.4% | [evals/reports](evals/reports) |
+| Genuine receipts wrongly accused because a figure was misread | 8 of 80 with one read, **1 of 80** with the second opinion | [ADR-031](docs/DECISIONS.md) |
+| Cost of reading a receipt | about **$0.0005** for the first read, $0.0025 on average with the second opinion and click-to-verify; p50 2.1 s | [ADR-018](docs/DECISIONS.md), [ADR-031](docs/DECISIONS.md) |
+| Model choice | a cascade to Sonnet on every unsure field costs 10x for +1.9 points, so Haiku reads and Sonnet only re-reads what looks wrong | bake-off, ADR-018, ADR-031 |
 | System One vs LLM on category (80 held-out documents) | same accuracy (85%), Jev about **3× faster and cheaper** | ADR-021 |
 | Duplicates, injection, tampered totals | 4/4, 4/4, 4/4 caught; 0 false positives on 88 clean documents | ADR-026 |
 | Policy rules on the golden set | 0 of 80 legitimate receipts flagged, 4 of 4 over-policy cases caught | ADR-024 |
 | Claim grouping against ground-truth trips | F1 = 1.000 | ADR-025 |
-| Tests | **1,625 API tests at 98.65% coverage**, plus MCP servers (100%), synthetic-data generator and web (see below) | CI |
+| Tests | **1,737 API tests at 98.7% coverage**, plus MCP servers (100%), synthetic-data generator and web (see below) | CI |
 
 ## Run it
 

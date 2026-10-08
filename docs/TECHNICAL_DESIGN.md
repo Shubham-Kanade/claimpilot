@@ -305,6 +305,15 @@ Prompt v3 with and without the second opinion (ADR-031), same split (n = 20; the
 
 An "arithmetic false alarm" is a receipt whose read makes the trust checks complain (a total that does not add up, a rate that contradicts the stated one, a GSTIN that fails its checksum) where the document's own printed figures are consistent: a misread or swapped figure that would accuse a genuine receipt.
 
+**Final numbers on the held-out test split (80 receipts, prompt v3, `evals/reports/2026-10-08-bakeoff-test-v3.md`):**
+
+| Config | Critical | Fields | Line-item F1 | Injection recall / false alarms | Arithmetic false alarms | Re-read | $ / 1k | p50 / p95 |
+|---|---|---|---|---|---|---|---|---|
+| `haiku-low` (one read) | 98.3% | 95.3% | 0.93 | 100% / 0% | **8 / 80** | 0/80 | $0.46 | 2.2 s / 3.4 s |
+| **`haiku-2nd` (production)** | **99.0%** | 95.4% | 0.93 | 100% / 0% | **1 / 80** | 17/80 | $2.46 | 2.1 s / 6.6 s |
+
+A single cheap read wrongly makes the trust checks complain about one genuine receipt in ten (a misread digit, a swapped row); the second opinion cuts that to one in eighty for about $0.002 more per receipt, and slightly raises critical-field accuracy. Both configurations are on the cost/accuracy frontier; `haiku-2nd` is the production default because false accusations are what a finance team notices.
+
 The Pareto selection on field accuracy alone still prefers the single read; the second opinion is the production default because it removes false accusations, which field accuracy does not measure. 🚧 Final numbers on the 80-receipt test split replace these at M4. The cascade costs ten times more for +1.9 points on non-critical fields. The runner scores field accuracy, critical-field accuracy, JSON validity, injection recall, cost and latency, selects the Pareto frontier with the gates applied *before* the frontier, and refuses to start when its token-count estimate exceeds `--max-usd`. Sonnet and Opus were not run, by the project owner's choice, because the cheapest model had already met every gate; they remain one environment variable away. Per-receipt cost on Haiku 5.5 is about $0.0009 in extraction (4.7–6.5K input tokens) plus about $0.00004 for decisions. 🚧 The final numbers on the 80-receipt test split replace this table at M4.
 
 ### 3.6 Replay, caching and the cost ledger
