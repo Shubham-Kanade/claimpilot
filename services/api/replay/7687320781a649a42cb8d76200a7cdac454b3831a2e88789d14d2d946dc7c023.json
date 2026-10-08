@@ -1,0 +1,20 @@
+{
+  "completion": {
+    "latency_ms": 1561,
+    "model_id": "claude-haiku-5-5",
+    "stop_category": null,
+    "stop_reason": "end_turn",
+    "text": "{\"doc_type\":\"upi_payment\",\"merchant_name\":\"SUNIL BHOSALE\",\"merchant_gstin\":\"\",\"merchant_city\":\"\",\"invoice_number\":\"\",\"date\":\"2026-10-07\",\"time\":\"08:42\",\"currency\":\"INR\",\"line_items\":[{\"description\":\"UPI payment to SUNIL BHOSALE (sunilbhosale84@okvasudha)\",\"quantity\":\"\",\"unit_price\":\"\",\"amount\":\"120.00\"}],\"subtotal\":\"\",\"taxes\":{\"cgst\":\"\",\"sgst\":\"\",\"igst\":\"\",\"cess\":\"\",\"gst_rate_percent\":\"\"},\"service_charge\":\"\",\"discount\":\"\",\"total\":\"120.00\",\"payment_method\":\"upi\",\"upi_reference\":\"528413907266\",\"travel_from\":\"\",\"travel_to\":\"\",\"languages\":[\"en\"],\"handwritten\":false,\"low_confidence_fields\":[],\"contains_instructions\":false}",
+    "usage": {
+      "cache_read_tokens": 4670,
+      "cache_write_tokens": 0,
+      "input_tokens": 1475,
+      "output_tokens": 290
+    }
+  },
+  "model_id": "claude-haiku-5-5",
+  "model_key": "haiku",
+  "output_model": "WireReceipt",
+  "request_hash": "7687320781a649a42cb8d76200a7cdac454b3831a2e88789d14d2d946dc7c023",
+  "route": "extraction"
+}

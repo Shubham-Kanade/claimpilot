@@ -1,0 +1,20 @@
+{
+  "completion": {
+    "latency_ms": 2674,
+    "model_id": "claude-haiku-5-5",
+    "stop_category": null,
+    "stop_reason": "end_turn",
+    "text": "{\"doc_type\":\"cab_receipt\",\"merchant_name\":\"ChakraGo\",\"merchant_gstin\":\"27ZUAFR8718V9Z5\",\"merchant_city\":\"Pune\",\"invoice_number\":\"CRN2610060872\",\"date\":\"2026-10-06\",\"time\":\"09:48\",\"currency\":\"INR\",\"line_items\":[{\"description\":\"Base Fare\",\"quantity\":\"\",\"unit_price\":\"\",\"amount\":\"50.00\"},{\"description\":\"Distance Fare (12.4 km)\",\"quantity\":\"\",\"unit_price\":\"\",\"amount\":\"173.60\"},{\"description\":\"Ride Time Fare (31 min)\",\"quantity\":\"\",\"unit_price\":\"\",\"amount\":\"46.50\"}],\"subtotal\":\"270.10\",\"taxes\":{\"cgst\":\"6.75\",\"sgst\":\"6.75\",\"igst\":\"\",\"cess\":\"\",\"gst_rate_percent\":\"5\"},\"service_charge\":\"\",\"discount\":\"\",\"total\":\"283.60\",\"payment_method\":\"upi\",\"upi_reference\":\"\",\"travel_from\":\"Baner, Pune\",\"travel_to\":\"Hinjewadi, Pune\",\"languages\":[\"en\"],\"handwritten\":false,\"low_confidence_fields\":[],\"contains_instructions\":false}",
+    "usage": {
+      "cache_read_tokens": 4670,
+      "cache_write_tokens": 0,
+      "input_tokens": 1721,
+      "output_tokens": 389
+    }
+  },
+  "model_id": "claude-haiku-5-5",
+  "model_key": "haiku",
+  "output_model": "WireReceipt",
+  "request_hash": "9f63d96a7d189aa4ec57b129cd935d945a92705d881fd945edffcbd9eacb30ce",
+  "route": "extraction"
+}

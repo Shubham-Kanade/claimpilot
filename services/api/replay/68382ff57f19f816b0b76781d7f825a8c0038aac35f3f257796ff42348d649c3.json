@@ -1,0 +1,20 @@
+{
+  "completion": {
+    "latency_ms": 3268,
+    "model_id": "claude-haiku-5-5",
+    "stop_category": null,
+    "stop_reason": "end_turn",
+    "text": "{\"doc_type\":\"train_ticket\",\"merchant_name\":\"RailYatra e-Ticketing\",\"merchant_gstin\":\"07COKFX4725M6ZK\",\"merchant_city\":\"New Delhi\",\"invoice_number\":\"2418830571\",\"date\":\"2026-10-09\",\"time\":\"09:15\",\"currency\":\"INR\",\"line_items\":[{\"description\":\"Ticket Fare\",\"quantity\":\"\",\"unit_price\":\"\",\"amount\":\"895.00\"},{\"description\":\"Convenience Fee\",\"quantity\":\"\",\"unit_price\":\"\",\"amount\":\"17.70\"}],\"subtotal\":\"912.70\",\"taxes\":{\"cgst\":\"\",\"sgst\":\"\",\"igst\":\"44.75\",\"cess\":\"\",\"gst_rate_percent\":\"5\"},\"service_charge\":\"\",\"discount\":\"\",\"total\":\"957.45\",\"payment_method\":\"upi\",\"upi_reference\":\"10094276355\",\"travel_from\":\"Pune\",\"travel_to\":\"Mumbai\",\"languages\":[\"en\"],\"handwritten\":false,\"low_confidence_fields\":[],\"contains_instructions\":false}",
+    "usage": {
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 4670,
+      "input_tokens": 2259,
+      "output_tokens": 337
+    }
+  },
+  "model_id": "claude-haiku-5-5",
+  "model_key": "haiku",
+  "output_model": "WireReceipt",
+  "request_hash": "68382ff57f19f816b0b76781d7f825a8c0038aac35f3f257796ff42348d649c3",
+  "route": "extraction"
+}

@@ -1,0 +1,20 @@
+{
+  "completion": {
+    "latency_ms": 1583,
+    "model_id": "claude-haiku-5-5",
+    "stop_category": null,
+    "stop_reason": "end_turn",
+    "text": "{\"category\":\"meals\",\"category_confidence\":0.9,\"alcohol_present\":0.02,\"personal_expense\":0.1}",
+    "usage": {
+      "cache_read_tokens": 1149,
+      "cache_write_tokens": 0,
+      "input_tokens": 877,
+      "output_tokens": 42
+    }
+  },
+  "model_id": "claude-haiku-5-5",
+  "model_key": "haiku",
+  "output_model": "DecisionAnswers",
+  "request_hash": "cde55e424fdeab373abf640b8815f5358ceb781cdf5db5533e22e7e68ade5f24",
+  "route": "decision_fallback"
+}

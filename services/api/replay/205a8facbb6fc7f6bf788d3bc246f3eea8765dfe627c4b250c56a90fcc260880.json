@@ -1,0 +1,20 @@
+{
+  "completion": {
+    "latency_ms": 4333,
+    "model_id": "claude-sonnet-5-5",
+    "stop_category": null,
+    "stop_reason": "end_turn",
+    "text": "{\"doc_type\":\"cab_receipt\",\"merchant_name\":\"Sawari Rides\",\"merchant_gstin\":\"27ZIEJF3469V3Z0\",\"merchant_city\":\"Pune\",\"invoice_number\":\"CRN2610081206\",\"date\":\"2026-10-08\",\"time\":\"19:36\",\"currency\":\"INR\",\"line_items\":[{\"description\":\"Base Fare\",\"quantity\":\"\",\"unit_price\":\"\",\"amount\":\"90.00\"},{\"description\":\"Distance Fare (8.6 km)\",\"quantity\":\"\",\"unit_price\":\"\",\"amount\":\"189.20\"},{\"description\":\"Ride Time Fare (24 min)\",\"quantity\":\"\",\"unit_price\":\"\",\"amount\":\"36.00\"}],\"subtotal\":\"315.20\",\"taxes\":{\"cgst\":\"7.88\",\"sgst\":\"7.88\",\"igst\":\"\",\"cess\":\"\",\"gst_rate_percent\":\"5\"},\"service_charge\":\"\",\"discount\":\"\",\"total\":\"830.96\",\"payment_method\":\"upi\",\"upi_reference\":\"\",\"travel_from\":\"\",\"travel_to\":\"\",\"languages\":[\"en\"],\"handwritten\":false,\"low_confidence_fields\":[],\"contains_instructions\":false}",
+    "usage": {
+      "cache_read_tokens": 0,
+      "cache_write_tokens": 4670,
+      "input_tokens": 1721,
+      "output_tokens": 372
+    }
+  },
+  "model_id": "claude-sonnet-5-5",
+  "model_key": "sonnet",
+  "output_model": "WireReceipt",
+  "request_hash": "205a8facbb6fc7f6bf788d3bc246f3eea8765dfe627c4b250c56a90fcc260880",
+  "route": "extraction_retry"
+}

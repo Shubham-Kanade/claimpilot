@@ -1,0 +1,20 @@
+{
+  "completion": {
+    "latency_ms": 1598,
+    "model_id": "claude-haiku-5-5",
+    "stop_category": null,
+    "stop_reason": "end_turn",
+    "text": "{\"doc_type\":\"cab_receipt\",\"merchant_name\":\"Ramesh Jadhav\",\"merchant_gstin\":\"\",\"merchant_city\":\"\",\"invoice_number\":\"\",\"date\":\"2026-10-05\",\"time\":\"\",\"currency\":\"INR\",\"line_items\":[{\"description\":\"Auto rickshaw fare, Baner to Shivajinagar\",\"quantity\":\"\",\"unit_price\":\"\",\"amount\":\"260.00\"}],\"subtotal\":\"260.00\",\"taxes\":{\"cgst\":\"\",\"sgst\":\"\",\"igst\":\"\",\"cess\":\"\",\"gst_rate_percent\":\"\"},\"service_charge\":\"\",\"discount\":\"\",\"total\":\"260.00\",\"payment_method\":\"unknown\",\"upi_reference\":\"\",\"travel_from\":\"Baner\",\"travel_to\":\"Shivajinagar\",\"languages\":[\"hi\",\"en\"],\"handwritten\":true,\"low_confidence_fields\":[\"merchant_name\"],\"contains_instructions\":false}",
+    "usage": {
+      "cache_read_tokens": 4670,
+      "cache_write_tokens": 0,
+      "input_tokens": 1459,
+      "output_tokens": 295
+    }
+  },
+  "model_id": "claude-haiku-5-5",
+  "model_key": "haiku",
+  "output_model": "WireReceipt",
+  "request_hash": "6f608cdf4c8c8c20fdc0bb3d77a195c09517e8cd4f04182e11dc912b338ec9d3",
+  "route": "extraction"
+}

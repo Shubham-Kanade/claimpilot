@@ -1,0 +1,20 @@
+{
+  "completion": {
+    "latency_ms": 1835,
+    "model_id": "claude-haiku-5-5",
+    "stop_category": null,
+    "stop_reason": "end_turn",
+    "text": "{\"doc_type\":\"cab_receipt\",\"merchant_name\":\"Sawari Rides\",\"merchant_gstin\":\"27ZIEJF3469V3Z0\",\"merchant_city\":\"Pune\",\"invoice_number\":\"CRN2610081206\",\"date\":\"2026-10-08\",\"time\":\"19:36\",\"currency\":\"INR\",\"line_items\":[{\"description\":\"Base Fare\",\"quantity\":\"\",\"unit_price\":\"\",\"amount\":\"90.00\"},{\"description\":\"Distance Fare (8.6 km)\",\"quantity\":\"\",\"unit_price\":\"\",\"amount\":\"189.20\"},{\"description\":\"Ride Time Fare (24 min)\",\"quantity\":\"\",\"unit_price\":\"\",\"amount\":\"36.00\"}],\"subtotal\":\"315.20\",\"taxes\":{\"cgst\":\"7.88\",\"sgst\":\"7.88\",\"igst\":\"\",\"cess\":\"\",\"gst_rate_percent\":\"5\"},\"service_charge\":\"\",\"discount\":\"\",\"total\":\"830.96\",\"payment_method\":\"upi\",\"upi_reference\":\"\",\"travel_from\":\"Shivajinagar, Pune\",\"travel_to\":\"Baner, Pune\",\"languages\":[\"en\"],\"handwritten\":false,\"low_confidence_fields\":[\"merchant_gstin\",\"total\"],\"contains_instructions\":false}",
+    "usage": {
+      "cache_read_tokens": 4670,
+      "cache_write_tokens": 0,
+      "input_tokens": 1721,
+      "output_tokens": 400
+    }
+  },
+  "model_id": "claude-haiku-5-5",
+  "model_key": "haiku",
+  "output_model": "WireReceipt",
+  "request_hash": "69f3c1a26c3787e97c2e1931e7893651c1b31fc2fcae0b4f27a73d1c5eb73e8f",
+  "route": "extraction"
+}

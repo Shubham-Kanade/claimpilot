@@ -1,0 +1,20 @@
+{
+  "completion": {
+    "latency_ms": 2759,
+    "model_id": "claude-haiku-5-5",
+    "stop_category": null,
+    "stop_reason": "end_turn",
+    "text": "{\"doc_type\":\"mobile_bill\",\"merchant_name\":\"Nakshatra Mobile\",\"merchant_gstin\":\"27PEDTZ4739C7ZG\",\"merchant_city\":\"Pune\",\"invoice_number\":\"MB261038412907\",\"date\":\"2026-10-04\",\"time\":\"\",\"currency\":\"INR\",\"line_items\":[{\"description\":\"Monthly Rental - Postpaid Plus 699\",\"quantity\":\"\",\"unit_price\":\"\",\"amount\":\"699.00\"},{\"description\":\"Extra 25 GB Data Booster\",\"quantity\":\"\",\"unit_price\":\"\",\"amount\":\"199.00\"}],\"subtotal\":\"898.00\",\"taxes\":{\"cgst\":\"80.82\",\"sgst\":\"80.82\",\"igst\":\"\",\"cess\":\"\",\"gst_rate_percent\":\"18\"},\"service_charge\":\"\",\"discount\":\"\",\"total\":\"1059.64\",\"payment_method\":\"unknown\",\"upi_reference\":\"\",\"travel_from\":\"\",\"travel_to\":\"\",\"languages\":[\"en\"],\"handwritten\":false,\"low_confidence_fields\":[],\"contains_instructions\":false}",
+    "usage": {
+      "cache_read_tokens": 4670,
+      "cache_write_tokens": 0,
+      "input_tokens": 2259,
+      "output_tokens": 345
+    }
+  },
+  "model_id": "claude-haiku-5-5",
+  "model_key": "haiku",
+  "output_model": "WireReceipt",
+  "request_hash": "fd87a4cb70aaf6454ab499a6683780591d237015812aa5be444f5fb1485f5051",
+  "route": "extraction"
+}

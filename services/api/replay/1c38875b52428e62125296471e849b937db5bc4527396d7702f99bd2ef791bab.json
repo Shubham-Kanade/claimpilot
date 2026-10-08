@@ -1,0 +1,20 @@
+{
+  "completion": {
+    "latency_ms": 1364,
+    "model_id": "claude-haiku-5-5",
+    "stop_category": null,
+    "stop_reason": "end_turn",
+    "text": "{\"category\":\"travel_domestic\",\"category_confidence\":0.97,\"alcohol_present\":0.0,\"personal_expense\":0.03}",
+    "usage": {
+      "cache_read_tokens": 1149,
+      "cache_write_tokens": 0,
+      "input_tokens": 842,
+      "output_tokens": 46
+    }
+  },
+  "model_id": "claude-haiku-5-5",
+  "model_key": "haiku",
+  "output_model": "DecisionAnswers",
+  "request_hash": "1c38875b52428e62125296471e849b937db5bc4527396d7702f99bd2ef791bab",
+  "route": "decision_fallback"
+}

@@ -1,0 +1,20 @@
+{
+  "completion": {
+    "latency_ms": 1515,
+    "model_id": "claude-haiku-5-5",
+    "stop_category": null,
+    "stop_reason": "end_turn",
+    "text": "{\"category\": \"client_entertainment\", \"category_confidence\": 0.85, \"alcohol_present\": 0.05, \"personal_expense\": 0.05}",
+    "usage": {
+      "cache_read_tokens": 1149,
+      "cache_write_tokens": 0,
+      "input_tokens": 1083,
+      "output_tokens": 50
+    }
+  },
+  "model_id": "claude-haiku-5-5",
+  "model_key": "haiku",
+  "output_model": "DecisionAnswers",
+  "request_hash": "b1b0976179583a6b49241364dee07df43b45d6951b942cf0e12f19353f004ee2",
+  "route": "decision_fallback"
+}

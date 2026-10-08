@@ -1,0 +1,20 @@
+{
+  "completion": {
+    "latency_ms": 1794,
+    "model_id": "claude-haiku-5-5",
+    "stop_category": null,
+    "stop_reason": "end_turn",
+    "text": "{\"doc_type\":\"cab_receipt\",\"merchant_name\":\"Raahi Cabs\",\"merchant_gstin\":\"27USWHV6336K9ZC\",\"merchant_city\":\"Pune\",\"invoice_number\":\"CRN2610071954\",\"date\":\"2026-10-07\",\"time\":\"18:05\",\"currency\":\"INR\",\"line_items\":[{\"description\":\"Base Fare\",\"quantity\":\"\",\"unit_price\":\"\",\"amount\":\"65.00\"},{\"description\":\"Distance Fare (7.8 km)\",\"quantity\":\"7.8\",\"unit_price\":\"\",\"amount\":\"132.60\"},{\"description\":\"Ride Time Fare (26 min)\",\"quantity\":\"26\",\"unit_price\":\"\",\"amount\":\"39.00\"}],\"subtotal\":\"236.60\",\"taxes\":{\"cgst\":\"5.92\",\"sgst\":\"5.92\",\"igst\":\"\",\"cess\":\"\",\"gst_rate_percent\":\"5\"},\"service_charge\":\"\",\"discount\":\"\",\"total\":\"248.44\",\"payment_method\":\"upi\",\"upi_reference\":\"\",\"travel_from\":\"Hinjewadi, Pune\",\"travel_to\":\"Kothrud, Pune\",\"languages\":[\"en\"],\"handwritten\":false,\"low_confidence_fields\":[],\"contains_instructions\":false}",
+    "usage": {
+      "cache_read_tokens": 4670,
+      "cache_write_tokens": 0,
+      "input_tokens": 1524,
+      "output_tokens": 395
+    }
+  },
+  "model_id": "claude-haiku-5-5",
+  "model_key": "haiku",
+  "output_model": "WireReceipt",
+  "request_hash": "eda75c8d80fed82e35d169b044a6b17e930b07d15541c17888cef7b7fdfb345b",
+  "route": "extraction"
+}
