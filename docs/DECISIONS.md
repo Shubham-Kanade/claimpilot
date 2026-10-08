@@ -84,3 +84,15 @@ Each entry gives the decision, the reason, and its consequences. Add new entries
 ### ADR-014: Live client hard-guarded; default tests ignore `.env` (2026-10-08)
 - **Decision:** `AnthropicLLM.from_settings` refuses unless `LLM_MODE=live`. The default pytest run ignores the developer's `.env`, and only `-m live` runs read it. `Settings` reads the repo-root `.env` first, then a local `.env`.
 - **Why:** these came from the reviewer agent's findings. Spend must be impossible without an explicit opt-in, and tests must be hermetic. A `REPO_ROOT` bug that crashed the container at `/app` was also fixed, with a regression test.
+
+### ADR-015: Synthetic data follows GST 2.0 rates (2026-10-08)
+- **Decision:** hotel rooms up to ₹7,500 a night are 5% GST (GST 2.0, effective 22 Sep 2025), and 18% above. The other rates are unchanged: restaurants, cabs, economy flights and AC train fares 5%; telecom and professional services 18%; fuel and informal bills no GST. Trust checks still accept the legacy 12% and 28% slabs, because older bills exist.
+- **Labelling conventions** (from data/synth, mirrored in extraction prompt v1):
+  - ticket `date` and `time` are the journey departure, and the PNR is `invoice_number`
+  - a hotel folio's `date` is the checkout date
+  - `travel_from` and `travel_to` are empty for local rides
+- **Generator deviations:**
+  - Edge/Chrome fallback when Playwright's Chromium download is blocked by the proxy
+  - `opencv-python` instead of the headless build, because Augraphy needs it
+  - Augraphy fold noise disabled because it can't be seeded
+  - phone photos saved as JPEG

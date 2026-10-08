@@ -1,0 +1,73 @@
+{
+  "id": "s42-0069",
+  "receipt": {
+    "doc_type": "flight_ticket",
+    "merchant_name": "Suryoday Air",
+    "merchant_gstin": "27CEGFA4772S1ZG",
+    "merchant_city": "Mumbai",
+    "invoice_number": "DR1XAJ",
+    "date": "2026-08-07",
+    "time": "08:16",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Base Fare",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 7179.0
+      },
+      {
+        "description": "User Development Fee",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 481.0
+      },
+      {
+        "description": "Passenger Service Fee",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 226.0
+      },
+      {
+        "description": "Aviation Security Fee",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 236.0
+      },
+      {
+        "description": "Convenience Fee",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 395.0
+      }
+    ],
+    "subtotal": 8517.0,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": 358.95,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 8875.95,
+    "payment_method": "upi",
+    "upi_reference": null,
+    "travel_from": "Panaji",
+    "travel_to": "Hyderabad",
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "travel_domestic",
+  "tags": [
+    "clean"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P005",
+  "trip_id": "P005-T1"
+}

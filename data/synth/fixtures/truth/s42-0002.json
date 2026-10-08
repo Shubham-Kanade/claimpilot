@@ -1,0 +1,49 @@
+{
+  "id": "s42-0002",
+  "receipt": {
+    "doc_type": "fuel_slip",
+    "merchant_name": "Agni Petroleum - Gachibowli",
+    "merchant_gstin": "36DUQTY9721A9ZM",
+    "merchant_city": "Hyderabad",
+    "invoice_number": "930368",
+    "date": "2026-07-04",
+    "time": "13:16",
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Power Petrol",
+        "quantity": 24.14,
+        "unit_price": 110.41,
+        "amount": 2665.3
+      }
+    ],
+    "subtotal": null,
+    "taxes": {
+      "cgst": null,
+      "sgst": null,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": null
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 2665.3,
+    "payment_method": "upi",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "fuel_vehicle",
+  "tags": [
+    "clean"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P001",
+  "trip_id": null
+}

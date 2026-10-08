@@ -1,0 +1,10 @@
+{"id": "s42-0006", "path": "docs/s42-0006.png", "truth_path": "truth/s42-0006.json", "doc_type": "restaurant_bill", "tags": ["degraded", "hindi"], "split": "dev"}
+{"id": "s42-0003", "path": "docs/s42-0003.png", "truth_path": "truth/s42-0003.json", "doc_type": "handwritten_bill", "tags": ["degraded", "handwritten"], "split": "dev"}
+{"id": "s42-0005", "path": "docs/s42-0005.png", "truth_path": "truth/s42-0005.json", "doc_type": "cab_receipt", "tags": ["degraded"], "split": "dev"}
+{"id": "s42-0013", "path": "docs/s42-0013.png", "truth_path": "truth/s42-0013.json", "doc_type": "upi_payment", "tags": ["clean"], "split": "dev"}
+{"id": "s42-0082", "path": "docs/s42-0082.png", "truth_path": "truth/s42-0082.json", "doc_type": "hotel_folio", "tags": ["clean", "tampered"], "split": "dev"}
+{"id": "s42-0069", "path": "docs/s42-0069.png", "truth_path": "truth/s42-0069.json", "doc_type": "flight_ticket", "tags": ["clean"], "split": "test"}
+{"id": "s42-0002", "path": "docs/s42-0002.png", "truth_path": "truth/s42-0002.json", "doc_type": "fuel_slip", "tags": ["clean"], "split": "dev"}
+{"id": "s42-0011", "path": "docs/s42-0011.pdf", "truth_path": "truth/s42-0011.json", "doc_type": "gst_invoice", "tags": ["clean"], "split": "dev"}
+{"id": "s42-0086", "path": "docs/s42-0086.pdf", "truth_path": "truth/s42-0086.json", "doc_type": "mobile_bill", "tags": ["clean", "injection"], "split": "test"}
+{"id": "s42-0097", "path": "docs/s42-0097.pdf", "truth_path": "truth/s42-0097.json", "doc_type": "gst_invoice", "tags": ["clean", "tampered"], "split": "test"}

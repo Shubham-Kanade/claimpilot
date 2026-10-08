@@ -1,0 +1,79 @@
+{% extends "_base.html.j2" %}
+{# Postpaid mobile bill (rendered to PDF). #}
+{% block style %}
+  @page { size: A4; margin: 0; }
+  #doc {
+    width: 794px;
+    min-height: 1000px;
+    font-family: "Inter", "Noto Sans", sans-serif;
+    font-size: 12px;
+    color: #1f2937;
+    background: #ffffff;
+  }
+  .band { background: {{ s.accent }}; color: #fff; padding: 22px 40px; display: flex; justify-content: space-between; align-items: center; }
+  .brand { font-size: 24px; font-weight: 700; }
+  .body { padding: 22px 40px; }
+  .cols { display: flex; gap: 20px; }
+  .card { flex: 1; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 14px; }
+  .h { font-size: 10.5px; text-transform: uppercase; color: #6b7280; letter-spacing: .5px; margin-bottom: 6px; }
+  .due { font-size: 26px; font-weight: 700; color: {{ s.accent }}; }
+  .kv td { padding: 2px 0; }
+  .charges { margin-top: 18px; }
+  .charges th { text-align: left; border-bottom: 2px solid #1f2937; padding: 6px 4px; }
+  .charges td { padding: 6px 4px; border-bottom: 1px solid #e5e7eb; }
+  .grand td { font-weight: 700; font-size: 14px; border-bottom: 2px solid #1f2937; }
+  .foot { padding: 14px 40px; font-size: 10.5px; color: #6b7280; border-top: 1px solid #e5e7eb; }
+{% endblock %}
+{% block content %}
+<div class="band">
+  <div class="brand">{{ r.merchant_name }}</div>
+  <div class="r">Postpaid Bill cum Tax Invoice</div>
+</div>
+<div class="body">
+  <div class="cols">
+    <div class="card">
+      <div class="h">Customer</div>
+      <div class="b">{{ x.customer }}</div>
+      {% for line in x.customer_address %}<div>{{ line }}</div>{% endfor %}
+      <div>Mobile: {{ x.mobile }} &middot; A/c No: {{ x.account_no }}</div>
+    </div>
+    <div class="card">
+      <div class="h">Bill Details</div>
+      <table class="kv">
+        <tr><td>Bill No.</td><td class="r b">{{ r.invoice_number }}</td></tr>
+        {% if r.date %}<tr><td>Bill Date</td><td class="r">{{ r.date | fdate(s.date_style) }}</td></tr>{% endif %}
+        <tr><td>Bill Period</td><td class="r">{{ x.cycle_start | fdate(s.date_style) }} to {{ x.cycle_end | fdate(s.date_style) }}</td></tr>
+        <tr><td>Due Date</td><td class="r">{{ x.due_date | fdate(s.date_style) }}</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="cols" style="margin-top:16px">
+    <div class="card">
+      <div class="h">Account Summary (&#8377;)</div>
+      <table class="kv">
+        <tr><td>Previous Balance</td><td class="r">{{ x.previous_balance | inr }}</td></tr>
+        <tr><td>Payments Received</td><td class="r">-{{ x.payment_received | inr }}</td></tr>
+        <tr><td>Current Bill Amount</td><td class="r">{{ r.total | inr }}</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="h">Total Amount Due</div>
+      <div class="due">&#8377; {{ r.total | inr }}</div>
+      <div>Pay by {{ x.due_date | fdate(s.date_style) }} to avoid late fee</div>
+    </div>
+  </div>
+  <table class="charges">
+    <tr><th>Charges for this bill</th><th class="r">Amount (&#8377;)</th></tr>
+    {% for item in r.line_items %}<tr><td>{{ item.description }}</td><td class="r">{{ item.amount | inr }}</td></tr>{% endfor %}
+    <tr><td class="b">Sub Total</td><td class="r b">{{ r.subtotal | inr }}</td></tr>
+    {% for label, amount in tax_lines(r) %}<tr><td>{{ label }}</td><td class="r">{{ amount | inr }}</td></tr>{% endfor %}
+    <tr class="grand"><td>Total Current Charges</td><td class="r">{{ r.total | inr }}</td></tr>
+  </table>
+  <div style="margin-top:14px" class="muted">Usage this cycle: {{ x.data_used_gb }} GB data &middot; {{ x.voice_minutes }} minutes voice</div>
+  {% if x.injection_text %}<div class="ai-note">{{ x.injection_text }}</div>{% endif %}
+</div>
+<div class="foot">
+  {{ r.merchant_name }} (fictional operator) &middot; GSTIN: {{ r.merchant_gstin }} &middot; {{ x.office | join(", ") }}<br>
+  This is a system generated bill and does not require a signature.
+</div>
+{% endblock %}

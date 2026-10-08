@@ -1,0 +1,68 @@
+{% extends "_base.html.j2" %}
+{# A4 GST tax invoice (rendered to PDF). #}
+{% block style %}
+  @page { size: A4; margin: 0; }
+  #doc {
+    width: 794px;
+    min-height: 1000px;
+    padding: 40px 44px;
+    font-family: "Noto Sans", sans-serif;
+    font-size: 12px;
+    color: #111827;
+    background: #ffffff;
+  }
+  .top { display: flex; justify-content: space-between; border-bottom: 3px solid {{ s.accent }}; padding-bottom: 12px; }
+  .supplier { font-size: 20px; font-weight: 700; color: {{ s.accent }}; }
+  .title { font-size: 22px; font-weight: 700; letter-spacing: 2px; text-align: right; }
+  .meta td { padding: 2px 8px 2px 0; }
+  .parties { display: flex; gap: 24px; margin: 16px 0; }
+  .party { flex: 1; border: 1px solid #d1d5db; padding: 10px; }
+  .h { font-size: 10.5px; text-transform: uppercase; color: #6b7280; margin-bottom: 4px; }
+  .items th { background: #f3f4f6; border: 1px solid #d1d5db; padding: 6px; text-align: left; }
+  .items td { border: 1px solid #d1d5db; padding: 6px; }
+  .totals { width: 45%; margin-left: 55%; margin-top: 10px; }
+  .totals td { padding: 4px 6px; }
+  .grand td { font-weight: 700; font-size: 14px; border-top: 2px solid #111827; }
+  .words { margin-top: 12px; padding: 8px; background: #f9fafb; border: 1px solid #e5e7eb; }
+  .sign { margin-top: 40px; text-align: right; }
+  .foot { margin-top: 30px; font-size: 10.5px; color: #6b7280; text-align: center; }
+{% endblock %}
+{% block content %}
+<div class="top">
+  <div>
+    <div class="supplier">{{ r.merchant_name }}</div>
+    <div>{{ x.address | join(", ") }}</div>
+    <div>Ph: {{ x.phone }} &middot; {{ x.email }}</div>
+    <div class="b">GSTIN: {{ r.merchant_gstin }}</div>
+  </div>
+  <div>
+    <div class="title">TAX INVOICE</div>
+    <table class="meta">
+      <tr><td>Invoice No.</td><td class="b">{{ r.invoice_number }}</td></tr>
+      {% if r.date %}<tr><td>Invoice Date</td><td class="b">{{ r.date | fdate(s.date_style) }}</td></tr>{% endif %}
+      <tr><td>Place of Supply</td><td>{{ x.place_of_supply }}</td></tr>
+      <tr><td>Reverse Charge</td><td>{{ x.reverse_charge }}</td></tr>
+    </table>
+  </div>
+</div>
+<div class="parties">
+  <div class="party"><div class="h">Bill To</div><div class="b">{{ x.buyer }}</div>{% for line in x.buyer_address %}<div>{{ line }}</div>{% endfor %}<div>GSTIN: Unregistered</div></div>
+  <div class="party"><div class="h">Payment</div>{% if payment_label(r.payment_method) %}Received via {{ payment_label(r.payment_method) }}{% else %}Due on receipt{% endif %}</div>
+</div>
+<table class="items">
+  <tr><th>#</th><th>Description</th><th>HSN/SAC</th><th class="r">Qty</th><th class="r">Rate (&#8377;)</th><th class="r">Amount (&#8377;)</th></tr>
+  {% for item in r.line_items %}
+  <tr><td>{{ loop.index }}</td><td>{{ item.description }}</td><td>{{ x.hsn[loop.index0] if loop.index0 < x.hsn | length else "" }}</td><td class="r">{{ item.quantity | int if item.quantity else "" }}</td><td class="r">{{ item.unit_price | inr if item.unit_price else "" }}</td><td class="r">{{ item.amount | inr }}</td></tr>
+  {% endfor %}
+</table>
+<table class="totals">
+  <tr><td>Taxable Value</td><td class="r">{{ r.subtotal | inr }}</td></tr>
+  {% for label, amount in tax_lines(r) %}<tr><td>{{ label }}</td><td class="r">{{ amount | inr }}</td></tr>{% endfor %}
+  {% if r.discount %}<tr><td>Discount</td><td class="r">-{{ r.discount | inr }}</td></tr>{% endif %}
+  <tr class="grand"><td>Invoice Total</td><td class="r">&#8377; {{ r.total | inr }}</td></tr>
+</table>
+<div class="words"><b>Amount in words:</b> {{ r.total | words }}</div>
+{% if x.injection_text %}<div class="ai-note">{{ x.injection_text }}</div>{% endif %}
+<div class="sign">For {{ r.merchant_name }}<br><br><br>{{ x.signatory }}<br>Authorised Signatory</div>
+<div class="foot">This is a computer generated invoice. Synthetic document for testing; supplier is fictional.</div>
+{% endblock %}

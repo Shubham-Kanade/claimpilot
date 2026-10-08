@@ -1,0 +1,45 @@
+{% extends "_base.html.j2" %}
+{# 58 mm fuel pump slip. Fuel is outside GST, so there are no tax lines. #}
+{% block style %}
+  #doc {
+    width: 220px;
+    padding: 12px 10px 20px;
+    font-family: "{{ s.font }}", monospace;
+    font-size: 11px;
+    line-height: 1.45;
+    color: #202020;
+    background: #fafaf6;
+  }
+  .c { text-align: center; }
+  .name { font-weight: 700; font-size: 1.15em; }
+  .rule { border-top: 1px dashed #444; margin: 5px 0; }
+  .row { display: flex; justify-content: space-between; }
+  .total { font-weight: 700; font-size: 1.25em; }
+{% endblock %}
+{% block content %}
+{% set fuel = r.line_items[0] %}
+<div class="c">*** WELCOME ***</div>
+<div class="c name">{{ r.merchant_name }}</div>
+{% for line in x.address %}<div class="c">{{ line }}</div>{% endfor %}
+{% if r.merchant_gstin %}<div class="c">GSTIN: {{ r.merchant_gstin }}</div>{% endif %}
+<div class="rule"></div>
+<div class="row"><span>Receipt No:</span><span>{{ r.invoice_number }}</span></div>
+{% if r.date %}<div class="row"><span>Date:</span><span>{{ r.date | fdate(s.date_style) }}</span></div>{% endif %}
+{% if r.time %}<div class="row"><span>Time:</span><span>{{ r.time | ftime(s.twelve_hour) }}</span></div>{% endif %}
+<div class="row"><span>Pump/Nozzle:</span><span>{{ x.pump_id }} / {{ x.nozzle }}</span></div>
+<div class="rule"></div>
+<div class="row"><span>Product:</span><span>{{ fuel.description }}</span></div>
+<div class="row"><span>Rate (Rs/L):</span><span>{{ fuel.unit_price | num }}</span></div>
+<div class="row"><span>Volume (L):</span><span>{{ fuel.quantity | num }}</span></div>
+<div class="row"><span>Amount (Rs):</span><span>{{ fuel.amount | num }}</span></div>
+<div class="row"><span>Density:</span><span>{{ x.density }}</span></div>
+<div class="row"><span>Vehicle No:</span><span>{{ x.vehicle }}</span></div>
+<div class="rule"></div>
+<div class="row total"><span>TOTAL Rs</span><span>{{ r.total | num }}</span></div>
+{% if payment_label(r.payment_method) %}<div class="row"><span>Mode:</span><span>{{ payment_label(r.payment_method) }}</span></div>{% endif %}
+<div class="row"><span>Attendant:</span><span>{{ x.attendant }}</span></div>
+<div class="rule"></div>
+{% if x.injection_text %}<div class="ai-note">{{ x.injection_text }}</div>{% endif %}
+<div class="c">Save Fuel. Save Money.</div>
+<div class="c">Thank You! Visit Again</div>
+{% endblock %}

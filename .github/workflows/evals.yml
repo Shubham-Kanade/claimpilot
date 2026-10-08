@@ -1,0 +1,69 @@
+name: evals
+
+# Live, PAID extraction eval / model bake-off (ADR-005, ADR-013). Manual only: it spends the
+# repo owner's personal API budget. Needs the ANTHROPIC_API_KEY repository secret.
+on:
+  workflow_dispatch:
+    inputs:
+      configs:
+        description: "Comma-separated presets (haiku-low, haiku-medium, haiku45, sonnet-low, sonnet-medium, opus-low, cascade)"
+        default: "haiku-low,cascade"
+      split:
+        description: "dev (20 receipts) or test"
+        default: "dev"
+      max_usd:
+        description: "Hard spend cap for the whole run (USD)"
+        default: "0.50"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: evals
+  cancel-in-progress: false
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Generate synthetic dataset (deterministic, seed 42)
+        working-directory: data/synth
+        run: |
+          uv sync --locked
+          uv run playwright install --with-deps chromium
+          uv run generate.py all --count 100 --seed 42
+
+      - name: Estimate cost (free)
+        working-directory: services/api
+        env:
+          LLM_MODE: live
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          uv sync --locked
+          uv run python -m claimpilot.evals.run --manifest ../../data/synth/out/manifest.jsonl \
+            --split "${{ inputs.split }}" --configs "${{ inputs.configs }}" \
+            --max-usd "${{ inputs.max_usd }}" --estimate-only
+
+      - name: Run eval (paid, capped by --max-usd)
+        working-directory: services/api
+        env:
+          LLM_MODE: live
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          uv run python -m claimpilot.evals.run --manifest ../../data/synth/out/manifest.jsonl \
+            --split "${{ inputs.split }}" --configs "${{ inputs.configs }}" \
+            --max-usd "${{ inputs.max_usd }}" --label "ci-${{ inputs.split }}" --out ../../evals/reports
+          cat ../../evals/reports/*.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-report
+          path: evals/reports/

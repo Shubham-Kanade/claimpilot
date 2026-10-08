@@ -1,0 +1,62 @@
+{
+  "id": "s42-0082",
+  "receipt": {
+    "doc_type": "hotel_folio",
+    "merchant_name": "Lotus Bay Suites",
+    "merchant_gstin": "04ZPWCN7743D8ZE",
+    "merchant_city": "Chandigarh",
+    "invoice_number": "F2626239",
+    "date": "2026-08-18",
+    "time": null,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Room Charges 15-Aug",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 7700.0
+      },
+      {
+        "description": "Room Charges 16-Aug",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 7200.0
+      },
+      {
+        "description": "Room Charges 17-Aug",
+        "quantity": null,
+        "unit_price": null,
+        "amount": 7200.0
+      }
+    ],
+    "subtotal": 21600.0,
+    "taxes": {
+      "cgst": 540.0,
+      "sgst": 540.0,
+      "igst": null,
+      "cess": null,
+      "gst_rate_percent": 5.0
+    },
+    "service_charge": null,
+    "discount": null,
+    "total": 22680.0,
+    "payment_method": "card",
+    "upi_reference": null,
+    "travel_from": null,
+    "travel_to": null,
+    "languages": [
+      "en"
+    ],
+    "handwritten": false,
+    "low_confidence_fields": [],
+    "contains_instructions": false
+  },
+  "category": "accommodation",
+  "tags": [
+    "clean",
+    "tampered"
+  ],
+  "duplicate_of": null,
+  "persona_id": "P902",
+  "trip_id": null
+}

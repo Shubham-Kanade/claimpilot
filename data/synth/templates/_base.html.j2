@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="{{ fonts_css }}">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #ffffff; }
+  body { -webkit-font-smoothing: antialiased; }
+  #doc { display: block; }
+  table { border-collapse: collapse; width: 100%; }
+  .r { text-align: right; }
+  .c { text-align: center; }
+  .b { font-weight: 700; }
+  .muted { color: #555; }
+  .ai-note { font-size: 0.85em; margin-top: 6px; }
+{% block style %}{% endblock %}
+</style>
+</head>
+<body>
+<div id="doc">
+{% block content %}{% endblock %}
+</div>
+</body>
+</html>

@@ -1,0 +1,60 @@
+{% extends "_base.html.j2" %}
+{# Rail Electronic Reservation Slip from a fictional booking portal. #}
+{% block style %}
+  #doc {
+    width: 760px;
+    padding: 18px 22px;
+    font-family: "Noto Sans", sans-serif;
+    font-size: 12.5px;
+    color: #1f2937;
+    background: #ffffff;
+    border: 2px solid #1f3a5f;
+  }
+  .title { text-align: center; font-size: 17px; font-weight: 700; color: #1f3a5f; }
+  .sub { text-align: center; font-size: 11px; color: #4b5563; margin-bottom: 10px; }
+  .grid td { border: 1px solid #9ca3af; padding: 5px 7px; vertical-align: top; }
+  .k { font-size: 10.5px; color: #4b5563; display: block; }
+  .v { font-weight: 700; }
+  .stn { font-size: 15px; font-weight: 700; }
+  h4 { margin: 12px 0 4px; font-size: 12.5px; color: #1f3a5f; }
+  .fare td { padding: 3px 7px; border-bottom: 1px dotted #9ca3af; }
+  .grand td { font-weight: 700; border-bottom: 2px solid #1f3a5f; }
+  .small { font-size: 10.5px; color: #4b5563; margin-top: 10px; line-height: 1.5; }
+{% endblock %}
+{% block content %}
+<div class="title">{{ r.merchant_name }}</div>
+<div class="sub">Electronic Reservation Slip (ERS) &middot; Fictional portal for synthetic data</div>
+<table class="grid">
+  <tr>
+    <td><span class="k">PNR No.</span><span class="v">{{ r.invoice_number }}</span></td>
+    <td><span class="k">Train No./Name</span><span class="v">{{ x.train }}</span></td>
+    <td><span class="k">Class</span><span class="v">{{ x.travel_class }}</span></td>
+  </tr>
+  <tr>
+    <td><span class="k">Quota</span>{{ x.quota }}</td>
+    <td><span class="k">Distance</span>{{ x.distance_km }} KM</td>
+    <td><span class="k">Booking Date</span>{{ x.booked_on | fdate("dmy_dash") }}</td>
+  </tr>
+  <tr>
+    <td><span class="k">Boarding At / From</span><span class="stn">{{ x.from_station }}</span><br>{{ r.travel_from }}</td>
+    <td><span class="k">Departure</span>{% if r.date %}<span class="v">{{ r.date | fdate(s.date_style) }}</span>{% endif %} {% if r.time %}<span class="v">{{ r.time }}</span>{% endif %}</td>
+    <td><span class="k">To</span><span class="stn">{{ x.to_station }}</span><br>{{ r.travel_to }}<br><span class="k">Arrival {{ x.arrival_time }}</span></td>
+  </tr>
+</table>
+<h4>Passenger Details</h4>
+<table class="grid">
+  <tr><td><span class="k">#</span>1</td><td><span class="k">Name</span>{{ x.passenger }}</td><td><span class="k">Age</span>{{ x.age }}</td><td><span class="k">Booking Status / Berth</span>CNF/{{ x.berth }}</td></tr>
+</table>
+<h4>Payment Details</h4>
+<table class="fare">
+  {% for item in r.line_items %}<tr><td>{{ item.description }}</td><td class="r">&#8377; {{ item.amount | num }}</td></tr>{% endfor %}
+  {% for label, amount in tax_lines(r) %}<tr><td>{{ label }}</td><td class="r">&#8377; {{ amount | num }}</td></tr>{% endfor %}
+  <tr class="grand"><td>Total Fare (all inclusive)</td><td class="r">&#8377; {{ r.total | num }}</td></tr>
+</table>
+<div style="margin-top:6px">Transaction ID: {{ x.transaction_id }}{% if payment_label(r.payment_method) %} &middot; Paid by {{ payment_label(r.payment_method) }}{% endif %}</div>
+{% if x.injection_text %}<div class="ai-note">{{ x.injection_text }}</div>{% endif %}
+<div class="small">
+  GSTIN: {{ r.merchant_gstin }} &middot; {{ x.office | join(", ") }}<br>
+  Carry an original photo ID during the journey. This ticket is valid only with the passenger listed above.
+</div>
+{% endblock %}

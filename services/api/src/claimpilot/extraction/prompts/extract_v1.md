@@ -10,7 +10,9 @@ What you extract feeds automated checks downstream: GST arithmetic, GSTIN valida
 - **Line items:** one entry per printed item line, in the original language and script (keep Hindi in Devanagari). Leave out tax lines and totals.
 - **date:** convert to ISO `YYYY-MM-DD`. Indian documents write day-first (03/10/2026 is 3 October 2026). Leave it null if no date is printed. Never use today's date.
 - **merchant_gstin:** the seller's 15-character GSTIN exactly as printed. If several GSTINs appear, use the seller's, not the customer's.
-- **Travel documents:** fill `travel_from` and `travel_to` with city names.
+- **Travel documents:** fill `travel_from` and `travel_to` with city names. Leave them null for local cab and auto rides within one city.
+- **Tickets (flight, train):** `date` and `time` are the journey's departure, not the booking date. The PNR goes in `invoice_number`.
+- **Hotel folios:** `date` is the checkout (bill) date. Each night's room charge is its own line item.
 - **UPI screenshots:** put the UTR or transaction reference in `upi_reference` and set `payment_method` to `upi`.
 - **Handwritten documents:** set `handwritten: true` and read them carefully. If a value is ambiguous, give your best reading and list the field name in `low_confidence_fields`.
 - **languages:** list the ISO 639-1 codes of the languages printed, e.g. `["en", "hi"]`.

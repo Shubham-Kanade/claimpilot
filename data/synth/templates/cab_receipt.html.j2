@@ -1,0 +1,51 @@
+{% extends "_base.html.j2" %}
+{# Ride-hailing e-mail receipt. #}
+{% block style %}
+  #doc {
+    width: 480px;
+    padding: 24px 26px 20px;
+    font-family: "Inter", "Noto Sans", sans-serif;
+    font-size: 13px;
+    color: #1f2937;
+    background: #ffffff;
+  }
+  .brand { font-weight: 700; font-size: 20px; color: {{ s.accent }}; }
+  .hello { margin-top: 10px; font-size: 15px; }
+  .big { font-size: 30px; font-weight: 700; margin: 6px 0 2px; }
+  .when { color: #6b7280; }
+  .box { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 14px; margin-top: 14px; }
+  .box td { padding: 3px 0; }
+  .total td { border-top: 1px solid #d1d5db; padding-top: 8px; font-weight: 700; font-size: 15px; }
+  .stop { display: flex; gap: 10px; align-items: baseline; margin: 4px 0; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: #16a34a; flex: none; }
+  .dot.end { background: #dc2626; }
+  .small { font-size: 11px; color: #6b7280; margin-top: 14px; line-height: 1.5; }
+{% endblock %}
+{% block content %}
+<div class="brand">{{ r.merchant_name }}</div>
+<div class="hello">Thanks for riding, {{ x.rider }}</div>
+<div class="big">&#8377;{{ r.total | inr }}</div>
+{% if r.date %}<div class="when">{{ r.date | fdate(s.date_style) }}{% if r.time %}, {{ r.time | ftime(s.twelve_hour) }}{% endif %}</div>{% endif %}
+<div class="box">
+  <div class="stop"><span class="dot"></span><span>{{ x.pickup }}</span></div>
+  <div class="stop"><span class="dot end"></span><span>{{ x.drop }}</span></div>
+  <div class="when">{{ x.ride_type }} &middot; {{ x.distance }} &middot; {{ x.duration }}</div>
+</div>
+<div class="box">
+  <table>
+    {% for item in r.line_items %}<tr><td>{{ item.description }}</td><td class="r">&#8377;{{ item.amount | num }}</td></tr>{% endfor %}
+    <tr><td class="b">Subtotal</td><td class="r b">&#8377;{{ r.subtotal | num }}</td></tr>
+    {% if r.discount %}<tr><td>Promotion ({{ x.promo }})</td><td class="r">-&#8377;{{ r.discount | num }}</td></tr>{% endif %}
+    {% for label, amount in tax_lines(r) %}<tr><td>{{ label }}</td><td class="r">&#8377;{{ amount | num }}</td></tr>{% endfor %}
+    <tr class="total"><td>Total</td><td class="r">&#8377;{{ r.total | num }}</td></tr>
+  </table>
+  {% if payment_label(r.payment_method) %}<div class="when" style="margin-top:6px">Paid via {{ payment_label(r.payment_method) }}</div>{% endif %}
+</div>
+<div class="box">Your driver: <b>{{ x.driver }}</b> &middot; {{ x.vehicle }}</div>
+{% if x.injection_text %}<div class="ai-note">{{ x.injection_text }}</div>{% endif %}
+<div class="small">
+  Invoice No: {{ r.invoice_number }}<br>
+  {{ r.merchant_name }} (a fictional service) &middot; GSTIN {{ r.merchant_gstin }}<br>
+  {{ x.office | join(", ") }}
+</div>
+{% endblock %}

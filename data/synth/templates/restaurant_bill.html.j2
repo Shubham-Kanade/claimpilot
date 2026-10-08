@@ -1,0 +1,67 @@
+{% extends "_base.html.j2" %}
+{# Thermal roll bill (58 or 80 mm). #}
+{% block style %}
+  #doc {
+    width: {{ (s.width_mm * 3.78) | round | int }}px;
+    padding: 14px 10px 22px;
+    font-family: "{{ s.font }}", "Noto Sans Devanagari", monospace;
+    font-size: {{ 11 if s.width_mm == 58 else 12.5 }}px;
+    line-height: 1.35;
+    color: #1a1a1a;
+    background: #fbfbf8;
+  }
+  .head { text-align: center; }
+  .name { font-size: 1.35em; font-weight: 700; text-transform: uppercase; }
+  .rule { border-top: 1px dashed #333; margin: 6px 0; }
+  .label { text-align: center; font-weight: 700; letter-spacing: 1px; }
+  .meta { display: flex; justify-content: space-between; flex-wrap: wrap; }
+  td { vertical-align: top; padding: 1px 0; }
+  .qty { width: 2.5em; text-align: center; }
+  .amt { width: 5.5em; text-align: right; }
+  .rate { width: 4.5em; text-align: right; }
+  .grand { font-size: 1.2em; font-weight: 700; }
+  .foot { text-align: center; margin-top: 8px; }
+{% endblock %}
+{% block content %}
+<div class="head">
+  <div class="name">{{ r.merchant_name }}</div>
+  {% for line in x.address %}<div>{{ line }}</div>{% endfor %}
+  <div>Ph: {{ x.phone }}</div>
+  {% if r.merchant_gstin %}<div>GSTIN: {{ r.merchant_gstin }}</div>{% endif %}
+  <div>FSSAI Lic No: {{ x.fssai }}</div>
+</div>
+<div class="rule"></div>
+<div class="label">{{ x.bill_label }}</div>
+<div class="rule"></div>
+<div class="meta"><span>Bill No: {{ r.invoice_number }}</span><span>Table: {{ x.table }}</span></div>
+{% if r.date %}
+<div class="meta"><span>Date: {{ r.date | fdate(s.date_style) }}</span>{% if r.time %}<span>Time: {{ r.time | ftime(s.twelve_hour) }}</span>{% endif %}</div>
+{% endif %}
+<div class="meta"><span>Covers: {{ x.covers }}</span><span>Steward: {{ x.steward }}</span></div>
+<div class="rule"></div>
+<table>
+  <tr class="b"><td>Item</td><td class="qty">Qty</td>{% if s.width_mm != 58 %}<td class="rate">Rate</td>{% endif %}<td class="amt">Amt</td></tr>
+  {% for item in r.line_items %}
+  <tr>
+    <td>{{ item.description }}{% if s.width_mm == 58 and item.unit_price %} @{{ item.unit_price | num }}{% endif %}</td>
+    <td class="qty">{{ item.quantity | int }}</td>
+    {% if s.width_mm != 58 %}<td class="rate">{{ item.unit_price | num }}</td>{% endif %}
+    <td class="amt">{{ item.amount | num }}</td>
+  </tr>
+  {% endfor %}
+</table>
+<div class="rule"></div>
+<table>
+  <tr><td>Sub Total</td><td class="amt">{{ r.subtotal | num }}</td></tr>
+  {% if r.discount %}<tr><td>Discount</td><td class="amt">-{{ r.discount | num }}</td></tr>{% endif %}
+  {% if r.service_charge %}<tr><td>Service Charge</td><td class="amt">{{ r.service_charge | num }}</td></tr>{% endif %}
+  {% for label, amount in tax_lines(r) %}<tr><td>{{ label }}</td><td class="amt">{{ amount | num }}</td></tr>{% endfor %}
+</table>
+<div class="rule"></div>
+<table><tr class="grand"><td>GRAND TOTAL</td><td class="r">&#8377;{{ r.total | inr }}</td></tr></table>
+<div class="rule"></div>
+{% if payment_label(r.payment_method) %}<div>Paid by: {{ payment_label(r.payment_method) }}</div>{% endif %}
+{% if x.alcohol_note %}<div class="muted">* {{ x.alcohol_note }}</div>{% endif %}
+{% if x.injection_text %}<div class="ai-note">{{ x.injection_text }}</div>{% endif %}
+<div class="foot">{{ x.footer }}</div>
+{% endblock %}

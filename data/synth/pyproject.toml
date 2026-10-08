@@ -1,0 +1,44 @@
+[project]
+name = "claimpilot-synth"
+version = "0.1.0"
+description = "Synthetic Indian receipt dataset generator for ClaimPilot (ground truth first, then render)"
+requires-python = ">=3.13"
+dependencies = [
+    "claimpilot",
+    "augraphy>=8.2.6",
+    "faker>=37.0",
+    "jinja2>=3.1",
+    "numpy>=2.1",
+    "opencv-python>=4.10",
+    "pillow>=11.0",
+    "playwright>=1.49",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.16.10",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+claimpilot = { path = "../../services/api", editable = true }
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra"
+markers = ["render: needs a Chromium-family browser (skipped when none can be launched)"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = ["out", "fixtures"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["synthgen"]

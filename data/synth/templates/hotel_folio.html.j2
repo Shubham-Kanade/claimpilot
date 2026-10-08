@@ -1,0 +1,49 @@
+{% extends "_base.html.j2" %}
+{# Hotel guest folio / tax invoice on checkout. #}
+{% block style %}
+  #doc {
+    width: 760px;
+    padding: 28px 32px;
+    font-family: "Noto Sans", serif;
+    font-size: 12.5px;
+    color: #1f2937;
+    background: #fffdf8;
+  }
+  .hotel { text-align: center; font-size: 24px; font-weight: 700; color: {{ s.accent }}; letter-spacing: 1px; }
+  .addr { text-align: center; font-size: 11.5px; color: #4b5563; }
+  .title { text-align: center; margin: 14px 0 10px; font-weight: 700; letter-spacing: 2px; border-top: 1px solid #9ca3af; border-bottom: 1px solid #9ca3af; padding: 4px; }
+  .info td { padding: 2px 6px 2px 0; width: 25%; }
+  .k { color: #6b7280; }
+  .lines { margin-top: 12px; }
+  .lines th { text-align: left; border-bottom: 1px solid #374151; padding: 4px; }
+  .lines td { padding: 4px; border-bottom: 1px dotted #d1d5db; }
+  .sum td { padding: 3px 4px; }
+  .grand td { font-weight: 700; font-size: 14px; border-top: 1px solid #374151; }
+  .sign { display: flex; justify-content: space-between; margin-top: 30px; font-size: 11.5px; }
+{% endblock %}
+{% block content %}
+<div class="hotel">{{ r.merchant_name }}</div>
+<div class="addr">{{ x.address | join(", ") }} &middot; Tel: {{ x.phone }}<br>GSTIN: {{ r.merchant_gstin }}</div>
+<div class="title">GUEST FOLIO / TAX INVOICE</div>
+<table class="info">
+  <tr><td class="k">Guest Name</td><td>{{ x.guest }}</td><td class="k">Folio No.</td><td>{{ r.invoice_number }}</td></tr>
+  <tr><td class="k">Company</td><td>{{ x.company }}</td><td class="k">Bill Date</td><td>{% if r.date %}{{ r.date | fdate(s.date_style) }}{% endif %}</td></tr>
+  <tr><td class="k">Room No. / Type</td><td>{{ x.room_no }} / {{ x.room_type }}</td><td class="k">Arrival</td><td>{{ x.arrival | fdate(s.date_style) }}</td></tr>
+  <tr><td class="k">Rate Plan</td><td>{{ x.plan }}</td><td class="k">Departure</td><td>{{ x.departure | fdate(s.date_style) }}</td></tr>
+  <tr><td class="k">Room Tariff</td><td>&#8377; {{ x.tariff | inr }} per night</td><td class="k">Nights</td><td>{{ x.nights }}</td></tr>
+</table>
+<table class="lines">
+  <tr><th>Description</th><th class="r">Amount (&#8377;)</th></tr>
+  {% for item in r.line_items %}<tr><td>{{ item.description }}</td><td class="r">{{ item.amount | inr }}</td></tr>{% endfor %}
+</table>
+<table class="sum" style="width:55%; margin-left:45%; margin-top:8px">
+  <tr><td>Sub Total</td><td class="r">{{ r.subtotal | inr }}</td></tr>
+  {% for label, amount in tax_lines(r) %}<tr><td>{{ label }}</td><td class="r">{{ amount | inr }}</td></tr>{% endfor %}
+  <tr class="grand"><td>Grand Total</td><td class="r">&#8377; {{ r.total | inr }}</td></tr>
+  {% if payment_label(r.payment_method) %}<tr><td>Settled by {{ payment_label(r.payment_method) }}</td><td class="r">{{ r.total | inr }}</td></tr>{% endif %}
+  <tr><td class="b">Balance</td><td class="r b">0.00</td></tr>
+</table>
+<div style="margin-top:10px">Amount in words: {{ r.total | words }}</div>
+{% if x.injection_text %}<div class="ai-note">{{ x.injection_text }}</div>{% endif %}
+<div class="sign"><span>Cashier: {{ x.cashier }}</span><span>Guest Signature ____________________</span></div>
+{% endblock %}

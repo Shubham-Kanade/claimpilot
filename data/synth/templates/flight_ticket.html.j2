@@ -1,0 +1,64 @@
+{% extends "_base.html.j2" %}
+{# Airline e-ticket / itinerary receipt. #}
+{% block style %}
+  #doc {
+    width: 760px;
+    font-family: "Noto Sans", "Inter", sans-serif;
+    font-size: 13px;
+    color: #111827;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+  }
+  .band { background: {{ s.accent }}; color: #fff; padding: 16px 22px; display: flex; justify-content: space-between; align-items: center; }
+  .airline { font-size: 22px; font-weight: 700; }
+  .section { padding: 14px 22px; border-bottom: 1px solid #e5e7eb; }
+  .h { font-size: 11px; text-transform: uppercase; color: #6b7280; letter-spacing: .5px; }
+  .pnr { font-size: 22px; font-weight: 700; letter-spacing: 2px; }
+  .route { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+  .code { font-size: 30px; font-weight: 700; }
+  .arrow { flex: 1; text-align: center; color: #6b7280; }
+  th { text-align: left; font-size: 11px; color: #6b7280; font-weight: 600; padding: 4px 0; border-bottom: 1px solid #e5e7eb; }
+  td { padding: 4px 0; }
+  .grand td { border-top: 1px solid #111827; font-weight: 700; font-size: 15px; padding-top: 6px; }
+  .small { font-size: 11px; color: #6b7280; line-height: 1.5; }
+{% endblock %}
+{% block content %}
+<div class="band">
+  <div class="airline">{{ r.merchant_name }}</div>
+  <div>E-Ticket &amp; Itinerary</div>
+</div>
+<div class="section" style="display:flex; justify-content:space-between">
+  <div><div class="h">PNR / Booking Ref</div><div class="pnr">{{ r.invoice_number }}</div></div>
+  <div class="r"><div class="h">Booked on</div><div>{{ x.booked_on | fdate("d_mon_y") }}</div></div>
+</div>
+<div class="section">
+  <div class="h">Flight {{ x.flight_no }} &middot; Economy ({{ x.fare_type }})</div>
+  <div class="route">
+    <div><div class="code">{{ x.origin_code }}</div><div>{{ r.travel_from }}</div>{% if r.time %}<div class="b">{{ r.time | ftime(false) }}</div>{% endif %}</div>
+    <div class="arrow">&#9992; {{ x.duration }}<br>{% if r.date %}{{ r.date | fdate(s.date_style) }}{% endif %}</div>
+    <div class="r"><div class="code">{{ x.destination_code }}</div><div>{{ r.travel_to }}</div><div class="b">{{ x.arrival_time }}</div></div>
+  </div>
+</div>
+<div class="section">
+  <table>
+    <tr><th>Passenger</th><th>Seat</th><th>Baggage</th></tr>
+    <tr><td>{{ x.passenger }}</td><td>{{ x.seat }}</td><td>15 kg check-in, 7 kg cabin</td></tr>
+  </table>
+</div>
+<div class="section">
+  <div class="h" style="margin-bottom:4px">Fare Summary (INR)</div>
+  <table>
+    {% for item in r.line_items %}<tr><td>{{ item.description }}</td><td class="r">{{ item.amount | inr }}</td></tr>{% endfor %}
+    {% if r.subtotal %}<tr><td class="b">Sub Total</td><td class="r b">{{ r.subtotal | inr }}</td></tr>{% endif %}
+    {% for label, amount in tax_lines(r) %}<tr><td>{{ label }} (on base fare)</td><td class="r">{{ amount | inr }}</td></tr>{% endfor %}
+    <tr class="grand"><td>Total Amount Paid</td><td class="r">&#8377; {{ r.total | inr }}</td></tr>
+  </table>
+  {% if payment_label(r.payment_method) %}<div style="margin-top:6px">Payment mode: {{ payment_label(r.payment_method) }}</div>{% endif %}
+</div>
+<div class="section small">
+  {% if x.injection_text %}<div class="ai-note">{{ x.injection_text }}</div>{% endif %}
+  {{ r.merchant_name }} (fictional airline) &middot; GSTIN: {{ r.merchant_gstin }}<br>
+  Registered office: {{ x.office | join(", ") }}<br>
+  Please report at the check-in counter at least 60 minutes before departure. Carry a valid photo ID.
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "_base.html.j2" %}
+{# Phone screenshot of a fictional UPI app's "payment successful" screen. #}
+{% block style %}
+  #doc {
+    width: 393px;
+    height: 852px;
+    font-family: "Inter", "Noto Sans", sans-serif;
+    color: {{ "#f3f4f6" if s.dark else "#111827" }};
+    background: {{ "#121212" if s.dark else "#ffffff" }};
+    position: relative;
+    overflow: hidden;
+  }
+  .status { display: flex; justify-content: space-between; padding: 10px 20px 0; font-size: 13px; font-weight: 600; }
+  .appbar { display: flex; align-items: center; gap: 12px; padding: 14px 18px; font-weight: 600; font-size: 16px; }
+  .hero { background: #12805c; color: #fff; padding: 26px 20px 30px; text-align: center; }
+  .tick { width: 62px; height: 62px; border-radius: 50%; background: #fff; color: #12805c; font-size: 38px; line-height: 62px; margin: 0 auto 10px; font-weight: 700; }
+  .amount { font-size: 40px; font-weight: 700; margin: 6px 0; }
+  .card { margin: 16px; padding: 14px 16px; border-radius: 14px; background: {{ "#1e1e1e" if s.dark else "#f5f6f8" }}; font-size: 13.5px; }
+  .card .k { color: {{ "#9ca3af" if s.dark else "#6b7280" }}; font-size: 12px; margin-top: 8px; }
+  .card .k:first-child { margin-top: 0; }
+  .v { font-weight: 600; word-break: break-all; }
+  .actions { display: flex; justify-content: space-around; margin: 8px 16px; font-size: 13px; color: #12805c; font-weight: 600; }
+  .foot { position: absolute; bottom: 18px; width: 100%; text-align: center; font-size: 11px; color: #9ca3af; }
+{% endblock %}
+{% block content %}
+<div class="status"><span>{{ x.status_time }}</span><span>4G &nbsp;{{ x.battery }}%</span></div>
+<div class="appbar"><span>&larr;</span><span>{{ x.app }}</span></div>
+<div class="hero">
+  <div class="tick">&#10003;</div>
+  <div>Payment Successful</div>
+  <div class="amount">&#8377;{{ r.total | inr }}</div>
+  {% if r.date %}<div>{{ r.date | fdate(s.date_style) }}{% if r.time %}, {{ r.time | ftime(s.twelve_hour) }}{% endif %}</div>{% endif %}
+</div>
+<div class="card">
+  <div class="k">Paid to</div>
+  <div class="v">{{ r.merchant_name }}</div>
+  <div class="v" style="font-weight:400">{{ x.payee_handle }}</div>
+  {% if x.note %}<div class="k">Note</div><div class="v">{{ x.note }}</div>{% endif %}
+  {% if x.injection_text %}<div class="k">Message</div><div class="v">{{ x.injection_text }}</div>{% endif %}
+  <div class="k">UPI Ref No.</div>
+  <div class="v">{{ r.upi_reference }}</div>
+  <div class="k">Debited from</div>
+  <div class="v">{{ x.bank }} &bull;&bull;&bull;&bull; {{ x.account_tail }}</div>
+</div>
+<div class="actions"><span>Share receipt</span><span>Split bill</span><span>Help</span></div>
+<div class="foot">{{ x.app }} &middot; fictional app for synthetic test data</div>
+{% endblock %}
