@@ -7,6 +7,7 @@ agent can use the same functions. Every action writes to the audit trail.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from datetime import date
 from typing import Any
 
 from fastapi import status
@@ -22,7 +23,8 @@ from claimpilot.claims import (
     route,
 )
 from claimpilot.container import Container
-from claimpilot.domain import ClaimStatus
+from claimpilot.domain import Claim, ClaimStatus
+from claimpilot.pipeline.finalize import refinalize
 from claimpilot.pipeline.reply import follow_up_message, interpret_reply
 from claimpilot.pipeline.views import ClaimView
 from claimpilot.problem import problem
@@ -33,6 +35,23 @@ async def visible_claim(container: Container, persona: Persona, claim_id: str) -
     if view is None or not persona.can_see(view.employee_id):
         raise problem(status.HTTP_404_NOT_FOUND, "claim_not_found", "No such claim")
     return view
+
+
+async def _refinalized(container: Container, employee_id: str, claim: Claim) -> Claim:
+    """Re-run policy once answers are in: an answer can change the findings (and so the route)."""
+    employee = await container.directory.get(employee_id)
+    members = await container.repo.processed_documents(claim.document_ids)
+    if employee is None or not members:
+        return claim
+    settings = container.settings
+    return refinalize(
+        claim,
+        members,
+        container.policy,
+        employee,
+        today=settings.demo_today or date.today(),
+        min_confidence=settings.decision_min_confidence,
+    )
 
 
 async def apply_answers(
@@ -57,6 +76,7 @@ async def apply_answers(
             ) from exc
         except InvalidTransition as exc:
             raise problem(status.HTTP_409_CONFLICT, "claim_locked", str(exc)) from exc
+    claim = await _refinalized(container, view.employee_id, claim)
     await container.repo.update_claim(claim, route=route(claim))
     await container.repo.audit(
         persona.id, "claim_answered", "claim", claim_id, {"questions": sorted(answers)}

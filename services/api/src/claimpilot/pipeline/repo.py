@@ -158,6 +158,15 @@ class Repository:
         async with self._sessions() as session:
             return await session.get(Document, document_id)
 
+    async def processed_documents(self, ids: Sequence[str]) -> list[ProcessedDocument]:
+        """The processed documents with these ids, in the order given."""
+        if not ids:
+            return []
+        async with self._sessions() as session:
+            rows = (await session.scalars(select(Document).where(Document.id.in_(ids)))).all()
+        by_id = {r.id: ProcessedDocument.model_validate(r.data) for r in rows if r.data}
+        return [by_id[i] for i in ids if i in by_id]
+
     async def seen_documents(self, *, exclude_batch: str | None = None) -> list[Document]:
         """Processed documents with an image hash (the duplicate index scans these)."""
         query = select(Document).where(Document.status == "processed")

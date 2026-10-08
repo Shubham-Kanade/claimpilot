@@ -14,6 +14,7 @@ from claimpilot.db import SessionFactory
 from claimpilot.llm.client import LLMClient
 from claimpilot.pipeline.events import EventBus
 from claimpilot.pipeline.repo import Repository
+from claimpilot.policy import Policy
 from claimpilot.ports import CalendarSource, EmployeeDirectory, FinanceSystem
 from claimpilot.storage import Storage
 
@@ -34,6 +35,7 @@ class Container:
     calendar: CalendarSource
     # Only the chat reply needs the LLM; without it the assistant asks one question at a time.
     llm: LLMClient | None = None
+    policy: Policy = field(default_factory=Policy.load)
     closers: list[Closer] = field(default_factory=list)
 
     @property

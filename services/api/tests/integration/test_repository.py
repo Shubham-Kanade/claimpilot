@@ -115,6 +115,26 @@ async def test_document_result_failure_and_batch_progress(repo: Repository):
     assert row is not None and row.sha256 == "a" * 64
 
 
+async def test_processed_documents_come_back_in_the_order_asked_for(repo: Repository):
+    _, (d1, d2) = await repo.create_batch("P001", FILES)
+    await repo.save_document(d1, processed(d1), phash=None, fingerprint=None, trust=None)
+    await repo.save_document(d2, processed(d2), phash=None, fingerprint=None, trust=None)
+
+    assert [d.id for d in await repo.processed_documents([d2, d1])] == [d2, d1]
+    assert [d.id for d in await repo.processed_documents([d1])] == [d1]
+    assert await repo.processed_documents([]) == []
+
+
+async def test_processed_documents_skip_what_is_unknown_or_has_no_result(repo: Repository):
+    _, (done, failed) = await repo.create_batch("P001", FILES)
+    await repo.save_document(done, processed(done), phash=None, fingerprint=None, trust=None)
+    await repo.fail_document(failed, "unreadable")
+
+    found = await repo.processed_documents(["missing", failed, done])
+
+    assert [d.id for d in found] == [done]
+
+
 async def test_unknown_ids_raise(repo: Repository):
     with pytest.raises(KeyError):
         await repo.mark_batch("nope", "done")

@@ -23,8 +23,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import date, timedelta
 
-from claimpilot.claims import apply_calendar, build_claims, refresh_status, route
-from claimpilot.claims import labels as claim_labels
+from claimpilot.claims import apply_calendar, build_claims, route
 from claimpilot.config import Settings
 from claimpilot.db import Document
 from claimpilot.decisions import DecisionEngine, decide_document
@@ -32,13 +31,12 @@ from claimpilot.domain import Claim, ExtractedReceipt
 from claimpilot.domain.claims import (
     Decisions,
     Employee,
-    OpenQuestion,
     ProcessedDocument,
-    QuestionKind,
 )
 from claimpilot.extraction import ReceiptExtractor, prepare_document
 from claimpilot.extraction.preprocess import PreparedDocument
 from claimpilot.pipeline import events as ev
+from claimpilot.pipeline.finalize import with_category_questions
 from claimpilot.pipeline.repo import Repository
 from claimpilot.pipeline.views import BatchView
 from claimpilot.policy import Policy
@@ -309,34 +307,3 @@ async def _apply_calendar(
         logger.warning("calendar unavailable for %s: %s", employee.id, _short(exc))
         return claim
     return apply_calendar(claim, members, events)
-
-
-def with_category_questions(
-    claim: Claim, members: Sequence[ProcessedDocument], min_confidence: float
-) -> Claim:
-    """Ask what a document was for when System One was not sure of its category.
-
-    Below the confidence gate we ask rather than guess (ADR-021): "What was the ₹120 payment to
-    "Chameli Garg" on 3 Oct for?". The question carries the document id so the UI can show it.
-    """
-    existing = {q.id for q in claim.open_questions}
-    added: list[OpenQuestion] = []
-    for doc in members:
-        question_id = f"q-category-{doc.id[:12]}"
-        if doc.decisions.category_confidence >= min_confidence or question_id in existing:
-            continue
-        day = doc.expense_date
-        when = f" on {claim_labels.short_day_label(day)}" if day else ""
-        added.append(
-            OpenQuestion(
-                id=question_id,
-                kind=QuestionKind.other,
-                text=f"What was {claim_labels.describe(doc)}{when} for?",
-                document_ids=[doc.id],
-            )
-        )
-    if not added:
-        return claim
-    return refresh_status(
-        claim.model_copy(update={"open_questions": [*claim.open_questions, *added]})
-    )
