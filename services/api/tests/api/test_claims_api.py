@@ -198,7 +198,9 @@ async def test_approver_endpoints_reject_everyone_else(http: AsyncClient, world:
 async def test_cannot_decide_a_claim_that_was_not_submitted(http: AsyncClient, world: World):
     await seed_claim(world, make_claim(answered=True))
     resp = await http.post(
-        "/v1/claims/clm-1/decision", json={"approved": False}, headers=as_persona(RAVI)
+        "/v1/claims/clm-1/decision",
+        json={"approved": False, "comment": "no"},
+        headers=as_persona(RAVI),
     )
     assert resp.status_code == 409 and resp.json()["type"] == "claim_not_submitted"
 
@@ -220,3 +222,22 @@ async def test_a_high_finding_routes_the_claim_to_finance_review(http: AsyncClie
         headers=as_persona(ASHA),
     )
     assert resp.status_code == 200 and resp.json()["route"] == "finance_review"
+
+
+async def test_a_rejection_needs_a_reason(http: AsyncClient, world: World):
+    await seed_claim(world, make_claim(answered=True))
+    await http.post("/v1/claims/clm-1/submit", json={"confirmed": True}, headers=as_persona(ASHA))
+    bare = await http.post(
+        "/v1/claims/clm-1/decision",
+        json={"approved": False, "comment": "  "},
+        headers=as_persona(RAVI),
+    )
+    assert bare.status_code == 422 and bare.json()["type"] == "comment_required"
+    assert world.finance.decisions == []  # finance was never asked
+
+    reasoned = await http.post(
+        "/v1/claims/clm-1/decision",
+        json={"approved": False, "comment": "Alcohol is not reimbursable (6.1)"},
+        headers=as_persona(RAVI),
+    )
+    assert reasoned.status_code == 200 and reasoned.json()["status"] == "rejected"

@@ -35,16 +35,9 @@ class InMemoryExtractionCache:
         self._data[key] = receipt.model_dump_json()
 
 
-class AsyncKV(Protocol):
-    """The subset of ``redis.asyncio.Redis`` the cache needs."""
-
-    async def get(self, name: str) -> Any: ...
-
-    async def set(self, name: str, value: str, *, ex: int) -> Any: ...
-
-
 class RedisExtractionCache:
-    def __init__(self, redis: AsyncKV, ttl_seconds: int = DEFAULT_TTL_SECONDS) -> None:
+    def __init__(self, redis: Any, ttl_seconds: int = DEFAULT_TTL_SECONDS) -> None:
+        """``redis`` is a ``redis.asyncio.Redis`` (typed Any: its stubs mix sync and async)."""
         self._redis = redis
         self._ttl = ttl_seconds
 

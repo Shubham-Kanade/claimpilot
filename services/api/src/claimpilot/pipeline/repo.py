@@ -176,7 +176,7 @@ class Repository:
     ) -> None:
         async with self._sessions() as session:
             for claim in claims:
-                session.add(
+                await session.merge(  # upsert: a retried batch rebuilds the same ids
                     ClaimRow(
                         id=claim.id,
                         batch_id=batch_id,

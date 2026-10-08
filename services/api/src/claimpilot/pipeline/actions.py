@@ -136,6 +136,12 @@ async def decide_claim(
     approved: bool,
     comment: str,
 ) -> ClaimView:
+    if not approved and not comment.strip():
+        raise problem(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            "comment_required",
+            "Say why the claim is rejected",
+        )
     view = await visible_claim(container, approver, claim_id)
     already = ClaimStatus.approved if approved else ClaimStatus.rejected
     if view.status is already:

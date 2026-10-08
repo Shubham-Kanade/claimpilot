@@ -12,7 +12,7 @@ import asyncio
 import time
 from collections import defaultdict
 from collections.abc import AsyncIterator
-from typing import Annotated, Literal, Protocol
+from typing import Annotated, Any, Literal, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
 
@@ -123,20 +123,11 @@ class InMemoryEventBus:
         return list(self._events[batch_id][start:])
 
 
-class RedisLike(Protocol):
-    """The subset of ``redis.asyncio.Redis`` the bus needs."""
-
-    async def rpush(self, name: str, *values: str) -> int: ...
-
-    async def expire(self, name: str, time: int) -> bool: ...
-
-    async def lrange(self, name: str, start: int, end: int) -> list[bytes | str]: ...
-
-
 class RedisEventBus:
     """Events live in a Redis list per batch (``RPUSH`` / ``LRANGE``), expiring after a day."""
 
-    def __init__(self, redis: RedisLike) -> None:
+    def __init__(self, redis: Any) -> None:
+        """``redis`` is a ``redis.asyncio.Redis`` (typed Any: its stubs mix sync and async)."""
         self._redis = redis
 
     @staticmethod

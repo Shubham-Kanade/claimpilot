@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import date
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
@@ -53,6 +54,9 @@ class Settings(BaseSettings):
 
     # Browser origins allowed to call the API (the web app). Same-origin hosting needs none.
     cors_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+
+    # Pins the 'current date' used by policy rules (late submission); the demo data is from 2026.
+    demo_today: date | None = None
 
     # Guardrails
     daily_user_token_budget: int = 200_000
