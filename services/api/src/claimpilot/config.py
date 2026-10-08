@@ -42,6 +42,10 @@ class Settings(BaseSettings):
     s3_endpoint_url: str | None = None
     s3_bucket: str | None = None
 
+    # Mocked enterprise systems (MCP, streamable HTTP). Compose overrides these with service names.
+    mcp_finance_url: str = "http://localhost:8101/mcp"
+    mcp_corp_url: str = "http://localhost:8102/mcp"
+
     # Guardrails
     daily_user_token_budget: int = 200_000
     max_upload_mb: int = 15
