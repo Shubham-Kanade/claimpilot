@@ -6,9 +6,10 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from claimpilot import __version__, health, meta, problem
-from claimpilot.api import batches, claims, documents, people
+from claimpilot.api import batches, claims, documents, people, stats
 from claimpilot.config import get_settings
 from claimpilot.container import Container
 
@@ -40,8 +41,16 @@ def create_app(container: Container | None = None) -> FastAPI:
     )
     if container is not None:
         app.state.container = container  # also available when the lifespan is not run (tests)
+    settings = container.settings if container is not None else get_settings()
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_headers=["X-Persona", "Idempotency-Key", "Content-Type", "Last-Event-ID"],
+        expose_headers=["Content-Type"],
+    )
     problem.install(app)
-    for module in (health, meta, batches, claims, documents, people):
+    for module in (health, meta, batches, claims, documents, people, stats):
         app.include_router(module.router)
     return app
 

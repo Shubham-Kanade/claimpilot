@@ -79,5 +79,6 @@ routes:
   agent_chat:        { model: sonnet, effort: low,  max_tokens: 8000 }
   question_draft:    { model: haiku,  effort: low,  max_tokens: 1500 }
   decision_fallback: { model: haiku,  effort: low,  max_tokens: 1000 }
+  reply_parse:       { model: haiku,  effort: low,  max_tokens: 1500 }   # free-text reply -> answers
   policy_compile:    { model: opus,   effort: high, max_tokens: 16000 }
   eval_judge:        { model: sonnet, effort: low,  max_tokens: 2000 }

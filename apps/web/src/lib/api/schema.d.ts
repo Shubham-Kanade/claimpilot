@@ -38,6 +38,278 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/approvals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Claims awaiting a decision (approvers) */
+        get: operations["approvals_v1_approvals_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/batches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload receipts and start processing */
+        post: operations["create_batch_v1_batches_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/batches/{batch_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Batch status with its documents and claims */
+        get: operations["get_batch_v1_batches__batch_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/batches/{batch_id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Live progress (server-sent events) */
+        get: operations["batch_events_v1_batches__batch_id__events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/batches/{batch_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Progress events so far (the same events as the SSE stream, as JSON) */
+        get: operations["batch_history_v1_batches__batch_id__history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/claims": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Claims you may see, newest first */
+        get: operations["list_claims_v1_claims_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/claims/{claim_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One claim */
+        get: operations["get_claim_v1_claims__claim_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/claims/{claim_id}/answers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Answer one or more open questions */
+        post: operations["post_answers_v1_claims__claim_id__answers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/claims/{claim_id}/decision": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve or reject a submitted claim (approvers) */
+        post: operations["post_decision_v1_claims__claim_id__decision_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/claims/{claim_id}/prompt": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The single message that asks everything still open */
+        get: operations["get_prompt_v1_claims__claim_id__prompt_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/claims/{claim_id}/reply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reply in plain words; the assistant works out which questions it answers */
+        post: operations["post_reply_v1_claims__claim_id__reply_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/claims/{claim_id}/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm and submit to the finance system (idempotent) */
+        post: operations["post_submit_v1_claims__claim_id__submit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/documents/{document_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One document: extracted fields, decisions, findings */
+        get: operations["get_document_v1_documents__document_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/documents/{document_id}/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The original uploaded file */
+        get: operations["get_document_file_v1_documents__document_id__file_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/employees": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Demo personas to act as */
+        get: operations["list_employees_v1_employees_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The persona named by X-Persona */
+        get: operations["me_v1_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/meta": {
         parameters: {
             query?: never;
@@ -55,16 +327,566 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Documents, claims, LLM spend and time saved */
+        get: operations["get_stats_v1_stats_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AnswersIn */
+        AnswersIn: {
+            /**
+             * Answers
+             * @description open question id -> the employee's answer
+             */
+            answers: {
+                [key: string]: string;
+            };
+        };
+        /** BatchCreated */
+        BatchCreated: {
+            /** Batch Id */
+            batch_id: string;
+            /** Documents */
+            documents: components["schemas"]["DocumentRef"][];
+            /**
+             * Events Url
+             * @description Server-sent events stream with live progress
+             */
+            events_url: string;
+            /** Status */
+            status: string;
+        };
+        /** BatchDone */
+        BatchDone: {
+            /** Batch Id */
+            batch_id: string;
+            /** Claims */
+            claims: number;
+            /** Cost Usd */
+            cost_usd: number;
+            /** Failed */
+            failed: number;
+            /** Processed */
+            processed: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "batch_done";
+        };
+        /** BatchFailed */
+        BatchFailed: {
+            /** Batch Id */
+            batch_id: string;
+            /** Error */
+            error: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "batch_failed";
+        };
+        /** BatchStarted */
+        BatchStarted: {
+            /** Batch Id */
+            batch_id: string;
+            /** Total */
+            total: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "batch_started";
+        };
+        /** BatchView */
+        BatchView: {
+            /**
+             * Claims
+             * @default []
+             */
+            claims: components["schemas"]["ClaimView"][];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Documents
+             * @default []
+             */
+            documents: components["schemas"]["DocumentView"][];
+            /** Employee Id */
+            employee_id: string;
+            /** Error */
+            error?: string | null;
+            /** Failed */
+            failed: number;
+            /** Finished At */
+            finished_at?: string | null;
+            /** Id */
+            id: string;
+            /** Processed */
+            processed: number;
+            /** Status */
+            status: string;
+            /** Total */
+            total: number;
+        };
+        /** Body_create_batch_v1_batches_post */
+        Body_create_batch_v1_batches_post: {
+            /**
+             * Files
+             * @description Photos, PDFs or screenshots
+             */
+            files: string[];
+        };
+        /**
+         * Box
+         * @description A region of one page, as fractions (0 to 1) of the page width and height.
+         */
+        Box: {
+            /** H */
+            h: number;
+            /**
+             * Page
+             * @default 0
+             */
+            page: number;
+            /** W */
+            w: number;
+            /** X */
+            x: number;
+            /** Y */
+            y: number;
+        };
+        /**
+         * ClaimMode
+         * @enum {string}
+         */
+        ClaimMode: "trip" | "period" | "event" | "allowance";
+        /**
+         * ClaimStatus
+         * @enum {string}
+         */
+        ClaimStatus: "draft" | "needs_info" | "ready" | "submitted" | "approved" | "rejected";
+        /**
+         * ClaimView
+         * @description A claim plus where it came from and how it will be routed.
+         */
+        ClaimView: {
+            /** Batch Id */
+            batch_id?: string | null;
+            /** City */
+            city?: string | null;
+            /**
+             * Currency
+             * @default INR
+             */
+            currency: string;
+            /** Document Ids */
+            document_ids: string[];
+            /** Employee Id */
+            employee_id: string;
+            /** End Date */
+            end_date?: string | null;
+            /**
+             * Findings
+             * @description Claim-level findings
+             */
+            findings?: components["schemas"]["Finding"][];
+            /** Id */
+            id: string;
+            mode: components["schemas"]["ClaimMode"];
+            /** Open Questions */
+            open_questions?: components["schemas"]["OpenQuestion"][];
+            /** Route */
+            route?: string | null;
+            /** Start Date */
+            start_date?: string | null;
+            /** @default draft */
+            status: components["schemas"]["ClaimStatus"];
+            /** Submission Reference */
+            submission_reference?: string | null;
+            /**
+             * Title
+             * @description e.g. 'Pune trip 12-14 Aug' or 'Local conveyance Sept 2026'
+             */
+            title: string;
+            /**
+             * Total
+             * @description Sum of document totals, in the claim currency
+             */
+            total: number;
+        };
+        /** ClaimsReady */
+        ClaimsReady: {
+            /** Batch Id */
+            batch_id: string;
+            /** Claim Ids */
+            claim_ids: string[];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "claims_ready";
+        };
+        /** DecisionIn */
+        DecisionIn: {
+            /** Approved */
+            approved: boolean;
+            /**
+             * Comment
+             * @default
+             */
+            comment: string;
+        };
+        /**
+         * Decisions
+         * @description System One answers for one document (Jev, or the LLM fallback with the same shape).
+         */
+        Decisions: {
+            /**
+             * Alcohol Present
+             * @description Probability the bill has alcohol
+             */
+            alcohol_present: number;
+            category: components["schemas"]["ExpenseCategory"];
+            /** Category Confidence */
+            category_confidence: number;
+            /**
+             * Engine
+             * @description 'jev', 'llm', 'fake' or 'truth' (ground truth in tests)
+             */
+            engine: string;
+            /**
+             * Personal Expense
+             * @description Probability it is a personal expense
+             */
+            personal_expense: number;
+        };
+        /**
+         * DocType
+         * @enum {string}
+         */
+        DocType: "restaurant_bill" | "gst_invoice" | "hotel_folio" | "cab_receipt" | "flight_ticket" | "train_ticket" | "fuel_slip" | "mobile_bill" | "upi_payment" | "handwritten_bill" | "other";
+        /**
+         * DocumentChecked
+         * @description Trust and policy checks finished for a document (in upload order).
+         */
+        DocumentChecked: {
+            /** Batch Id */
+            batch_id: string;
+            /** Document Id */
+            document_id: string;
+            /** Findings */
+            findings: number;
+            /** Trust Score */
+            trust_score: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "document_checked";
+            /** Verdict */
+            verdict: string;
+        };
+        /**
+         * DocumentExtracted
+         * @description A document has been read and categorised (the slow, parallel phase).
+         */
+        DocumentExtracted: {
+            /** Batch Id */
+            batch_id: string;
+            /** Cached */
+            cached: boolean;
+            /** Category */
+            category: string;
+            /** Category Confidence */
+            category_confidence: number;
+            /** Cost Usd */
+            cost_usd: number;
+            /** Doc Type */
+            doc_type: string;
+            /** Document Id */
+            document_id: string;
+            /** Engine */
+            engine: string;
+            /** Filename */
+            filename: string;
+            /** Merchant */
+            merchant: string | null;
+            /** Position */
+            position: number;
+            /** Total */
+            total: number | null;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "document_extracted";
+        };
+        /** DocumentFailed */
+        DocumentFailed: {
+            /** Batch Id */
+            batch_id: string;
+            /** Document Id */
+            document_id: string;
+            /** Error */
+            error: string;
+            /** Filename */
+            filename: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "document_failed";
+        };
+        /** DocumentRef */
+        DocumentRef: {
+            /** Filename */
+            filename: string;
+            /** Id */
+            id: string;
+        };
+        /** DocumentView */
+        DocumentView: {
+            document?: components["schemas"]["ProcessedDocument"] | null;
+            /** Error */
+            error?: string | null;
+            /** Filename */
+            filename: string;
+            /** Id */
+            id: string;
+            /** Position */
+            position: number;
+            /** Status */
+            status: string;
+            /** Trust Score */
+            trust_score?: number | null;
+            /** Verdict */
+            verdict?: string | null;
+        };
+        /**
+         * Employee
+         * @description An employee profile (from the corporate directory, mocked by ``mcp-corp``).
+         */
+        Employee: {
+            /** Base City */
+            base_city: string;
+            /**
+             * Base State Code
+             * @description GST state code of the base city
+             */
+            base_state_code?: string | null;
+            /**
+             * Employee Id
+             * @description HR employee number, e.g. 'EMP85968'
+             */
+            employee_id: string;
+            /**
+             * Grade
+             * @description Grade band L1 (junior) to L5 (senior)
+             */
+            grade: string;
+            /**
+             * Id
+             * @description Directory id, e.g. 'P001'
+             */
+            id: string;
+            /** Name */
+            name: string;
+        };
+        /**
+         * ExpenseCategory
+         * @description Claim taxonomy (decided by System One / the LLM fallback, not by extraction).
+         * @enum {string}
+         */
+        ExpenseCategory: "travel_domestic" | "travel_international" | "accommodation" | "local_conveyance" | "meals" | "client_entertainment" | "fuel_vehicle" | "mobile_internet" | "relocation" | "learning" | "conference" | "medical" | "wfh_supplies" | "misc";
+        /** ExtractedReceipt */
+        ExtractedReceipt: {
+            /**
+             * Contains Instructions
+             * @description True if the document contains text addressed to an AI/system (e.g. 'approve this claim'). Such text is never followed.
+             * @default false
+             */
+            contains_instructions: boolean;
+            /**
+             * Currency
+             * @description ISO 4217 code
+             * @default INR
+             */
+            currency: string;
+            /**
+             * Date
+             * @description Transaction date as ISO YYYY-MM-DD
+             */
+            date?: string | null;
+            /** Discount */
+            discount?: number | null;
+            doc_type: components["schemas"]["DocType"];
+            /**
+             * Handwritten
+             * @default false
+             */
+            handwritten: boolean;
+            /** Invoice Number */
+            invoice_number?: string | null;
+            /**
+             * Languages
+             * @description ISO 639-1 codes of languages printed, e.g. ['en','hi']
+             */
+            languages?: string[];
+            /** Line Items */
+            line_items?: components["schemas"]["LineItem"][];
+            /**
+             * Low Confidence Fields
+             * @description Names of fields that were hard to read or inferred
+             */
+            low_confidence_fields?: string[];
+            /** Merchant City */
+            merchant_city?: string | null;
+            /**
+             * Merchant Gstin
+             * @description 15-char GSTIN exactly as printed
+             */
+            merchant_gstin?: string | null;
+            /** Merchant Name */
+            merchant_name?: string | null;
+            /** @default unknown */
+            payment_method: components["schemas"]["PaymentMethod"];
+            /** Service Charge */
+            service_charge?: number | null;
+            /** Subtotal */
+            subtotal?: number | null;
+            taxes?: components["schemas"]["TaxBreakup"];
+            /**
+             * Time
+             * @description 24h HH:MM if printed
+             */
+            time?: string | null;
+            /**
+             * Total
+             * @description Grand total actually payable
+             */
+            total?: number | null;
+            /**
+             * Travel From
+             * @description Origin city for travel documents
+             */
+            travel_from?: string | null;
+            /**
+             * Travel To
+             * @description Destination city for travel documents
+             */
+            travel_to?: string | null;
+            /**
+             * Upi Reference
+             * @description UPI transaction / UTR reference
+             */
+            upi_reference?: string | null;
+        };
+        /** Finding */
+        Finding: {
+            /** Actual */
+            actual?: number | string | null;
+            /**
+             * Clause Id
+             * @description Policy clause cited, e.g. '4.2'
+             */
+            clause_id?: string | null;
+            /**
+             * Clause Text
+             * @description The clause wording, quoted
+             */
+            clause_text?: string | null;
+            /**
+             * Code
+             * @description Stable machine code, e.g. 'total_mismatch'
+             */
+            code: string;
+            /**
+             * Document Id
+             * @description Document the finding is about; set by the pipeline
+             */
+            document_id?: string | null;
+            /** Expected */
+            expected?: number | string | null;
+            /**
+             * Fields
+             * @description Receipt fields the finding is about
+             * @default []
+             */
+            fields: string[];
+            /**
+             * Message
+             * @description One sentence a non-expert understands
+             */
+            message: string;
+            severity: components["schemas"]["Severity"];
+            /** @default trust */
+            source: components["schemas"]["FindingSource"];
+        };
+        /**
+         * FindingSource
+         * @enum {string}
+         */
+        FindingSource: "trust" | "policy" | "decision" | "system";
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
         /** Health */
         Health: {
             /** Status */
             status: string;
             /** Version */
             version: string;
+        };
+        /** LineItem */
+        LineItem: {
+            /**
+             * Amount
+             * @description Line total as printed
+             */
+            amount: number;
+            /**
+             * Description
+             * @description Item text as printed (keep the original language)
+             */
+            description: string;
+            /**
+             * Quantity
+             * @description Quantity if printed
+             */
+            quantity?: number | null;
+            /**
+             * Unit Price
+             * @description Price per unit if printed
+             */
+            unit_price?: number | null;
+        };
+        /** Me */
+        Me: {
+            employee: components["schemas"]["Employee"];
+            /** Is Approver */
+            is_approver: boolean;
         };
         /** MetaInfo */
         MetaInfo: {
@@ -75,6 +897,83 @@ export interface components {
             /** Routes */
             routes: components["schemas"]["RouteInfo"][];
         };
+        /**
+         * OpenQuestion
+         * @description Something we need from the employee. The chat asks all open ones in ONE message.
+         */
+        OpenQuestion: {
+            /** Answer */
+            answer?: string | null;
+            /** Document Ids */
+            document_ids?: string[];
+            /** Id */
+            id: string;
+            kind: components["schemas"]["QuestionKind"];
+            /** Text */
+            text: string;
+        };
+        /**
+         * PaymentMethod
+         * @enum {string}
+         */
+        PaymentMethod: "cash" | "card" | "upi" | "wallet" | "netbanking" | "unknown";
+        /**
+         * Problem
+         * @description The body of every error response (``application/problem+json``).
+         */
+        Problem: {
+            /** Detail */
+            detail?: {
+                [key: string]: unknown;
+            } | null;
+            /** Status */
+            status: number;
+            /** Title */
+            title: string;
+            /** Type */
+            type: string;
+        };
+        /**
+         * ProcessedDocument
+         * @description One uploaded document after extraction, decisions and per-document checks.
+         */
+        ProcessedDocument: {
+            /**
+             * Boxes
+             * @description Receipt field name -> where it is printed (click-to-verify); may be empty
+             */
+            boxes?: {
+                [key: string]: components["schemas"]["Box"];
+            };
+            decisions: components["schemas"]["Decisions"];
+            /** Filename */
+            filename: string;
+            /** Findings */
+            findings?: components["schemas"]["Finding"][];
+            /** Id */
+            id: string;
+            receipt: components["schemas"]["ExtractedReceipt"];
+            /**
+             * Sha256
+             * @description Of the original upload bytes
+             */
+            sha256: string;
+        };
+        /** PromptOut */
+        PromptOut: {
+            /** Open Question Ids */
+            open_question_ids: string[];
+            /**
+             * Prompt
+             * @description ONE message with every open question; null if none
+             */
+            prompt: string | null;
+        };
+        /**
+         * QuestionKind
+         * @enum {string}
+         */
+        QuestionKind: "attendees" | "business_purpose" | "missing_date" | "confirm_personal" | "self_declaration" | "other";
         /** Readiness */
         Readiness: {
             /** Checks */
@@ -83,6 +982,30 @@ export interface components {
             };
             /** Status */
             status: string;
+        };
+        /** ReplyIn */
+        ReplyIn: {
+            /**
+             * Text
+             * @description Free-text reply to the question
+             */
+            text: string;
+        };
+        /** ReplyOut */
+        ReplyOut: {
+            claim: components["schemas"]["ClaimView"];
+            /**
+             * Follow Up
+             * @description ONE message with whatever is still open; null when the claim is complete
+             */
+            follow_up: string | null;
+            /**
+             * Understood
+             * @description question id -> answer taken from the reply
+             */
+            understood: {
+                [key: string]: string;
+            };
         };
         /** RouteInfo */
         RouteInfo: {
@@ -96,6 +1019,87 @@ export interface components {
             overridden: boolean;
             /** Route */
             route: string;
+        };
+        /**
+         * Severity
+         * @enum {string}
+         */
+        Severity: "info" | "warn" | "high";
+        /** Stats */
+        Stats: {
+            /** Assumed Manual Minutes Per Document */
+            assumed_manual_minutes_per_document: number;
+            /** Auto Approvable Claims */
+            auto_approvable_claims: number;
+            /** Avg Batch Seconds */
+            avg_batch_seconds: number | null;
+            /** Claims */
+            claims: number;
+            /** Claims By Status */
+            claims_by_status: {
+                [key: string]: number;
+            };
+            /** Documents Failed */
+            documents_failed: number;
+            /** Documents Processed */
+            documents_processed: number;
+            /** Estimated Minutes Saved */
+            estimated_minutes_saved: number;
+            /** Llm Calls */
+            llm_calls: number;
+            /** Llm Cost Per Document Usd */
+            llm_cost_per_document_usd: number | null;
+            /** Llm Cost Usd */
+            llm_cost_usd: number;
+        };
+        /** SubmitIn */
+        SubmitIn: {
+            /**
+             * Confirmed
+             * @description Must be true: the employee explicitly confirms
+             */
+            confirmed: boolean;
+        };
+        /** TaxBreakup */
+        TaxBreakup: {
+            /**
+             * Cess
+             * @description Any cess amount
+             */
+            cess?: number | null;
+            /**
+             * Cgst
+             * @description Central GST amount
+             */
+            cgst?: number | null;
+            /**
+             * Gst Rate Percent
+             * @description Total GST rate if printed, e.g. 5 or 18
+             */
+            gst_rate_percent?: number | null;
+            /**
+             * Igst
+             * @description Integrated GST amount (inter-state)
+             */
+            igst?: number | null;
+            /**
+             * Sgst
+             * @description State/UT GST amount
+             */
+            sgst?: number | null;
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Context */
+            ctx?: Record<string, never>;
+            /** Input */
+            input?: unknown;
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
         };
     };
     responses: never;
@@ -146,6 +1150,755 @@ export interface operations {
             };
         };
     };
+    approvals_v1_approvals_get: {
+        parameters: {
+            query?: {
+                /** @description submitted | approved | rejected */
+                status?: string;
+            };
+            header?: {
+                /** @description Acting persona (employee id) */
+                "x-persona"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_batch_v1_batches_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Acting persona (employee id) */
+                "x-persona"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_create_batch_v1_batches_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchCreated"];
+                };
+            };
+            /** @description A file or the whole upload is too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Nothing to process, or an unsupported file */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_batch_v1_batches__batch_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Acting persona (employee id) */
+                "x-persona"?: string | null;
+            };
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BatchView"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    batch_events_v1_batches__batch_id__events_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Last-Event-ID"?: string | null;
+                /** @description Acting persona (employee id) */
+                "x-persona"?: string | null;
+            };
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Server-sent events; each `data` is a PipelineEvent (see /history) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": unknown;
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    batch_history_v1_batches__batch_id__history_get: {
+        parameters: {
+            query?: {
+                /** @description Skip this many events */
+                after?: number;
+            };
+            header?: {
+                /** @description Acting persona (employee id) */
+                "x-persona"?: string | null;
+            };
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": (components["schemas"]["BatchStarted"] | components["schemas"]["DocumentExtracted"] | components["schemas"]["DocumentChecked"] | components["schemas"]["DocumentFailed"] | components["schemas"]["ClaimsReady"] | components["schemas"]["BatchDone"] | components["schemas"]["BatchFailed"])[];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_claims_v1_claims_get: {
+        parameters: {
+            query?: {
+                /** @description draft|needs_info|ready|submitted|... */
+                status?: string | null;
+                /** @description auto_approve | finance_review */
+                route?: string | null;
+                /** @description Approvers only */
+                employee_id?: string | null;
+            };
+            header?: {
+                /** @description Acting persona (employee id) */
+                "x-persona"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimView"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_claim_v1_claims__claim_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Acting persona (employee id) */
+                "x-persona"?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimView"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_answers_v1_claims__claim_id__answers_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Acting persona (employee id) */
+                "x-persona"?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnswersIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimView"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_decision_v1_claims__claim_id__decision_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Acting persona (employee id) */
+                "x-persona"?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DecisionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimView"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_prompt_v1_claims__claim_id__prompt_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Acting persona (employee id) */
+                "x-persona"?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromptOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_reply_v1_claims__claim_id__reply_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Acting persona (employee id) */
+                "x-persona"?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReplyOut"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    post_submit_v1_claims__claim_id__submit_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "Idempotency-Key"?: string | null;
+                /** @description Acting persona (employee id) */
+                "x-persona"?: string | null;
+            };
+            path: {
+                claim_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClaimView"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    get_document_v1_documents__document_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Acting persona (employee id) */
+                "x-persona"?: string | null;
+            };
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentView"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_document_file_v1_documents__document_id__file_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Acting persona (employee id) */
+                "x-persona"?: string | null;
+            };
+            path: {
+                document_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
+                    "image/jpeg": unknown;
+                    "image/png": unknown;
+                    "image/webp": unknown;
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_employees_v1_employees_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Employee"][];
+                };
+            };
+        };
+    };
+    me_v1_me_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Acting persona (employee id) */
+                "x-persona"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_meta_v1_meta_get: {
         parameters: {
             query?: never;
@@ -162,6 +1915,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MetaInfo"];
+                };
+            };
+        };
+    };
+    get_stats_v1_stats_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Acting persona (employee id) */
+                "x-persona"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Stats"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

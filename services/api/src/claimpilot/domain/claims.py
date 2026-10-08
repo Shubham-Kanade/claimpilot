@@ -40,6 +40,18 @@ class Decisions(BaseModel):
     engine: str = Field(description="'jev', 'llm', 'fake' or 'truth' (ground truth in tests)")
 
 
+class Box(BaseModel):
+    """A region of one page, as fractions (0 to 1) of the page width and height."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    page: int = 0
+    x: float = Field(ge=0, le=1)
+    y: float = Field(ge=0, le=1)
+    w: float = Field(ge=0, le=1)
+    h: float = Field(ge=0, le=1)
+
+
 class ProcessedDocument(BaseModel):
     """One uploaded document after extraction, decisions and per-document checks."""
 
@@ -51,6 +63,10 @@ class ProcessedDocument(BaseModel):
     receipt: ExtractedReceipt
     decisions: Decisions
     findings: list[Finding] = Field(default_factory=list)
+    boxes: dict[str, Box] = Field(
+        default_factory=dict,
+        description="Receipt field name -> where it is printed (click-to-verify); may be empty",
+    )
 
     @property
     def category(self) -> ExpenseCategory:

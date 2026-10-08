@@ -12,9 +12,9 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 
-from claimpilot.db import AuditEvent, Batch, ClaimRow, Document, SessionFactory
+from claimpilot.db import AuditEvent, Batch, ClaimRow, Document, LlmCall, SessionFactory
 from claimpilot.domain.claims import Claim, ProcessedDocument
 from claimpilot.pipeline.views import BatchView, ClaimView, DocumentView, to_claim
 
@@ -283,3 +283,60 @@ def document_view(row: Document) -> DocumentView:
 def claim_view(row: ClaimRow) -> ClaimView:
     claim = Claim.model_validate(row.data)
     return ClaimView(**claim.model_dump(), batch_id=row.batch_id, route=row.route)
+
+
+ASSUMED_MANUAL_MINUTES_PER_DOCUMENT = 4.0  # collect, type in, categorise and check one receipt
+
+
+async def collect_stats(sessions: SessionFactory) -> dict[str, Any]:
+    """Aggregates behind the impact meter (documents, claims, routing, LLM spend, time saved)."""
+    async with sessions() as session:
+        docs = dict(
+            (
+                await session.execute(
+                    select(Document.status, func.count()).group_by(Document.status)
+                )
+            ).all()
+        )
+        claims = dict(
+            (
+                await session.execute(
+                    select(ClaimRow.status, func.count()).group_by(ClaimRow.status)
+                )
+            ).all()
+        )
+        auto = (
+            await session.scalar(select(func.count()).where(ClaimRow.route == "auto_approve")) or 0
+        )
+        finished = (
+            await session.execute(
+                select(Batch.created_at, Batch.finished_at).where(
+                    Batch.status == "done", Batch.finished_at.is_not(None)
+                )
+            )
+        ).all()
+        llm_calls, llm_cost = (
+            await session.execute(
+                select(func.count(), func.coalesce(func.sum(LlmCall.cost_usd), 0.0)).where(
+                    LlmCall.error.is_(None)
+                )
+            )
+        ).one()
+    seconds = [(done - created).total_seconds() for created, done in finished if done is not None]
+    processed = docs.get("processed", 0)
+    automated_minutes = sum(seconds) / 60
+    return {
+        "documents_processed": processed,
+        "documents_failed": docs.get("failed", 0),
+        "claims": sum(claims.values()),
+        "claims_by_status": claims,
+        "auto_approvable_claims": auto,
+        "llm_calls": llm_calls,
+        "llm_cost_usd": float(llm_cost),
+        "llm_cost_per_document_usd": float(llm_cost) / processed if processed else None,
+        "avg_batch_seconds": sum(seconds) / len(seconds) if seconds else None,
+        "assumed_manual_minutes_per_document": ASSUMED_MANUAL_MINUTES_PER_DOCUMENT,
+        "estimated_minutes_saved": max(
+            0.0, processed * ASSUMED_MANUAL_MINUTES_PER_DOCUMENT - automated_minutes
+        ),
+    }

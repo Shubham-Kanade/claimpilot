@@ -12,6 +12,7 @@ from typing import Any
 from fastapi import status
 
 from claimpilot.api.deps import Persona
+from claimpilot.api.schemas import ReplyOut
 from claimpilot.claims import (
     InvalidTransition,
     UnknownQuestion,
@@ -22,6 +23,7 @@ from claimpilot.claims import (
 )
 from claimpilot.container import Container
 from claimpilot.domain import ClaimStatus
+from claimpilot.pipeline.reply import follow_up_message, interpret_reply
 from claimpilot.pipeline.views import ClaimView
 from claimpilot.problem import problem
 
@@ -60,6 +62,25 @@ async def apply_answers(
         persona.id, "claim_answered", "claim", claim_id, {"questions": sorted(answers)}
     )
     return await visible_claim(container, persona, claim_id)
+
+
+async def reply(container: Container, persona: Persona, claim_id: str, text: str) -> ReplyOut:
+    """The employee's one free-text reply: apply what it answers, ask once more for the rest."""
+    view = await visible_claim(container, persona, claim_id)
+    if persona.id != view.employee_id:
+        raise problem(status.HTTP_403_FORBIDDEN, "not_your_claim", "Only the owner can answer")
+    if not view.unanswered:
+        return ReplyOut(claim=view, understood={}, follow_up=None)
+    understood = await interpret_reply(container.llm, view, text)
+    updated = await apply_answers(container, persona, claim_id, understood) if understood else view
+    await container.repo.audit(
+        persona.id, "claim_replied", "claim", claim_id, {"answered": sorted(understood)}
+    )
+    return ReplyOut(
+        claim=updated,
+        understood=understood,
+        follow_up=follow_up_message(updated, understood=bool(understood)),
+    )
 
 
 async def submit(

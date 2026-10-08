@@ -5,6 +5,7 @@ from __future__ import annotations
 from pydantic import BaseModel, ConfigDict, Field
 
 from claimpilot.domain.claims import Employee
+from claimpilot.pipeline.views import ClaimView
 
 
 class DocumentRef(BaseModel):
@@ -35,6 +36,14 @@ class ReplyIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     text: str = Field(min_length=1, max_length=2000, description="Free-text reply to the question")
+
+
+class ReplyOut(BaseModel):
+    claim: ClaimView
+    understood: dict[str, str] = Field(description="question id -> answer taken from the reply")
+    follow_up: str | None = Field(
+        description="ONE message with whatever is still open; null when the claim is complete"
+    )
 
 
 class DecisionIn(BaseModel):

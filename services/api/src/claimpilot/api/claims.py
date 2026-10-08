@@ -7,7 +7,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Header, Query
 
 from claimpilot.api.deps import ApproverDep, ContainerDep, PersonaDep
-from claimpilot.api.schemas import AnswersIn, DecisionIn, PromptOut, SubmitIn
+from claimpilot.api.schemas import AnswersIn, DecisionIn, PromptOut, ReplyIn, ReplyOut, SubmitIn
 from claimpilot.claims import combined_prompt
 from claimpilot.pipeline import actions
 from claimpilot.pipeline.views import ClaimView
@@ -65,6 +65,23 @@ async def post_answers(
     claim_id: str, body: AnswersIn, container: ContainerDep, persona: PersonaDep
 ) -> ClaimView:
     return await actions.apply_answers(container, persona, claim_id, body.answers)
+
+
+@router.post(
+    "/claims/{claim_id}/reply",
+    response_model=ReplyOut,
+    responses={
+        **NOT_FOUND,
+        403: {"model": Problem},
+        409: {"model": Problem},
+        422: {"model": Problem},
+    },
+    summary="Reply in plain words; the assistant works out which questions it answers",
+)
+async def post_reply(
+    claim_id: str, body: ReplyIn, container: ContainerDep, persona: PersonaDep
+) -> ReplyOut:
+    return await actions.reply(container, persona, claim_id, body.text)
 
 
 @router.post(

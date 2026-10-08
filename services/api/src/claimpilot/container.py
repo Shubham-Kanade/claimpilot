@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 
 from claimpilot.config import Settings
 from claimpilot.db import SessionFactory
+from claimpilot.llm.client import LLMClient
 from claimpilot.pipeline.events import EventBus
 from claimpilot.pipeline.repo import Repository
 from claimpilot.ports import CalendarSource, EmployeeDirectory, FinanceSystem
@@ -31,6 +32,8 @@ class Container:
     directory: EmployeeDirectory
     finance: FinanceSystem
     calendar: CalendarSource
+    # Only the chat reply needs the LLM; without it the assistant asks one question at a time.
+    llm: LLMClient | None = None
     closers: list[Closer] = field(default_factory=list)
 
     @property

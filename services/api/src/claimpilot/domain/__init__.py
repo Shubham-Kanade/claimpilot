@@ -1,6 +1,7 @@
 """Shared domain contract (source of truth for API schemas, LLM outputs and synthetic data)."""
 
 from claimpilot.domain.claims import (
+    Box,
     Claim,
     ClaimMode,
     ClaimStatus,
@@ -25,6 +26,7 @@ from claimpilot.domain.receipt import (
 
 __all__ = [
     "CRITICAL_FIELDS",
+    "Box",
     "Claim",
     "ClaimMode",
     "ClaimStatus",

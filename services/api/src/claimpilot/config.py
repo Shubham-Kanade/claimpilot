@@ -51,6 +51,9 @@ class Settings(BaseSettings):
     # Demo personas allowed to act as approver (no real login in the demo: ADR-010).
     approver_ids: list[str] = ["DEMO-RAVI"]
 
+    # Browser origins allowed to call the API (the web app). Same-origin hosting needs none.
+    cors_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+
     # Guardrails
     daily_user_token_budget: int = 200_000
     max_upload_mb: int = 15
