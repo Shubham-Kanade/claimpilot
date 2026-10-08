@@ -242,6 +242,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/demo/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Start over: delete your uploads and claims (demo mode only) */
+        post: operations["reset_v1_demo_reset_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/documents/{document_id}": {
         parameters: {
             query?: never;
@@ -892,10 +909,20 @@ export interface components {
         MetaInfo: {
             /** Decision Engine */
             decision_engine: string;
+            /**
+             * Demo
+             * @default false
+             */
+            demo: boolean;
             /** Llm Mode */
             llm_mode: string;
             /** Routes */
             routes: components["schemas"]["RouteInfo"][];
+            /**
+             * Runtime
+             * @default distributed
+             */
+            runtime: string;
         };
         /**
          * OpenQuestion
@@ -1006,6 +1033,15 @@ export interface components {
             understood: {
                 [key: string]: string;
             };
+        };
+        /** ResetResult */
+        ResetResult: {
+            /** Batches */
+            batches: number;
+            /** Claims */
+            claims: number;
+            /** Documents */
+            documents: number;
         };
         /** RouteInfo */
         RouteInfo: {
@@ -1745,6 +1781,47 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    reset_v1_demo_reset_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Acting persona (employee id) */
+                "x-persona"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResetResult"];
+                };
+            };
+            /** @description Not running in demo mode */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

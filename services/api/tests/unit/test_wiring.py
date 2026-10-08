@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from types import SimpleNamespace
 from typing import Any
 
@@ -17,7 +18,7 @@ from claimpilot.domain.claims import Employee
 from claimpilot.extraction.cache import RedisExtractionCache
 from claimpilot.main import create_app
 from claimpilot.pipeline.dupindex import DbDuplicateIndex
-from claimpilot.pipeline.events import RedisEventBus
+from claimpilot.pipeline.events import InMemoryEventBus, RedisEventBus
 from claimpilot.ports import FakeFinance, StaticCalendar, StaticDirectory
 from claimpilot.storage import LocalStorage
 
@@ -196,3 +197,64 @@ def test_an_injected_container_is_used_as_is_and_not_closed():
     with TestClient(create_app(container)) as client:
         assert client.get("/v1/employees").status_code == 200
     assert closed == []  # whoever injected the container owns its lifetime
+
+
+# --- the embedded runtime (the single-container demo) ------------------------------------------
+
+
+def embedded(tmp_path) -> Settings:
+    return settings(tmp_path).model_copy(update={"runtime": "embedded", "demo_mode": True})
+
+
+async def test_the_embedded_runtime_has_no_redis_and_runs_batches_in_process(
+    fakes: FakePool, tmp_path, monkeypatch: pytest.MonkeyPatch
+):
+    ran: list[str] = []
+
+    async def run_pipeline(deps: Any, batch_id: str) -> None:
+        assert isinstance(deps.index, DbDuplicateIndex) and deps.extractor is not None
+        ran.append(batch_id)
+
+    monkeypatch.setattr(wiring, "run_pipeline", run_pipeline)
+    container = await wiring.build_container(embedded(tmp_path))
+
+    assert isinstance(container.events, InMemoryEventBus)
+    assert isinstance(container.storage, LocalStorage)
+    await container.enqueue("b-1")
+    await asyncio.sleep(0)  # let the background task start
+    await asyncio.sleep(0)
+    assert ran == ["b-1"]
+    assert fakes.jobs == []  # nothing went to an Arq queue
+    await container.aclose()
+    assert not FakeRedis.closed  # no Redis connection was ever opened
+
+
+async def test_closing_the_embedded_runtime_cancels_batches_still_running(
+    fakes: FakePool, tmp_path, monkeypatch: pytest.MonkeyPatch
+):
+    started, cancelled = asyncio.Event(), asyncio.Event()
+
+    async def run_pipeline(deps: Any, batch_id: str) -> None:
+        started.set()
+        try:
+            await asyncio.sleep(60)
+        except asyncio.CancelledError:
+            cancelled.set()
+            raise
+
+    monkeypatch.setattr(wiring, "run_pipeline", run_pipeline)
+    container = await wiring.build_container(embedded(tmp_path))
+    await container.enqueue("slow")
+    await asyncio.wait_for(started.wait(), 5)
+
+    await container.aclose()
+
+    assert cancelled.is_set()
+
+
+async def test_the_embedded_container_carries_the_policy_the_pipeline_uses(
+    fakes: FakePool, tmp_path
+):
+    container = await wiring.build_container(embedded(tmp_path))
+    assert container.policy.version
+    await container.aclose()

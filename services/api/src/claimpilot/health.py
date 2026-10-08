@@ -9,7 +9,7 @@ from fastapi import APIRouter, Request, Response, status
 from pydantic import BaseModel
 
 from claimpilot import __version__
-from claimpilot.config import get_settings
+from claimpilot.config import Settings, get_settings
 
 Check = Callable[[], Awaitable[None]]
 
@@ -36,7 +36,7 @@ async def check_redis() -> None:
         await client.aclose()
 
 
-async def check_postgres() -> None:
+async def check_database() -> None:
     from sqlalchemy import text
     from sqlalchemy.ext.asyncio import create_async_engine
 
@@ -48,7 +48,11 @@ async def check_postgres() -> None:
         await engine.dispose()
 
 
-DEFAULT_CHECKS: dict[str, Check] = {"redis": check_redis, "postgres": check_postgres}
+def default_checks(settings: Settings) -> dict[str, Check]:
+    """What the API depends on: Postgres and Redis, or just the SQLite file when embedded."""
+    if settings.runtime == "embedded":
+        return {"database": check_database}
+    return {"redis": check_redis, "postgres": check_database}
 
 
 @router.get("/healthz", response_model=Health)
@@ -58,7 +62,9 @@ async def healthz() -> Health:
 
 @router.get("/readyz", response_model=Readiness)
 async def readyz(request: Request, response: Response) -> Readiness:
-    checks: dict[str, Check] = getattr(request.app.state, "readiness_checks", DEFAULT_CHECKS)
+    checks: dict[str, Check] = getattr(
+        request.app.state, "readiness_checks", None
+    ) or default_checks(get_settings())
 
     async def run(check: Check) -> str:
         try:

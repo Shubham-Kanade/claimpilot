@@ -36,6 +36,17 @@ class Settings(BaseSettings):
     # Cascade: choice/score answers below this confidence are re-asked on the LLM fallback.
     decision_min_confidence: float = 0.7
 
+    # How the pieces are run. "distributed": API and worker are separate processes joined by Redis
+    # (Arq queue, event log, extraction cache). "embedded": one process runs everything, with an
+    # in-memory queue and event bus and no Redis; for the single-container hosted demo.
+    runtime: Literal["distributed", "embedded"] = "distributed"
+    # The public demo: enables "start over" and friendlier messages for receipts that were never
+    # recorded. It never turns on anything that could spend money.
+    demo_mode: bool = False
+    # Whose earlier uploads a new receipt is compared with. "company" flags a receipt already
+    # submitted by anyone (split bills, shared taxis); "employee" only the same person's.
+    duplicate_scope: Literal["company", "employee"] = "company"
+
     # Infra
     database_url: str = "postgresql+asyncpg://claimpilot:claimpilot@localhost:5432/claimpilot"
     redis_url: str = "redis://localhost:6379/0"

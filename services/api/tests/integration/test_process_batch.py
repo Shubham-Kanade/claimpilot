@@ -140,7 +140,14 @@ class Harness:
 
 
 def build_harness(
-    sessions, models_registry, fixtures, *, confidence=None, calendar=None, responder=None
+    sessions,
+    models_registry,
+    fixtures,
+    *,
+    confidence=None,
+    calendar=None,
+    responder=None,
+    settings: Settings | None = None,
 ) -> Harness:
     by_image = {prepare_document(f.raw).blocks[0]["source"]["data"]: f for f in fixtures.values()}
 
@@ -164,7 +171,7 @@ def build_harness(
         directory=StaticDirectory(list(employees.values())),
         calendar=calendar or StaticCalendar(),
         index=DbDuplicateIndex(sessions),
-        settings=Settings(demo_today=TODAY),
+        settings=settings or Settings(demo_today=TODAY),
     )
     return Harness(deps, repo, events, storage, fixtures)
 

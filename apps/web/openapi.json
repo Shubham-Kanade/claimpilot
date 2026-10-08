@@ -1300,6 +1300,11 @@
             "title": "Decision Engine",
             "type": "string"
           },
+          "demo": {
+            "default": false,
+            "title": "Demo",
+            "type": "boolean"
+          },
           "llm_mode": {
             "title": "Llm Mode",
             "type": "string"
@@ -1310,6 +1315,11 @@
             },
             "title": "Routes",
             "type": "array"
+          },
+          "runtime": {
+            "default": "distributed",
+            "title": "Runtime",
+            "type": "string"
           }
         },
         "required": [
@@ -1570,6 +1580,29 @@
           "follow_up"
         ],
         "title": "ReplyOut",
+        "type": "object"
+      },
+      "ResetResult": {
+        "properties": {
+          "batches": {
+            "title": "Batches",
+            "type": "integer"
+          },
+          "claims": {
+            "title": "Claims",
+            "type": "integer"
+          },
+          "documents": {
+            "title": "Documents",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "batches",
+          "documents",
+          "claims"
+        ],
+        "title": "ResetResult",
         "type": "object"
       },
       "RouteInfo": {
@@ -2947,6 +2980,67 @@
         "summary": "Confirm and submit to the finance system (idempotent)",
         "tags": [
           "claims"
+        ]
+      }
+    },
+    "/v1/demo/reset": {
+      "post": {
+        "operationId": "reset_v1_demo_reset_post",
+        "parameters": [
+          {
+            "description": "Acting persona (employee id)",
+            "in": "header",
+            "name": "x-persona",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Acting persona (employee id)",
+              "title": "X-Persona"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResetResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not running in demo mode"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start over: delete your uploads and claims (demo mode only)",
+        "tags": [
+          "demo"
         ]
       }
     },

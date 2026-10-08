@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select, true
 
 from claimpilot.db import AuditEvent, Batch, ClaimRow, Document, LlmCall, SessionFactory
 from claimpilot.domain.claims import Claim, ProcessedDocument
@@ -24,6 +24,16 @@ class NewFile:
     filename: str
     sha256: str
     storage_key: str
+
+
+@dataclass(frozen=True, slots=True)
+class Deleted:
+    """What ``Repository.delete_data`` removed; the caller deletes the stored files."""
+
+    batches: int
+    documents: int
+    claims: int
+    storage_keys: list[str]
 
 
 def new_id() -> str:
@@ -265,6 +275,44 @@ class Repository:
                 )
             )
             await session.commit()
+
+    async def delete_data(self, employee_id: str | None = None) -> Deleted:
+        """Delete uploads, documents and claims of one employee (or of everyone): "start over".
+
+        The audit trail of what was deleted goes with it; the LLM cost ledger stays, because the
+        money was spent either way.
+        """
+        tables: dict[str, Any] = {"batch": Batch, "document": Document, "claim": ClaimRow}
+        async with self._sessions() as session:
+
+            def owned(table: Any) -> Any:
+                return table.employee_id == employee_id if employee_id is not None else true()
+
+            keys = (
+                await session.scalars(select(Document.storage_key).where(owned(Document)))
+            ).all()
+            entity_ids: list[str] = []
+            for table in tables.values():
+                entity_ids += (await session.scalars(select(table.id).where(owned(table)))).all()
+            counts = {}
+            for name in (
+                "claim",
+                "document",
+                "batch",
+            ):  # children first: documents point at batches
+                result = await session.execute(delete(tables[name]).where(owned(tables[name])))
+                counts[name] = result.rowcount  # type: ignore[attr-defined]
+            if entity_ids:
+                await session.execute(
+                    delete(AuditEvent).where(AuditEvent.entity_id.in_(entity_ids))
+                )
+            await session.commit()
+        return Deleted(
+            batches=counts["batch"],
+            documents=counts["document"],
+            claims=counts["claim"],
+            storage_keys=list(keys),
+        )
 
     async def audit_trail(self, entity_id: str) -> list[AuditEvent]:
         async with self._sessions() as session:

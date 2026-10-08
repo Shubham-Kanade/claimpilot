@@ -35,7 +35,9 @@ from claimpilot.domain.claims import (
 )
 from claimpilot.extraction import ReceiptExtractor, prepare_document
 from claimpilot.extraction.preprocess import PreparedDocument
+from claimpilot.llm.errors import ReplayMissError
 from claimpilot.pipeline import events as ev
+from claimpilot.pipeline.dupindex import DbDuplicateIndex, EmployeeScopedIndex
 from claimpilot.pipeline.finalize import with_category_questions
 from claimpilot.pipeline.repo import Repository
 from claimpilot.pipeline.views import BatchView
@@ -81,8 +83,28 @@ class _Read:
     cost_usd: float
 
 
+DEMO_MISS = (
+    "This demo reads only its recorded sample receipts. To read your own, run ClaimPilot with "
+    "your own API key (see the README)."
+)
+
+
 def _short(exc: BaseException) -> str:
     return f"{type(exc).__name__}: {exc}"[:MAX_ERROR_CHARS]
+
+
+def _reason(deps: PipelineDeps, exc: BaseException) -> str:
+    """What the employee is told about a document that could not be read."""
+    if deps.settings.demo_mode and isinstance(exc, ReplayMissError):
+        return DEMO_MISS
+    return _short(exc)
+
+
+def _index_for(deps: PipelineDeps, employee_id: str) -> DuplicateIndex:
+    """The duplicate index as this employee should see it (company-wide or just their own)."""
+    if deps.settings.duplicate_scope == "employee" and isinstance(deps.index, DbDuplicateIndex):
+        return EmployeeScopedIndex(deps.index, employee_id)
+    return deps.index
 
 
 async def process_batch(deps: PipelineDeps, batch_id: str) -> None:
@@ -193,10 +215,11 @@ async def _read_one(deps: PipelineDeps, row: Document) -> _Read:
 
 async def _fail(deps: PipelineDeps, batch_id: str, row: Document, exc: BaseException) -> None:
     logger.warning("document %s failed: %s", row.id, _short(exc))
-    await deps.repo.fail_document(row.id, _short(exc))
+    reason = _reason(deps, exc)
+    await deps.repo.fail_document(row.id, reason)
     await deps.events.publish(
         ev.DocumentFailed(
-            batch_id=batch_id, document_id=row.id, filename=row.filename, error=_short(exc)
+            batch_id=batch_id, document_id=row.id, filename=row.filename, error=reason
         )
     )
 
@@ -219,7 +242,7 @@ async def _check_all(
                 prepared=read.prepared,
                 receipt=read.receipt,
                 employee_id=row.employee_id,
-                index=deps.index,
+                index=_index_for(deps, row.employee_id),
             )
             processed = ProcessedDocument(
                 id=row.id,

@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from claimpilot import __version__, health, meta, problem
-from claimpilot.api import batches, claims, documents, people, stats
+from claimpilot.api import batches, claims, demo, documents, people, stats
 from claimpilot.config import get_settings
 from claimpilot.container import Container
 
@@ -50,7 +50,7 @@ def create_app(container: Container | None = None) -> FastAPI:
         expose_headers=["Content-Type"],
     )
     problem.install(app)
-    for module in (health, meta, batches, claims, documents, people, stats):
+    for module in (health, meta, batches, claims, documents, people, stats, demo):
         app.include_router(module.router)
     return app
 

@@ -22,6 +22,8 @@ class RouteInfo(BaseModel):
 class MetaInfo(BaseModel):
     llm_mode: str
     decision_engine: str
+    demo: bool = False  # the public demo: "start over" exists and receipts come from recordings
+    runtime: str = "distributed"
     routes: list[RouteInfo]
 
 
@@ -42,5 +44,9 @@ async def get_meta() -> MetaInfo:
             )
         )
     return MetaInfo(
-        llm_mode=settings.llm_mode, decision_engine=settings.decision_engine, routes=routes
+        llm_mode=settings.llm_mode,
+        decision_engine=settings.decision_engine,
+        demo=settings.demo_mode,
+        runtime=settings.runtime,
+        routes=routes,
     )
