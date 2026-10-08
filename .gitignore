@@ -1,0 +1,47 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Challenge brief / internal documents must never enter this repo
+*Business Cases*
+email.txt
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+coverage.xml
+junit.xml
+*.egg-info/
+
+# Node / Next
+node_modules/
+.next/
+out/
+apps/web/test-results/
+apps/web/playwright-report/
+*.tsbuildinfo
+next-env.d.ts
+
+# Data & eval artefacts (generated; small committed fixtures live in data/synth/fixtures)
+data/synth/out/
+data/raw/
+evals/.cache/
+
+# Local infra volumes
+infra/.data/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
+
+# Claude Code local-only settings
+.claude/settings.local.json

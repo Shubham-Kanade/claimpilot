@@ -1,0 +1,65 @@
+# Model registry: the ONLY place Claude model IDs and prices live.
+# Prices are USD per 1M tokens, taken from the claude-api skill model table (cached 2026-09-25).
+# Re-check them before every bake-off and update `pricing_checked`.
+# Runtime spend is the user's personal money: route defaults are starting guesses until the bake-off decides (ADR-005).
+pricing_checked: 2026-10-07
+
+models:
+  haiku:
+    id: claude-haiku-4-5
+    context_tokens: 200000
+    max_output_tokens: 64000
+    price: { input: 1.00, output: 5.00, cache_read: 0.10, cache_write_5m: 1.25 }
+    thinking: budget_tokens        # legacy thinking: {type: enabled, budget_tokens}; omit to disable
+    can_disable_thinking: true
+    effort_levels: []              # `effort` param is rejected on Haiku 4.5
+    default_effort: null
+    forced_tool_choice: true
+    structured_outputs: true
+    refusal_fallbacks: false
+    min_cache_prefix: 4096
+    vision: true
+    pdf: true
+
+  sonnet:
+    id: claude-sonnet-5-5
+    context_tokens: 1000000
+    max_output_tokens: 128000
+    price: { input: 2.00, output: 10.00, cache_read: 0.20, cache_write_5m: 2.50 }
+    thinking: adaptive             # disable via {type: between_tools} at effort <= high
+    can_disable_thinking: true
+    effort_levels: [low, medium, high, xhigh, max]
+    default_effort: high
+    forced_tool_choice: false      # tool_choice any/tool -> 400; use auto + strict tools
+    structured_outputs: true
+    refusal_fallbacks: true        # fallbacks: "default" (beta server-side-fallback-2026-07-01)
+    min_cache_prefix: 512
+    vision: true
+    pdf: true
+
+  opus:
+    id: claude-opus-5-5
+    context_tokens: 1000000
+    max_output_tokens: 128000
+    price: { input: 4.00, output: 20.00, cache_read: 0.20, cache_write_5m: 5.00 }
+    thinking: adaptive             # cannot be disabled; lower effort instead
+    can_disable_thinking: false
+    effort_levels: [low, medium, high, xhigh, max]
+    default_effort: medium
+    forced_tool_choice: false
+    structured_outputs: true
+    refusal_fallbacks: true
+    min_cache_prefix: 512
+    vision: true
+    pdf: true
+
+# Route -> model assignment. Override per route via env: ROUTE_<NAME>=haiku|sonnet|opus
+# and optionally ROUTE_<NAME>_EFFORT=low|medium|...
+routes:
+  extraction:        { model: haiku,  max_tokens: 4000 }
+  extraction_retry:  { model: sonnet, effort: low,  max_tokens: 6000 }
+  agent_chat:        { model: sonnet, effort: low,  max_tokens: 8000 }
+  question_draft:    { model: haiku,  max_tokens: 1500 }
+  decision_fallback: { model: haiku,  max_tokens: 1000 }
+  policy_compile:    { model: opus,   effort: high, max_tokens: 16000 }
+  eval_judge:        { model: sonnet, effort: low,  max_tokens: 2000 }

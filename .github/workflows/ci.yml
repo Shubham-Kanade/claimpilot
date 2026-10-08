@@ -1,0 +1,105 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+# No secrets in this workflow: LLM calls run in fake/replay mode only (ADR-005).
+env:
+  LLM_MODE: replay
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - name: Lint
+        run: uv run ruff check . && uv run ruff format --check .
+      - name: Types
+        run: uv run pyright
+      - name: Tests + coverage gate (fail_under in pyproject)
+        run: uv run pytest --cov --cov-report=term --cov-report=xml:coverage.xml --junitxml=junit.xml
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-coverage
+          path: |
+            services/api/coverage.xml
+            services/api/junit.xml
+      - name: OpenAPI drift
+        run: |
+          uv run python -m claimpilot.export_openapi > /tmp/openapi.json
+          diff -u ../../apps/web/openapi.json /tmp/openapi.json || {
+            echo "::error::apps/web/openapi.json is stale. Run the api-contract skill steps and commit."; exit 1; }
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: npm ci
+      - name: Generated API types up to date
+        run: npm run gen:api && git diff --exit-code -- src/lib/api/schema.d.ts
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run format:check
+      - name: Tests + coverage gate (thresholds in vitest.config.ts)
+        run: npm run test:coverage
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-coverage
+          path: apps/web/coverage/
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: [api, web]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build images
+        run: docker compose -f infra/compose.yml build
+      - name: Boot stack and probe
+        run: |
+          docker compose -f infra/compose.yml up -d --wait postgres redis api
+          curl -fsS http://localhost:8000/healthz
+          curl -fsS http://localhost:8000/readyz
+      - name: Logs on failure
+        if: failure()
+        run: docker compose -f infra/compose.yml logs --no-color
+      - name: Teardown
+        if: always()
+        run: docker compose -f infra/compose.yml down -v
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

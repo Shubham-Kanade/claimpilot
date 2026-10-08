@@ -1,0 +1,76 @@
+# Full local stack:  docker compose -f infra/compose.yml up --build
+# MCP servers (mcp-finance, mcp-corp) are added in M2.
+name: claimpilot
+
+x-api-env: &api-env
+  DATABASE_URL: postgresql+asyncpg://claimpilot:claimpilot@postgres:5432/claimpilot
+  REDIS_URL: redis://redis:6379/0
+  UPLOAD_DIR: /data/uploads
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: claimpilot
+      POSTGRES_PASSWORD: claimpilot
+      POSTGRES_DB: claimpilot
+    volumes: [pgdata:/var/lib/postgresql/data]
+    ports: ["5432:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U claimpilot -d claimpilot"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7.4-alpine
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: { context: ../services/api }
+    image: claimpilot-api:local
+    env_file:
+      - path: ../.env
+        required: false
+    environment: *api-env
+    volumes: [uploads:/data/uploads]
+    ports: ["8000:8000"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+
+  worker:
+    image: claimpilot-api:local
+    command: ["arq", "claimpilot.worker.WorkerSettings"]
+    env_file:
+      - path: ../.env
+        required: false
+    environment: *api-env
+    volumes: [uploads:/data/uploads]
+    healthcheck:
+      test: ["CMD", "arq", "--check", "claimpilot.worker.WorkerSettings"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      api: { condition: service_started }
+      redis: { condition: service_healthy }
+
+  web:
+    build:
+      context: ../apps/web
+      args:
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:8000
+    image: claimpilot-web:local
+    ports: ["3000:3000"]
+    depends_on:
+      api: { condition: service_healthy }
+
+volumes:
+  pgdata:
+  uploads:
