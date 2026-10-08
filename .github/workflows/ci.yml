@@ -133,6 +133,33 @@ jobs:
         if: always()
         run: docker compose -f infra/compose.yml down -v
 
+  demo:
+    # The hosted demo is one image (ADR-030). Build it, start it and drive the sample receipts to
+    # an approved claim through the public port. Every model answer must come from the committed
+    # recordings, so this also catches recordings that stop matching on another machine.
+    runs-on: ubuntu-latest
+    needs: [api, web]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Build the hosted-demo image
+        run: docker build -f deploy/hf-space/Dockerfile --build-arg SOURCE=fetch-local -t claimpilot-demo .
+      - name: Start it
+        run: |
+          docker run -d --name demo -p 7860:7860 claimpilot-demo
+          for i in $(seq 1 90); do curl -fsS http://localhost:7860/api/readyz && exit 0; sleep 2; done
+          docker logs demo; exit 1
+      - name: Drive the sample receipts through it (replay mode, no model calls)
+        run: uv run --project services/api python scripts/smoke.py --api http://localhost:7860/api
+      - name: Logs on failure
+        if: failure()
+        run: docker logs demo
+      - name: Teardown
+        if: always()
+        run: docker rm -f demo
+
   secrets:
     runs-on: ubuntu-latest
     steps:

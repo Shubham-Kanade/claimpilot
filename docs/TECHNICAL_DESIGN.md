@@ -153,7 +153,7 @@ sequenceDiagram
   F-->>API: reference FIN-2026-000001
   API-->>U: status submitted
   A->>API: POST /v1/claims/{id}/decision {approved, comment}
-  API->>F: decide_claim (MCP); a rejection needs a reason
+  API->>F: decide_claim (MCP), a rejection needs a reason
 ```
 - **The approval gate** is in the API, not in a prompt: `submit` refuses (422 `confirmation_required`) without `confirmed: true` and (409 `claim_not_ready`) while any question is open. Repeating a submission with the same idempotency key returns the first result.
 - **Answers change the findings.** After every answer the claim is finalised again from its stored documents (`pipeline/finalize.py`): the per-head cap on a client dinner is only checked once the headcount is known, so one answer can turn a clean `auto_approve` claim into `finance_review`, or the reverse. The questions the pipeline itself asked ("what was this ₹120 payment for?") and every earlier answer survive the recomputation.
@@ -255,7 +255,8 @@ The pipeline is explicit code with models at the edges, not a free-running tool-
 - **Input.** Files are validated (type sniffing, size and page caps), images downscaled to a long-edge cap, and **PDFs rasterised to page images** with pdfium. Rasterising gives one image path for extraction, cost and click-to-verify, and avoids the corporate proxy resetting PDF payloads (ADR-016).
 - **Output schema.** Claude's structured outputs allow at most 24 optional and 16 union-typed parameters, and the domain receipt has about 25 nullable fields. So the model fills a flat "wire" schema (`WireReceipt`: every field required, "not printed" is an empty string, amounts are number strings) which `to_domain` maps to the `ExtractedReceipt`, flagging unparseable values as low-confidence. A test asserts the wire schema has 0 optional and 0 union parameters (ADR-017).
 - **Cache.** Results are cached in Redis by `(document hash, prompt version, model, effort)`, so a re-upload or a re-run of the evals costs nothing.
-- **Escalation** to a larger model on unsure critical fields exists (`ReceiptExtractor(escalate=True)`) but is off, because the bake-off showed it costs 10× for +1.9 points on non-critical fields (ADR-018).
+- **Second opinion before anyone is accused (ADR-031).** A first read is re-read by the stronger `extraction_retry` model only when it looks suspicious: it says the document talks to an AI, it is unsure of the total, or its own arithmetic and GST figures do not add up. The stronger read replaces the first; where both reads agree on the disputed figures the "hard to read" hedge is dropped, so a genuine mismatch keeps its severity. This stopped genuine rail tickets being flagged as injection or forgery and recovered a handwritten "Rs 260/-" misread as 2601, at about $0.0013 more per receipt on average (3 of 20 receipts re-read). Re-reading every unsure critical field (`escalate=True`) stays off: it costs 10× for +1.9 points on non-critical fields (ADR-018).
+- **Prompt `extract_v3`** defines `contains_instructions` by what it must catch (a sentence that tells an AI to approve, skip checks or ignore instructions) and what it must not (terms, "carry a photo ID", "computer generated", disclaimers), keeps tax rows and fee rows apart, and reads `/-` after an amount as "only".
 - **Labelling conventions** shared with the data generator: a ticket's `date` is the journey date and the PNR is `invoice_number`; a hotel folio's `date` is the checkout date (ADR-015).
 
 ### 3.3 System One decisions (Jev) and the LLM twin
@@ -268,7 +269,7 @@ Per document three typed questions are asked over the extracted fields (and, whe
 | **seed 7, 80 docs (held out)** | Jev | **85.0%** | 94.4% (89%) | 546 ms | $0.040 |
 | | LLM (Haiku 5.5) | 85.0% | 97.0% (82%) | 1,655 ms | $0.117 |
 
-Jev matches the LLM's accuracy at roughly one third of the latency and cost. Alcohol detection was 100% accurate and 100% recall on all four over-policy dinners. The wording of the questions mattered more than the model: the first version had Jev at 77% and a 57% personal-expense false-alarm rate, both caused by how the question was phrased; question v2 defines the answers with explicit criteria (ADR-021). The 85% held-out number is the honest one to quote; the remaining errors are documents the receipt itself cannot explain (a ₹120 UPI payment to a person's name), and those arrive below 0.7 confidence and become questions.
+The decision state also carries what the employee's calendar shows on the receipt's date, as words without names ("client dinner with 3 guests", or "nothing relevant"): a client dinner that day is what separates hosting clients from an ordinary meal, and without it the first run put every client dinner of the demo at 0.60 confidence. Jev matches the LLM's accuracy at roughly one third of the latency and cost. Alcohol detection was 100% accurate and 100% recall on all four over-policy dinners. The wording of the questions mattered more than the model: the first version had Jev at 77% and a 57% personal-expense false-alarm rate, both caused by how the question was phrased; question v2 defines the answers with explicit criteria (ADR-021). The 85% held-out number is the honest one to quote; the remaining errors are documents the receipt itself cannot explain (a ₹120 UPI payment to a person's name), and those arrive below 0.7 confidence and become questions.
 
 ### 3.4 Model registry and capability shim
 All model ids and prices live in one file, [models.yaml](../services/api/config/models.yaml). No model id appears anywhere in code.
@@ -292,7 +293,18 @@ Run on the 20-receipt dev split with the production prompt, synchronous calls (A
 | **Haiku 5.5 (effort low)** | **100%** | 95.0% | 100% | 100% | **$0.42** | 3.1 s / 3.9 s |
 | cascade (Haiku, then Sonnet on unsure critical fields; 7/20 escalated) | 100% | 96.9% | 100% | 100% | $4.22 | 3.3 s / 7.5 s |
 
-Haiku 5.5 alone cleared every gate, so it is the extraction route (ADR-018). Prompt v2 (fee rows are line items, ADR-028) re-run on the same split: critical 100%, field accuracy 96.0%, line-item F1 0.93, $0.52 per 1,000 receipts, p50 2.5 s; it also fixed flight tickets whose fee rows used to be skipped. The cascade costs ten times more for +1.9 points on non-critical fields. The runner scores field accuracy, critical-field accuracy, JSON validity, injection recall, cost and latency, selects the Pareto frontier with the gates applied *before* the frontier, and refuses to start when its token-count estimate exceeds `--max-usd`. Sonnet and Opus were not run, by the project owner's choice, because the cheapest model had already met every gate; they remain one environment variable away. Per-receipt cost on Haiku 5.5 is about $0.0009 in extraction (4.7–6.5K input tokens) plus about $0.00004 for decisions. 🚧 The final numbers on the 80-receipt test split replace this table at M4.
+Haiku 5.5 alone cleared every gate, so it is the extraction route (ADR-018). Prompt v2 (fee rows are line items, ADR-028) re-run on the same split: critical 100%, field accuracy 96.0%, line-item F1 0.93, $0.52 per 1,000 receipts, p50 2.5 s; it also fixed flight tickets whose fee rows used to be skipped.
+
+Prompt v3 with and without the second opinion (ADR-031), same split (n = 20; the same configuration moves by about two points between runs, so read these as indications):
+
+| Config | Critical | Fields | Line-item F1 | Injection recall / false alarms | Arithmetic false alarms | Re-read | $ / 1k | p50 / p95 |
+|---|---|---|---|---|---|---|---|---|
+| `haiku-low` (one read) | 100% | 96.5% | 0.89 | 100% / 0% | 1/20 | 0/20 | $0.43 | 2.2 s / 3.3 s |
+| **`haiku-2nd` (production)** | 100% | **99.0%** | 0.90 | 100% / 0% | **0/20** | 3/20 | $1.77 | 2.4 s / 5.7 s |
+
+An "arithmetic false alarm" is a receipt whose read makes the trust checks complain (a total that does not add up, a rate that contradicts the stated one, a GSTIN that fails its checksum) where the document's own printed figures are consistent: a misread or swapped figure that would accuse a genuine receipt.
+
+The Pareto selection on field accuracy alone still prefers the single read; the second opinion is the production default because it removes false accusations, which field accuracy does not measure. 🚧 Final numbers on the 80-receipt test split replace these at M4. The cascade costs ten times more for +1.9 points on non-critical fields. The runner scores field accuracy, critical-field accuracy, JSON validity, injection recall, cost and latency, selects the Pareto frontier with the gates applied *before* the frontier, and refuses to start when its token-count estimate exceeds `--max-usd`. Sonnet and Opus were not run, by the project owner's choice, because the cheapest model had already met every gate; they remain one environment variable away. Per-receipt cost on Haiku 5.5 is about $0.0009 in extraction (4.7–6.5K input tokens) plus about $0.00004 for decisions. 🚧 The final numbers on the 80-receipt test split replace this table at M4.
 
 ### 3.6 Replay, caching and the cost ledger
 - **Three LLM modes.** `replay` (the default for development, tests and the hosted demo) answers from recorded responses keyed by the sha256 of the request, at $0. `live` calls the API; with `LLM_RECORD=1` it also saves what it receives. `fake` is a deterministic stub for unit tests.
