@@ -11,13 +11,13 @@ paths:
 | Layer | Where | Rule |
 |---|---|---|
 | Unit | `services/*/tests/unit` | No network. Use the `fake` LLM and Jev engines. Cover policy, GSTIN, GST math, grouping, the claim state machine and prompt builders |
-| LLM replay | `services/api/tests/replay` | `pytest-recording` cassettes. Record only with `LLM_MODE=live --record-mode=once` and a scrubbed key. CI always replays |
+| LLM replay | `services/api/replay`, `tests/unit/test_llm_replay.py` | Recordings keyed by the request hash (`RecordReplayLLM`). Record only with `LLM_MODE=live LLM_RECORD=1`, in Docker, via `infra/compose.record.yml`. CI always replays; the demo image is smoke-tested in replay mode |
 | Contract | `tests/contract` | Every LLM structured output parses to its Pydantic model. Tool schemas are strict |
 | Model switching | `tests/unit/test_llm_shim.py` | Snapshot the request params for each registry model × route |
 | Agent trajectory | `tests/agent` | Scripted conversations. Assert the order of tool calls: never `submit_claim` before confirmation; at most one combined question |
 | API | `tests/api` | httpx `AsyncClient` against the app. Auth/RBAC, idempotent submit, problem+json errors |
 | Frontend unit | `apps/web/src/**/*.test.tsx` | Vitest + RTL + MSW. Test the reducer and components, not implementation details |
-| E2E | `apps/web/e2e` | Playwright on the Compose stack with `LLM_MODE=replay`. Include axe checks |
+| E2E | `apps/web/e2e` | Playwright against the hosted-demo image (`deploy/hf-space`, `LLM_MODE=replay`, the committed recordings). Include axe checks |
 | Evals | `evals/` | Live and costly. Run only through the `run-evals` / `model-bakeoff` skills with `--max-usd`. Never in the default CI job |
 
 - **Never call live APIs from the default `pytest` or `npm test` run.** Live tests are marked `@pytest.mark.live` and skipped unless `LLM_MODE=live`.

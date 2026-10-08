@@ -1,0 +1,74 @@
+name: cd
+
+# Runs when a version tag is pushed (git tag v1.0.0 && git push --tags), or by hand.
+#  1. builds every image and publishes it to the GitHub container registry (ghcr.io);
+#  2. if the repository variable HF_SPACE is set (for example "your-user/claimpilot") and the secret
+#     HF_TOKEN holds a Hugging Face token with write access, asks the Space to rebuild: its
+#     Dockerfile clones this repository, so the Space picks up the tagged code (ADR-030).
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: api, context: services/api, file: services/api/Dockerfile }
+          - { name: web, context: apps/web, file: apps/web/Dockerfile }
+          - { name: mcp-finance, context: services/mcp-finance, file: services/mcp-finance/Dockerfile }
+          - { name: mcp-corp, context: ., file: services/mcp-corp/Dockerfile }
+          - { name: demo, context: ., file: deploy/hf-space/Dockerfile, args: "SOURCE=fetch-local" }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Image name (registry names must be lower case)
+        run: echo "IMAGE=${REGISTRY}/${GITHUB_REPOSITORY,,}-${{ matrix.name }}" >> "$GITHUB_ENV"
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=ref,event=tag
+            type=sha
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          build-args: ${{ matrix.args }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+
+  space:
+    needs: images
+    if: ${{ vars.HF_SPACE != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rebuild the Hugging Face Space from the tagged code
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE: ${{ vars.HF_SPACE }}
+        run: |
+          curl -fsS -X POST \
+            -H "Authorization: Bearer ${HF_TOKEN}" \
+            "https://huggingface.co/api/spaces/${HF_SPACE}/restart?factory=true"
+          echo "Asked ${HF_SPACE} to rebuild."

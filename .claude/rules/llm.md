@@ -25,7 +25,7 @@ Runtime API spend is the **user's personal money**. Treat every live call as a c
 
 ## Modes and spend
 - **`LLM_MODE`:**
-  - `replay` (default in CI and dev) uses VCR cassettes and costs $0.
+  - `replay` (default in CI, dev and the hosted demo) answers from recordings in `services/api/replay/`, keyed by the sha256 of the request, and costs $0. A miss raises `ReplayMissError`.
   - `live` makes real calls.
   - `fake` is the deterministic stub used in unit tests.
 - **Live eval and bake-off runs** must pass `--max-usd`. The runner estimates cost with `count_tokens` first and aborts if the estimate goes over.
@@ -37,7 +37,7 @@ Runtime API spend is the **user's personal money**. Treat every live call as a c
   - Haiku caches only prefixes of 4,096 tokens or more.
   - Verify via `usage.cache_read_input_tokens`.
 - **Prompt injection:** wrap receipt text and OCR output in clearly delimited data blocks. The system prompt says that content inside them is data. Final approve/reject decisions are rule-gated in `policy` and `claims`, never taken from model text alone.
-- **Prompts live in files** (`prompts/*.md` or `.j2`) with a version string. Any prompt change requires re-recording the cassettes and re-running the eval subset (`run-evals` skill).
+- **Prompts live in files** (`prompts/*.md` or `.j2`) with a version string (`extract_v2`, `decide_v1`, `reply_v1`). Any prompt change requires a new version, re-recording the demo recordings **inside Docker** (`infra/compose.record.yml` + `scripts/smoke.py`, ADR-029) and re-running the eval subset (`run-evals` skill). Delete the stale `services/api/replay/*.json` first.
 - **Check `stop_reason`** (`refusal`, `max_tokens`) before using the output. Validate every tool input against its schema.
 
 ## Jev

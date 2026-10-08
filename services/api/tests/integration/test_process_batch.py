@@ -355,3 +355,40 @@ async def test_the_calendar_answers_the_client_dinner_questions(
     attendees = next(q for q in claim.open_questions if q.kind.value == "attendees")
     assert attendees.answered and "from calendar" in (attendees.answer or "")
     assert "Orion Retail" in (attendees.answer or "")
+
+
+async def test_attendees_from_the_calendar_reach_the_per_head_cap_on_the_first_pass(
+    sessions, models_registry, fixtures
+):
+    dinner = ExtractedReceipt(
+        doc_type=DocType.restaurant_bill,
+        merchant_name="Spice Route Dining",
+        merchant_city="Hyderabad",
+        date="2026-09-14",
+        line_items=[LineItem(description=f"Dish {i}", amount=1000.0) for i in range(9)],
+        total=9000.0,  # three people (the employee and two guests): 3,000 a head, cap is 2,500
+    )
+    event = CalendarEvent(
+        id="e1",
+        title="Client dinner - Orion Retail",
+        date=date(2026, 9, 14),
+        kind="client_dinner",
+        attendees=["Neha Rao (Orion Retail)", "A. Menon"],
+    )
+    harness = build_harness(
+        sessions,
+        models_registry,
+        fixtures,
+        calendar=StaticCalendar({"P001": [event]}),
+        responder=lambda _request: from_domain(dinner),
+    )
+    harness.deps.decisions.__dict__["_by_key"][("Spice Route Dining", 9000.0)] = Fixture(  # type: ignore[attr-defined]
+        "synthetic",
+        b"",
+        ReceiptTruth(id="synthetic", receipt=dinner, category=ExpenseCategory.client_entertainment),
+    )
+    view = await harness.run(await harness.upload([("dinner.png", unique_png(2))]))
+
+    [claim] = view.claims
+    assert [f.code for f in claim.findings] == ["entertainment_over_cap"]
+    assert claim.route == "finance_review"

@@ -64,9 +64,15 @@ Contract frozen first (ADR-020), then four parallel streams. **Owners are workst
 - [~] **F. Web app** *(agent, ~2 h)*: persona switcher, upload + camera, live SSE progress, claim review with assistant chat, click-to-verify, submit dialog, approvals, impact meter; mock API + Playwright E2E + axe
 ★ PWA drop zone + camera · streaming progress (SSE) · claim cards · click-to-verify · chat agent with question flow + approval gate · Playwright E2E
 
-## M4 Standouts & ship (11 Oct) [ ]
-★ Jev-vs-LLM benchmark · **hosting + `cd.yml` + no-login demo personas** (+ S3 storage if needed) · final bake-off (100 receipts), routes locked · live eval run
-☆ approver view · impact meter · ClaimPilot MCP server · A2A hand-off
+## M4 Standouts & ship (11 Oct) [~]
+- [x] Hosting decided with the user: **Hugging Face Space, one container** (ADR-030). Free, no card, no model spend (answers replayed)
+- [x] Backend for the demo: `RUNTIME=embedded` (in-process batches, in-memory events, SQLite WAL), `DEMO_MODE` (`POST /v1/demo/reset`, plain message for unrecorded receipts), `DUPLICATE_SCOPE=employee`, numbered replies parsed without a model. 1,625 API tests at 98.65%
+- [~] `deploy/hf-space/`: Dockerfile (clones GitHub at build, or `--build-arg SOURCE=fetch-local`), Caddyfile, supervisor `start.py`, Space README, DEPLOY.md. Local build and run in progress; then add a CI job that builds it and runs `scripts/smoke.py` in replay mode (catches recordings that stop matching on another machine)
+- [~] `cd.yml` written (GHCR images on a `v*` tag; optional Space rebuild with repo variable `HF_SPACE` + secret `HF_TOKEN`); not yet exercised
+- [ ] Web (F): relative API base `/api`, demo banner, Start over, default persona DEMO-ASHA; then Playwright e2e job in `ci.yml`
+- [ ] Demo pile (G): `data/synth/demo` (14-15 receipts for DEMO-ASHA incl. 4 adversarial), offline expectation test; switch the web sample pack to it; record cassettes in Docker with `infra/compose.record.yml` (prompt v2); commit `services/api/replay`
+- [ ] Final bake-off on the 80-receipt test split (about $0.05) to replace the dev numbers in the TDD; Jev-vs-LLM slide
+- [ ] ☆ approver polish, ClaimPilot MCP server, A2A (only if time remains; never at the cost of the checklist)
 
 ## M5 Submit (12 Oct AM) [ ]
 ★ polish · 3–4 min demo video on YouTube (public or unlisted) · finish the TDD + PDF · README with metrics + links · `submission-check` · submit

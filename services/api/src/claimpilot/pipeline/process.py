@@ -38,7 +38,7 @@ from claimpilot.extraction.preprocess import PreparedDocument
 from claimpilot.llm.errors import ReplayMissError
 from claimpilot.pipeline import events as ev
 from claimpilot.pipeline.dupindex import DbDuplicateIndex, EmployeeScopedIndex
-from claimpilot.pipeline.finalize import with_category_questions
+from claimpilot.pipeline.finalize import refinalize
 from claimpilot.pipeline.repo import Repository
 from claimpilot.pipeline.views import BatchView
 from claimpilot.policy import Policy
@@ -308,7 +308,16 @@ async def _form_claims(
     for claim in claims:
         members = [by_id[i] for i in claim.document_ids]
         claim = await _apply_calendar(deps, employee, claim, members)
-        claim = with_category_questions(claim, members, deps.settings.decision_min_confidence)
+        # Answers change what policy sees (the per-head cap needs the attendees the calendar just
+        # supplied), so the findings are recomputed before the claim is routed.
+        claim = refinalize(
+            claim,
+            members,
+            deps.policy,
+            employee,
+            today=deps.today(),
+            min_confidence=deps.settings.decision_min_confidence,
+        )
         finished.append(claim)
     routes = {c.id: route(c) for c in finished}
     await deps.repo.save_claims(batch_id, employee.id, finished, routes)

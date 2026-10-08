@@ -370,6 +370,8 @@ Deterministic: the same arguments and seed give identical truths and byte-identi
 
 What is committed: 10 sample receipts (`data/synth/fixtures`, also served as one-click samples by the web app) and the **truth-only golden set** (`data/synth/golden`, 100 documents plus the persona roster, about 0.3 MB), so policy, grouping and decision evals run in CI with no rendering and no spend.
 
+**The demo pile** (`data/synth/demo`, 15 documents, 2.1 MB) tells one story for the video and the hosted demo: Asha Menon (grade L3, based in Pune) comes back from a client visit to Mumbai. Eleven receipts are honest (a client dinner whose guests her calendar already lists, the trip's train tickets, hotel folio, cab and meal, three local rides including a handwritten Hindi auto slip, a mobile bill, and a ₹120 UPI payment that nothing on screen explains) and four are traps that must be caught: the dinner bill photographed twice, a cab receipt whose total was edited from ₹330.96 to ₹830.96, a café bill carrying a printed note to an "AI reviewer", and a Mumbai dinner with beer and whisky. Fed to the real grouping, policy and trust code the pile makes six claims, auto-approves two, routes four to finance review and leaves exactly two questions (the trip's purpose and the UPI payment); an offline test asserts all of it and fails if the pile drifts. It is regenerated deterministically with `uv run generate.py demo`.
+
 ## 5. Setup & deployment
 
 ### 5.1 Prerequisites
@@ -397,8 +399,23 @@ Set `ANTHROPIC_API_KEY` and `LLM_MODE=live` in `.env` (and `LLM_RECORD=1` to sav
 ### 5.5 Configuration reference
 All configuration is environment variables read in one place (`config.py`, 12-factor). See [.env.example](../.env.example) for the full list: LLM mode and keys, decision engine, database, Redis, upload directory and limits, MCP URLs, approver allow-list, CORS origins.
 
-### 5.6 Hosted deployment 🚧 M4
-Images are built by CI and published to GHCR; the deployment target is chosen on 11 Oct (ADR-006). The hosted demo needs no login: the persona switcher selects a synthetic employee or approver.
+### 5.6 Hosted demo (Hugging Face Space)
+The public demo is **one container** (ADR-030), built by [deploy/hf-space/Dockerfile](../deploy/hf-space/Dockerfile) and deployed as a Hugging Face Space (free, no login for visitors).
+
+```mermaid
+flowchart LR
+  B[Browser] --> P["Caddy :7860"]
+  P -- "/api/*" --> A["FastAPI :8000<br/>RUNTIME=embedded<br/>batches run in-process"]
+  P -- "everything else" --> W["Next.js :3000"]
+  A --> DB[("SQLite in /data")]
+  A -- MCP --> F["mcp-finance :8101"]
+  A -- MCP --> C["mcp-corp :8102"]
+  A -. "replay (no network)" .-> R[["recorded model answers<br/>services/api/replay"]]
+```
+- **What differs from the Compose stack:** SQLite instead of Postgres, an in-memory queue and event bus instead of Redis and a separate worker, model answers replayed from recordings (`LLM_MODE=replay`), `DEMO_MODE=1` (a "Start over" button, plain messages), duplicates compared per employee, and a pinned clock. The pipeline code is identical; only `wiring.py` differs.
+- **Deploy:** create a Docker Space and add `Dockerfile` and `README.md` from `deploy/hf-space/`; the build clones this repository. Steps in [deploy/hf-space/DEPLOY.md](../deploy/hf-space/DEPLOY.md). No secrets are needed.
+- **Verify a deployment:** `uv run --project services/api python scripts/smoke.py --api https://<space>.hf.space/api`.
+- **No login:** the persona switcher picks a synthetic employee or the approver. State resets when the Space restarts or when a visitor presses *Start over*.
 
 ## 6. Code walkthrough
 Backend package `services/api/src/claimpilot/`:

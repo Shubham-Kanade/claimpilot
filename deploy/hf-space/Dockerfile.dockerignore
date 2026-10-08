@@ -1,0 +1,19 @@
+# Used when building from a checkout (--build-arg SOURCE=fetch-local): keep the context small.
+**/.git
+**/node_modules
+**/.venv
+**/.next
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.ruff_cache
+**/coverage
+**/test-results
+**/playwright-report
+.env
+.env.*
+**/.data
+data/synth/out
+data/synth/html
+evals
+docs
