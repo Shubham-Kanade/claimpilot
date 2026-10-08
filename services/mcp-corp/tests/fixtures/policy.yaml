@@ -1,0 +1,7 @@
+# Test fixture: a tiny stand-in for services/api/config/policy.yaml (the real file is copied into
+# the image at build time). Includes a non-ASCII character to check the UTF-8 round trip.
+name: Fixture Policy
+version: "fixture"
+clauses:
+  - id: "1.1"
+    text: Amounts are in ₹ and include GST.

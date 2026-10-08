@@ -1,0 +1,240 @@
+[
+  {
+    "owner": "DEMO-ASHA",
+    "id": "CAL-DEMO-ASHA-20261006-MTG",
+    "kind": "client_meeting",
+    "title": "Quarterly review with Kestrel Logistics",
+    "date": "2026-10-06",
+    "end_date": null,
+    "start_time": "11:00",
+    "end_time": "12:30",
+    "location": "Kestrel Logistics office, Pune",
+    "attendees": [
+      "Neha Rao (Kestrel Logistics)",
+      "Rohan Kapoor (Kestrel Logistics)"
+    ]
+  },
+  {
+    "owner": "DEMO-ASHA",
+    "id": "CAL-DEMO-ASHA-20261006-DIN",
+    "kind": "client_dinner",
+    "title": "Dinner with Kestrel Logistics",
+    "date": "2026-10-06",
+    "end_date": null,
+    "start_time": "20:00",
+    "end_time": "22:00",
+    "location": "Saffron Terrace, Pune",
+    "attendees": [
+      "Neha Rao (Kestrel Logistics)",
+      "Rohan Kapoor (Kestrel Logistics)",
+      "Priya Nair (Kestrel Logistics)"
+    ]
+  },
+  {
+    "owner": "DEMO-ASHA",
+    "id": "CAL-DEMO-ASHA-20261009-TRV",
+    "kind": "travel",
+    "title": "Client visit to Mumbai",
+    "date": "2026-10-09",
+    "end_date": "2026-10-10",
+    "start_time": null,
+    "end_time": null,
+    "location": "Mumbai",
+    "attendees": []
+  },
+  {
+    "owner": "DEMO-MEERA",
+    "id": "CAL-DEMO-MEERA-20261007-TRN",
+    "kind": "training",
+    "title": "Data privacy essentials",
+    "date": "2026-10-07",
+    "end_date": "2026-10-08",
+    "start_time": null,
+    "end_time": null,
+    "location": "Mumbai Learning Centre",
+    "attendees": []
+  },
+  {
+    "owner": "DEMO-MEERA",
+    "id": "CAL-DEMO-MEERA-20261008-DIN",
+    "kind": "client_dinner",
+    "title": "Dinner with Harbour Analytics",
+    "date": "2026-10-08",
+    "end_date": null,
+    "start_time": "20:00",
+    "end_time": "22:00",
+    "location": "Harbour Lights Bistro, Mumbai",
+    "attendees": [
+      "Kavya Pillai (Harbour Analytics)",
+      "Tarun Varma (Harbour Analytics)"
+    ]
+  },
+  {
+    "owner": "DEMO-RAVI",
+    "id": "CAL-DEMO-RAVI-20261007-MTG",
+    "kind": "client_meeting",
+    "title": "Annual contract review with Blue Lotus Foods",
+    "date": "2026-10-07",
+    "end_date": null,
+    "start_time": "15:00",
+    "end_time": "16:00",
+    "location": "Blue Lotus Foods office, Bengaluru",
+    "attendees": [
+      "Anita Desai (Blue Lotus Foods)",
+      "Sameer Joshi (Blue Lotus Foods)"
+    ]
+  },
+  {
+    "owner": "DEMO-RAVI",
+    "id": "CAL-DEMO-RAVI-20261014-OFF",
+    "kind": "offsite",
+    "title": "Leadership offsite",
+    "date": "2026-10-14",
+    "end_date": "2026-10-15",
+    "start_time": null,
+    "end_time": null,
+    "location": "Lakeview Resort, Lonavala",
+    "attendees": [
+      "Asha Menon",
+      "Meera Shah"
+    ]
+  },
+  {
+    "owner": "P001",
+    "id": "CAL-P001-20260712-TRV",
+    "kind": "travel",
+    "title": "Business trip to Bengaluru",
+    "date": "2026-07-12",
+    "end_date": "2026-07-14",
+    "start_time": null,
+    "end_time": null,
+    "location": "Bengaluru",
+    "attendees": []
+  },
+  {
+    "owner": "P002",
+    "id": "CAL-P002-20260804-DIN",
+    "kind": "client_dinner",
+    "title": "Client dinner with Juniper Health",
+    "date": "2026-08-04",
+    "end_date": null,
+    "start_time": "20:00",
+    "end_time": "22:30",
+    "location": "Chandni Cafe, Bhubaneswar",
+    "attendees": [
+      "Neha Kapoor (Juniper Health)",
+      "Anita Banerjee (Juniper Health)",
+      "Sameer Kapoor (Juniper Health)",
+      "Tarun Rao (Juniper Health)"
+    ]
+  },
+  {
+    "owner": "P002",
+    "id": "CAL-P002-20260812-TRV",
+    "kind": "travel",
+    "title": "Business trip to Chandigarh",
+    "date": "2026-08-12",
+    "end_date": "2026-08-14",
+    "start_time": null,
+    "end_time": null,
+    "location": "Chandigarh",
+    "attendees": []
+  },
+  {
+    "owner": "P002",
+    "id": "CAL-P002-20260818-TRV",
+    "kind": "travel",
+    "title": "Business trip to Kolkata",
+    "date": "2026-08-18",
+    "end_date": "2026-08-19",
+    "start_time": null,
+    "end_time": null,
+    "location": "Kolkata",
+    "attendees": []
+  },
+  {
+    "owner": "P003",
+    "id": "CAL-P003-20260907-TRV",
+    "kind": "travel",
+    "title": "Business trip to Nagpur",
+    "date": "2026-09-07",
+    "end_date": "2026-09-10",
+    "start_time": null,
+    "end_time": null,
+    "location": "Nagpur",
+    "attendees": []
+  },
+  {
+    "owner": "P003",
+    "id": "CAL-P003-20260909-DIN",
+    "kind": "client_dinner",
+    "title": "Client dinner with Cobalt Mobility",
+    "date": "2026-09-09",
+    "end_date": null,
+    "start_time": "21:00",
+    "end_time": "23:30",
+    "location": "Chulha Junction, New Delhi",
+    "attendees": [
+      "Arjun Banerjee (Cobalt Mobility)",
+      "Priya Varma (Cobalt Mobility)"
+    ]
+  },
+  {
+    "owner": "P004",
+    "id": "CAL-P004-20260707-DIN",
+    "kind": "client_dinner",
+    "title": "Client dinner with Sunbeam Retail",
+    "date": "2026-07-07",
+    "end_date": null,
+    "start_time": "18:30",
+    "end_time": "21:00",
+    "location": "Kesar Grill House, Kochi",
+    "attendees": [
+      "Arjun Rao (Sunbeam Retail)",
+      "Rohan Desai (Sunbeam Retail)",
+      "Vikram Kapoor (Sunbeam Retail)",
+      "Vikram Desai (Sunbeam Retail)"
+    ]
+  },
+  {
+    "owner": "P004",
+    "id": "CAL-P004-20260710-TRV",
+    "kind": "travel",
+    "title": "Business trip to Bengaluru",
+    "date": "2026-07-10",
+    "end_date": "2026-07-13",
+    "start_time": null,
+    "end_time": null,
+    "location": "Bengaluru",
+    "attendees": []
+  },
+  {
+    "owner": "P005",
+    "id": "CAL-P005-20260807-TRV",
+    "kind": "travel",
+    "title": "Business trip to Hyderabad",
+    "date": "2026-08-07",
+    "end_date": "2026-08-08",
+    "start_time": null,
+    "end_time": null,
+    "location": "Hyderabad",
+    "attendees": []
+  },
+  {
+    "owner": "P005",
+    "id": "CAL-P005-20260808-DIN",
+    "kind": "client_dinner",
+    "title": "Client dinner with Kestrel Logistics",
+    "date": "2026-08-08",
+    "end_date": null,
+    "start_time": "18:30",
+    "end_time": "21:00",
+    "location": "Coastal Tadka Grill House, Panaji",
+    "attendees": [
+      "Karan Banerjee (Kestrel Logistics)",
+      "Naveen Bhatt (Kestrel Logistics)",
+      "Pooja Pillai (Kestrel Logistics)",
+      "Anita Rao (Kestrel Logistics)"
+    ]
+  }
+]

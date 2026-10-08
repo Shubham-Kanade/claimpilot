@@ -1,0 +1,82 @@
+[
+  {
+    "id": "P001",
+    "name": "Advika Hayer",
+    "employee_id": "EMP85968",
+    "grade": "L4",
+    "base_city": "Hyderabad",
+    "base_state_code": "36",
+    "manager_id": "DEMO-RAVI",
+    "email": "advika.hayer@example.com"
+  },
+  {
+    "id": "P002",
+    "name": "Zansi Samra",
+    "employee_id": "EMP74851",
+    "grade": "L4",
+    "base_city": "Bhubaneswar",
+    "base_state_code": "21",
+    "manager_id": "DEMO-RAVI",
+    "email": "zansi.samra@example.com"
+  },
+  {
+    "id": "P003",
+    "name": "Sudiksha Bhavsar",
+    "employee_id": "EMP82433",
+    "grade": "L1",
+    "base_city": "New Delhi",
+    "base_state_code": "07",
+    "manager_id": "DEMO-RAVI",
+    "email": "sudiksha.bhavsar@example.com"
+  },
+  {
+    "id": "P004",
+    "name": "Abha Balan",
+    "employee_id": "EMP44590",
+    "grade": "L3",
+    "base_city": "Kochi",
+    "base_state_code": "32",
+    "manager_id": "DEMO-RAVI",
+    "email": "abha.balan@example.com"
+  },
+  {
+    "id": "P005",
+    "name": "Advik Kaur",
+    "employee_id": "EMP35048",
+    "grade": "L4",
+    "base_city": "Panaji",
+    "base_state_code": "30",
+    "manager_id": "DEMO-RAVI",
+    "email": "advik.kaur@example.com"
+  },
+  {
+    "id": "DEMO-ASHA",
+    "name": "Asha Menon",
+    "employee_id": "EMP90001",
+    "grade": "L3",
+    "base_city": "Pune",
+    "base_state_code": "27",
+    "manager_id": "DEMO-RAVI",
+    "email": "asha.menon@example.com"
+  },
+  {
+    "id": "DEMO-RAVI",
+    "name": "Ravi Iyer",
+    "employee_id": "EMP90002",
+    "grade": "L5",
+    "base_city": "Bengaluru",
+    "base_state_code": "29",
+    "manager_id": null,
+    "email": "ravi.iyer@example.com"
+  },
+  {
+    "id": "DEMO-MEERA",
+    "name": "Meera Shah",
+    "employee_id": "EMP90003",
+    "grade": "L2",
+    "base_city": "Mumbai",
+    "base_state_code": "27",
+    "manager_id": "DEMO-RAVI",
+    "email": "meera.shah@example.com"
+  }
+]

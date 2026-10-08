@@ -1,0 +1,3 @@
+# Copied from the canonical services/api/config/policy.yaml (the Docker build does this; locally
+# the server falls back to that file directly).
+seed/policy.yaml

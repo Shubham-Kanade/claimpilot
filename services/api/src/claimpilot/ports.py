@@ -24,6 +24,15 @@ class CalendarEvent(BaseModel):
     date: date
     kind: str = "meeting"  # client_dinner | client_meeting | travel | training | offsite
     attendees: list[str] = []
+    end_date: date | None = None  # last day of a multi-day event (a trip, an offsite)
+
+    @property
+    def last_day(self) -> date:
+        return self.end_date or self.date
+
+    def overlaps(self, start: date, end: date) -> bool:
+        """Whether any day of the event falls in ``start..end`` (inclusive)."""
+        return self.date <= end and self.last_day >= start
 
 
 class SubmissionResult(BaseModel):
@@ -71,11 +80,12 @@ class StaticCalendar:
         self._events = events or {}
 
     async def events(self, employee_id: str, start: date, end: date) -> list[CalendarEvent]:
-        return [e for e in self._events.get(employee_id, []) if start <= e.date <= end]
+        return [e for e in self._events.get(employee_id, []) if e.overlaps(start, end)]
 
 
 class FakeFinance:
-    """Idempotent in-memory finance system."""
+    """Idempotent in-memory finance system with the real server's rules (a rejection needs a
+    reason)."""
 
     def __init__(self) -> None:
         self.submitted: dict[str, SubmissionResult] = {}
@@ -91,5 +101,7 @@ class FakeFinance:
     async def decide_claim(
         self, reference: str, *, approved: bool, approver_id: str, comment: str = ""
     ) -> str:
+        if not approved and not comment.strip():  # the real finance server demands a reason too
+            raise ValueError("a rejection needs a comment")
         self.decisions.append((reference, approved, approver_id))
         return "approved" if approved else "rejected"

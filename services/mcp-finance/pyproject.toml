@@ -1,0 +1,61 @@
+[project]
+name = "claimpilot-mcp-finance"
+version = "0.1.0"
+description = "Mock finance / reimbursement system for ClaimPilot, served as an MCP server (streamable HTTP)"
+readme = "README.md"
+authors = [{ name = "Shubham Kanade" }]
+requires-python = ">=3.13"
+dependencies = [
+    "anyio>=4.9",
+    "mcp>=2.3.0",
+    "pydantic>=2.12",
+    "pydantic-settings>=2.15.0",
+    "starlette>=0.48",
+    "uvicorn>=0.54.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.23,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.414",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.16.10",
+]
+
+[project.scripts]
+claimpilot-mcp-finance = "claimpilot_mcp_finance.__main__:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-ra"
+
+[tool.coverage.run]
+source = ["claimpilot_mcp_finance"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+skip_covered = true
+exclude_also = ["if TYPE_CHECKING:", "if __name__ == .__main__.:"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "ASYNC", "RUF"]
+
+[tool.pyright]
+include = ["src", "tests"]
+typeCheckingMode = "standard"
+pythonVersion = "3.13"
+venvPath = "."
+venv = ".venv"

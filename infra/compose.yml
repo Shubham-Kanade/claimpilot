@@ -1,11 +1,14 @@
 # Full local stack:  docker compose -f infra/compose.yml up --build
-# MCP servers (mcp-finance, mcp-corp) are added in M2.
+# Includes the mock MCP servers (mcp-finance, mcp-corp). They have no authentication, so their
+# host ports are published on 127.0.0.1 only; the api reaches them over the compose network.
 name: claimpilot
 
 x-api-env: &api-env
   DATABASE_URL: postgresql+asyncpg://claimpilot:claimpilot@postgres:5432/claimpilot
   REDIS_URL: redis://redis:6379/0
   UPLOAD_DIR: /data/uploads
+  MCP_FINANCE_URL: http://mcp-finance:8101/mcp
+  MCP_CORP_URL: http://mcp-corp:8102/mcp
 
 services:
   postgres:
@@ -31,6 +34,20 @@ services:
       timeout: 3s
       retries: 10
 
+  # Mock enterprise systems (MCP over streamable HTTP). Each image ships its own HEALTHCHECK.
+  mcp-finance:
+    build: { context: ../services/mcp-finance }
+    image: claimpilot-mcp-finance:local
+    environment: { FINANCE_DB: /data/finance.db }
+    volumes: [finance-data:/data]
+    ports: ["127.0.0.1:8101:8101"]  # loopback only: no authentication
+
+  mcp-corp:
+    # Context is the repo root: the image bakes in services/api/config/policy.yaml.
+    build: { context: .., dockerfile: services/mcp-corp/Dockerfile }
+    image: claimpilot-mcp-corp:local
+    ports: ["127.0.0.1:8102:8102"]  # loopback only: no authentication
+
   api:
     build: { context: ../services/api }
     image: claimpilot-api:local
@@ -43,6 +60,8 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
+      mcp-finance: { condition: service_healthy }
+      mcp-corp: { condition: service_healthy }
 
   worker:
     image: claimpilot-api:local
@@ -74,3 +93,4 @@ services:
 volumes:
   pgdata:
   uploads:
+  finance-data:

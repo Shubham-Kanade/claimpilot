@@ -1,0 +1,13 @@
+# BuildKit's per-Dockerfile ignore file (used instead of any .dockerignore at the context root).
+# The build context is the REPO ROOT, so this is an allow-list: ignore everything, then re-include
+# only what services/mcp-corp/Dockerfile copies. Paths are relative to the context root.
+*
+!services/mcp-corp/pyproject.toml
+!services/mcp-corp/uv.lock
+!services/mcp-corp/README.md
+!services/mcp-corp/src
+!services/mcp-corp/seed
+!services/api/config/policy.yaml
+# Last on purpose: the last matching pattern wins, so these still apply inside the re-included dirs.
+**/__pycache__
+**/*.pyc
