@@ -50,7 +50,7 @@ flowchart LR
 | Duplicates, injection, tampered totals | 4/4, 4/4, 4/4 caught; 0 false positives on 88 clean documents | ADR-026 |
 | Policy rules on the golden set | 0 of 80 legitimate receipts flagged, 4 of 4 over-policy cases caught | ADR-024 |
 | Claim grouping against ground-truth trips | F1 = 1.000 | ADR-025 |
-| Tests | **1,742 API tests at 98.7% coverage**, 539 web tests at 98% (plus 110 browser runs on desktop and phone with accessibility checks), 566 MCP-server tests at 100%, synthetic-data generator | CI |
+| Tests | **1,742 API tests at 98.7% coverage**, 539 web tests at 98% (plus 110 browser runs on desktop and phone with accessibility checks), 566 MCP-server tests at 100%, 111 synthetic-data generator tests | CI |
 
 ## Run it
 
