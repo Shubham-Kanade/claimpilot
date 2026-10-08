@@ -1,0 +1,28 @@
+# Record the demo's LLM responses so the hosted demo can replay them for $0.
+#
+#   docker compose -f infra/compose.yml -f infra/compose.record.yml up -d
+#   uv run --project services/api python scripts/smoke.py          # drives the sample pile through
+#
+# THIS SPENDS REAL MONEY (about $0.001-0.002 per receipt on Claude Haiku 5.5, so a few cents for the
+# demo pile). Recordings land in services/api/replay/ on the host, keyed by the sha256 of each
+# request; a request that is already recorded is replayed, not paid for again.
+#
+# Record inside Docker, not on the host: the request hash covers the rasterised page images, so the
+# recordings are only reproducible with the same Pillow/pdfium builds the hosted image uses.
+x-record-env: &record-env
+  LLM_MODE: live
+  LLM_RECORD: "1"
+  # The Jev call is not an LLM request, so it cannot be recorded; decisions go through the LLM
+  # engine (same typed questions) so replay mode can serve them too.
+  DECISION_ENGINE: llm
+  DEMO_TODAY: "2026-10-12"
+
+services:
+  api:
+    environment: *record-env
+    volumes:
+      - ../services/api/replay:/app/replay
+  worker:
+    environment: *record-env
+    volumes:
+      - ../services/api/replay:/app/replay
