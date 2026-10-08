@@ -12,6 +12,7 @@ dependencies = [
     "asyncpg>=0.32.0",
     "fastapi>=0.142.2",
     "httpx>=0.28.1",
+    "pillow>=11",
     "pydantic>=2.9",
     "pydantic-settings>=2.15.0",
     "python-multipart>=0.0.32",
@@ -28,12 +29,14 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "aiosqlite>=0.22.1",
     "pyright>=1.1.414",
     "pytest>=9.1.1",
     "pytest-asyncio>=1.4.0",
     "pytest-cov>=7.1.0",
     "pytest-recording>=0.14.0",
     "ruff>=0.16.10",
+    "syrupy>=6.1.1",
 ]
 
 [tool.pytest.ini_options]
@@ -60,8 +63,11 @@ target-version = "py313"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "ASYNC", "RUF"]
 
+[tool.ruff.lint.isort]
+known-third-party = ["alembic"]  # the local alembic/ migrations dir is not a first-party package
+
 [tool.pyright]
-include = ["src", "tests"]
+include = ["src", "tests", "alembic"]
 typeCheckingMode = "standard"
 pythonVersion = "3.13"
 venvPath = "."

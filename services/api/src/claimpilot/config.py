@@ -10,10 +10,13 @@ from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 API_ROOT = Path(__file__).resolve().parents[2]  # services/api
+# .parent.parent never raises (Path('/').parent == Path('/')): in the Docker image API_ROOT is /app.
+REPO_ROOT = API_ROOT.parent.parent
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    # Repo-root .env (where keys live), then a local .env; real env vars override both.
+    model_config = SettingsConfigDict(env_file=(REPO_ROOT / ".env", ".env"), extra="ignore")
 
     env: Literal["dev", "test", "prod"] = "dev"
 
@@ -21,6 +24,9 @@ class Settings(BaseSettings):
     llm_mode: Literal["replay", "live", "fake"] = "replay"
     anthropic_api_key: SecretStr | None = None
     models_config: Path = API_ROOT / "config" / "models.yaml"
+    # With llm_mode=live, also write recordings (sha256 of the request) for replay mode.
+    llm_record: bool = False
+    replay_dir: Path = API_ROOT / "replay"
 
     # System One
     decision_engine: Literal["jev", "llm", "fake"] = "llm"

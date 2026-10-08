@@ -1,0 +1,1383 @@
+# serializer version: 1
+# name: test_every_route_on_every_model_snapshot
+  dict({
+    'agent_chat/haiku': dict({
+      'betas': list([
+      ]),
+      'effort': 'low',
+      'max_tokens': 8000,
+      'model': 'claude-haiku-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'agent_chat/haiku45': dict({
+      'betas': list([
+      ]),
+      'effort': None,
+      'max_tokens': 8000,
+      'model': 'claude-haiku-4-5',
+      'thinking': dict({
+        'budget_tokens': 4000,
+        'type': 'enabled',
+      }),
+    }),
+    'agent_chat/opus': dict({
+      'betas': list([
+        'server-side-fallback-2026-07-01',
+      ]),
+      'effort': 'low',
+      'max_tokens': 8000,
+      'model': 'claude-opus-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'agent_chat/sonnet': dict({
+      'betas': list([
+        'server-side-fallback-2026-07-01',
+      ]),
+      'effort': 'low',
+      'max_tokens': 8000,
+      'model': 'claude-sonnet-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'decision_fallback/haiku': dict({
+      'betas': list([
+      ]),
+      'effort': 'low',
+      'max_tokens': 1000,
+      'model': 'claude-haiku-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'decision_fallback/haiku45': dict({
+      'betas': list([
+      ]),
+      'effort': None,
+      'max_tokens': 1000,
+      'model': 'claude-haiku-4-5',
+      'thinking': None,
+    }),
+    'decision_fallback/opus': dict({
+      'betas': list([
+        'server-side-fallback-2026-07-01',
+      ]),
+      'effort': 'low',
+      'max_tokens': 1000,
+      'model': 'claude-opus-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'decision_fallback/sonnet': dict({
+      'betas': list([
+        'server-side-fallback-2026-07-01',
+      ]),
+      'effort': 'low',
+      'max_tokens': 1000,
+      'model': 'claude-sonnet-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'eval_judge/haiku': dict({
+      'betas': list([
+      ]),
+      'effort': 'low',
+      'max_tokens': 2000,
+      'model': 'claude-haiku-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'eval_judge/haiku45': dict({
+      'betas': list([
+      ]),
+      'effort': None,
+      'max_tokens': 2000,
+      'model': 'claude-haiku-4-5',
+      'thinking': dict({
+        'budget_tokens': 1024,
+        'type': 'enabled',
+      }),
+    }),
+    'eval_judge/opus': dict({
+      'betas': list([
+        'server-side-fallback-2026-07-01',
+      ]),
+      'effort': 'low',
+      'max_tokens': 2000,
+      'model': 'claude-opus-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'eval_judge/sonnet': dict({
+      'betas': list([
+        'server-side-fallback-2026-07-01',
+      ]),
+      'effort': 'low',
+      'max_tokens': 2000,
+      'model': 'claude-sonnet-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'extraction/haiku': dict({
+      'betas': list([
+      ]),
+      'effort': 'low',
+      'max_tokens': 4000,
+      'model': 'claude-haiku-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'extraction/haiku45': dict({
+      'betas': list([
+      ]),
+      'effort': None,
+      'max_tokens': 4000,
+      'model': 'claude-haiku-4-5',
+      'thinking': dict({
+        'budget_tokens': 2000,
+        'type': 'enabled',
+      }),
+    }),
+    'extraction/opus': dict({
+      'betas': list([
+        'server-side-fallback-2026-07-01',
+      ]),
+      'effort': 'low',
+      'max_tokens': 4000,
+      'model': 'claude-opus-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'extraction/sonnet': dict({
+      'betas': list([
+        'server-side-fallback-2026-07-01',
+      ]),
+      'effort': 'low',
+      'max_tokens': 4000,
+      'model': 'claude-sonnet-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'extraction_retry/haiku': dict({
+      'betas': list([
+      ]),
+      'effort': 'low',
+      'max_tokens': 6000,
+      'model': 'claude-haiku-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'extraction_retry/haiku45': dict({
+      'betas': list([
+      ]),
+      'effort': None,
+      'max_tokens': 6000,
+      'model': 'claude-haiku-4-5',
+      'thinking': dict({
+        'budget_tokens': 3000,
+        'type': 'enabled',
+      }),
+    }),
+    'extraction_retry/opus': dict({
+      'betas': list([
+        'server-side-fallback-2026-07-01',
+      ]),
+      'effort': 'low',
+      'max_tokens': 6000,
+      'model': 'claude-opus-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'extraction_retry/sonnet': dict({
+      'betas': list([
+        'server-side-fallback-2026-07-01',
+      ]),
+      'effort': 'low',
+      'max_tokens': 6000,
+      'model': 'claude-sonnet-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'policy_compile/haiku': dict({
+      'betas': list([
+      ]),
+      'effort': 'high',
+      'max_tokens': 16000,
+      'model': 'claude-haiku-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'policy_compile/haiku45': dict({
+      'betas': list([
+      ]),
+      'effort': None,
+      'max_tokens': 16000,
+      'model': 'claude-haiku-4-5',
+      'thinking': dict({
+        'budget_tokens': 8000,
+        'type': 'enabled',
+      }),
+    }),
+    'policy_compile/opus': dict({
+      'betas': list([
+        'server-side-fallback-2026-07-01',
+      ]),
+      'effort': 'high',
+      'max_tokens': 16000,
+      'model': 'claude-opus-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'policy_compile/sonnet': dict({
+      'betas': list([
+        'server-side-fallback-2026-07-01',
+      ]),
+      'effort': 'high',
+      'max_tokens': 16000,
+      'model': 'claude-sonnet-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'question_draft/haiku': dict({
+      'betas': list([
+      ]),
+      'effort': 'low',
+      'max_tokens': 1500,
+      'model': 'claude-haiku-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'question_draft/haiku45': dict({
+      'betas': list([
+      ]),
+      'effort': None,
+      'max_tokens': 1500,
+      'model': 'claude-haiku-4-5',
+      'thinking': dict({
+        'budget_tokens': 1024,
+        'type': 'enabled',
+      }),
+    }),
+    'question_draft/opus': dict({
+      'betas': list([
+        'server-side-fallback-2026-07-01',
+      ]),
+      'effort': 'low',
+      'max_tokens': 1500,
+      'model': 'claude-opus-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'question_draft/sonnet': dict({
+      'betas': list([
+        'server-side-fallback-2026-07-01',
+      ]),
+      'effort': 'low',
+      'max_tokens': 1500,
+      'model': 'claude-sonnet-5-5',
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+  })
+# ---
+# name: test_shim_matrix_snapshot[haiku-auto-structured]
+  dict({
+    'betas': list([
+    ]),
+    'body': dict({
+      'max_tokens': 4000,
+      'model': 'claude-haiku-5-5',
+      'output_config': dict({
+        'effort': 'low',
+        'format': dict({
+          'schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'total': dict({
+                'title': 'Total',
+                'type': 'number',
+              }),
+            }),
+            'required': list([
+              'total',
+            ]),
+            'title': 'ReceiptTotal',
+            'type': 'object',
+          }),
+          'type': 'json_schema',
+        }),
+      }),
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'effort': 'low',
+  })
+# ---
+# name: test_shim_matrix_snapshot[haiku-auto-tools_auto]
+  dict({
+    'betas': list([
+    ]),
+    'body': dict({
+      'max_tokens': 4000,
+      'model': 'claude-haiku-5-5',
+      'output_config': dict({
+        'effort': 'low',
+      }),
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+      'tools': list([
+        dict({
+          'description': 'Look up an expense policy clause',
+          'input_schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'category': dict({
+                'type': 'string',
+              }),
+            }),
+            'required': list([
+              'category',
+            ]),
+            'type': 'object',
+          }),
+          'name': 'lookup_policy',
+        }),
+      ]),
+    }),
+    'effort': 'low',
+  })
+# ---
+# name: test_shim_matrix_snapshot[haiku-auto-tools_forced]
+  dict({
+    'betas': list([
+    ]),
+    'body': dict({
+      'max_tokens': 4000,
+      'model': 'claude-haiku-5-5',
+      'output_config': dict({
+        'effort': 'low',
+      }),
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'thinking': dict({
+        'type': 'disabled',
+      }),
+      'tool_choice': dict({
+        'name': 'lookup_policy',
+        'type': 'tool',
+      }),
+      'tools': list([
+        dict({
+          'description': 'Look up an expense policy clause',
+          'input_schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'category': dict({
+                'type': 'string',
+              }),
+            }),
+            'required': list([
+              'category',
+            ]),
+            'type': 'object',
+          }),
+          'name': 'lookup_policy',
+        }),
+      ]),
+    }),
+    'effort': 'low',
+  })
+# ---
+# name: test_shim_matrix_snapshot[haiku-off-structured]
+  dict({
+    'betas': list([
+    ]),
+    'body': dict({
+      'max_tokens': 4000,
+      'model': 'claude-haiku-5-5',
+      'output_config': dict({
+        'effort': 'low',
+        'format': dict({
+          'schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'total': dict({
+                'title': 'Total',
+                'type': 'number',
+              }),
+            }),
+            'required': list([
+              'total',
+            ]),
+            'title': 'ReceiptTotal',
+            'type': 'object',
+          }),
+          'type': 'json_schema',
+        }),
+      }),
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'thinking': dict({
+        'type': 'disabled',
+      }),
+    }),
+    'effort': 'low',
+  })
+# ---
+# name: test_shim_matrix_snapshot[haiku-off-tools_auto]
+  dict({
+    'betas': list([
+    ]),
+    'body': dict({
+      'max_tokens': 4000,
+      'model': 'claude-haiku-5-5',
+      'output_config': dict({
+        'effort': 'low',
+      }),
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'thinking': dict({
+        'type': 'disabled',
+      }),
+      'tools': list([
+        dict({
+          'description': 'Look up an expense policy clause',
+          'input_schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'category': dict({
+                'type': 'string',
+              }),
+            }),
+            'required': list([
+              'category',
+            ]),
+            'type': 'object',
+          }),
+          'name': 'lookup_policy',
+        }),
+      ]),
+    }),
+    'effort': 'low',
+  })
+# ---
+# name: test_shim_matrix_snapshot[haiku-off-tools_forced]
+  dict({
+    'betas': list([
+    ]),
+    'body': dict({
+      'max_tokens': 4000,
+      'model': 'claude-haiku-5-5',
+      'output_config': dict({
+        'effort': 'low',
+      }),
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'thinking': dict({
+        'type': 'disabled',
+      }),
+      'tool_choice': dict({
+        'name': 'lookup_policy',
+        'type': 'tool',
+      }),
+      'tools': list([
+        dict({
+          'description': 'Look up an expense policy clause',
+          'input_schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'category': dict({
+                'type': 'string',
+              }),
+            }),
+            'required': list([
+              'category',
+            ]),
+            'type': 'object',
+          }),
+          'name': 'lookup_policy',
+        }),
+      ]),
+    }),
+    'effort': 'low',
+  })
+# ---
+# name: test_shim_matrix_snapshot[haiku45-auto-structured]
+  dict({
+    'betas': list([
+    ]),
+    'body': dict({
+      'max_tokens': 4000,
+      'model': 'claude-haiku-4-5',
+      'output_config': dict({
+        'format': dict({
+          'schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'total': dict({
+                'title': 'Total',
+                'type': 'number',
+              }),
+            }),
+            'required': list([
+              'total',
+            ]),
+            'title': 'ReceiptTotal',
+            'type': 'object',
+          }),
+          'type': 'json_schema',
+        }),
+      }),
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'thinking': dict({
+        'budget_tokens': 2000,
+        'type': 'enabled',
+      }),
+    }),
+    'effort': None,
+  })
+# ---
+# name: test_shim_matrix_snapshot[haiku45-auto-tools_auto]
+  dict({
+    'betas': list([
+    ]),
+    'body': dict({
+      'max_tokens': 4000,
+      'model': 'claude-haiku-4-5',
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'thinking': dict({
+        'budget_tokens': 2000,
+        'type': 'enabled',
+      }),
+      'tools': list([
+        dict({
+          'description': 'Look up an expense policy clause',
+          'input_schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'category': dict({
+                'type': 'string',
+              }),
+            }),
+            'required': list([
+              'category',
+            ]),
+            'type': 'object',
+          }),
+          'name': 'lookup_policy',
+        }),
+      ]),
+    }),
+    'effort': None,
+  })
+# ---
+# name: test_shim_matrix_snapshot[haiku45-auto-tools_forced]
+  dict({
+    'betas': list([
+    ]),
+    'body': dict({
+      'max_tokens': 4000,
+      'model': 'claude-haiku-4-5',
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'tool_choice': dict({
+        'name': 'lookup_policy',
+        'type': 'tool',
+      }),
+      'tools': list([
+        dict({
+          'description': 'Look up an expense policy clause',
+          'input_schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'category': dict({
+                'type': 'string',
+              }),
+            }),
+            'required': list([
+              'category',
+            ]),
+            'type': 'object',
+          }),
+          'name': 'lookup_policy',
+        }),
+      ]),
+    }),
+    'effort': None,
+  })
+# ---
+# name: test_shim_matrix_snapshot[haiku45-off-structured]
+  dict({
+    'betas': list([
+    ]),
+    'body': dict({
+      'max_tokens': 4000,
+      'model': 'claude-haiku-4-5',
+      'output_config': dict({
+        'format': dict({
+          'schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'total': dict({
+                'title': 'Total',
+                'type': 'number',
+              }),
+            }),
+            'required': list([
+              'total',
+            ]),
+            'title': 'ReceiptTotal',
+            'type': 'object',
+          }),
+          'type': 'json_schema',
+        }),
+      }),
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+    }),
+    'effort': None,
+  })
+# ---
+# name: test_shim_matrix_snapshot[haiku45-off-tools_auto]
+  dict({
+    'betas': list([
+    ]),
+    'body': dict({
+      'max_tokens': 4000,
+      'model': 'claude-haiku-4-5',
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'tools': list([
+        dict({
+          'description': 'Look up an expense policy clause',
+          'input_schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'category': dict({
+                'type': 'string',
+              }),
+            }),
+            'required': list([
+              'category',
+            ]),
+            'type': 'object',
+          }),
+          'name': 'lookup_policy',
+        }),
+      ]),
+    }),
+    'effort': None,
+  })
+# ---
+# name: test_shim_matrix_snapshot[haiku45-off-tools_forced]
+  dict({
+    'betas': list([
+    ]),
+    'body': dict({
+      'max_tokens': 4000,
+      'model': 'claude-haiku-4-5',
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'tool_choice': dict({
+        'name': 'lookup_policy',
+        'type': 'tool',
+      }),
+      'tools': list([
+        dict({
+          'description': 'Look up an expense policy clause',
+          'input_schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'category': dict({
+                'type': 'string',
+              }),
+            }),
+            'required': list([
+              'category',
+            ]),
+            'type': 'object',
+          }),
+          'name': 'lookup_policy',
+        }),
+      ]),
+    }),
+    'effort': None,
+  })
+# ---
+# name: test_shim_matrix_snapshot[opus-auto-structured]
+  dict({
+    'betas': list([
+      'server-side-fallback-2026-07-01',
+    ]),
+    'body': dict({
+      'fallbacks': 'default',
+      'max_tokens': 4000,
+      'model': 'claude-opus-5-5',
+      'output_config': dict({
+        'effort': 'low',
+        'format': dict({
+          'schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'total': dict({
+                'title': 'Total',
+                'type': 'number',
+              }),
+            }),
+            'required': list([
+              'total',
+            ]),
+            'title': 'ReceiptTotal',
+            'type': 'object',
+          }),
+          'type': 'json_schema',
+        }),
+      }),
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'effort': 'low',
+  })
+# ---
+# name: test_shim_matrix_snapshot[opus-auto-tools_auto]
+  dict({
+    'betas': list([
+      'server-side-fallback-2026-07-01',
+    ]),
+    'body': dict({
+      'fallbacks': 'default',
+      'max_tokens': 4000,
+      'model': 'claude-opus-5-5',
+      'output_config': dict({
+        'effort': 'low',
+      }),
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+      'tools': list([
+        dict({
+          'description': 'Look up an expense policy clause',
+          'input_schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'category': dict({
+                'type': 'string',
+              }),
+            }),
+            'required': list([
+              'category',
+            ]),
+            'type': 'object',
+          }),
+          'name': 'lookup_policy',
+        }),
+      ]),
+    }),
+    'effort': 'low',
+  })
+# ---
+# name: test_shim_matrix_snapshot[opus-auto-tools_forced]
+  dict({
+    'betas': list([
+      'server-side-fallback-2026-07-01',
+    ]),
+    'body': dict({
+      'fallbacks': 'default',
+      'max_tokens': 4000,
+      'model': 'claude-opus-5-5',
+      'output_config': dict({
+        'effort': 'low',
+      }),
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+      'tool_choice': dict({
+        'type': 'auto',
+      }),
+      'tools': list([
+        dict({
+          'description': 'Look up an expense policy clause',
+          'input_schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'category': dict({
+                'type': 'string',
+              }),
+            }),
+            'required': list([
+              'category',
+            ]),
+            'type': 'object',
+          }),
+          'name': 'lookup_policy',
+          'strict': True,
+        }),
+      ]),
+    }),
+    'effort': 'low',
+  })
+# ---
+# name: test_shim_matrix_snapshot[opus-off-structured]
+  dict({
+    'betas': list([
+      'server-side-fallback-2026-07-01',
+    ]),
+    'body': dict({
+      'fallbacks': 'default',
+      'max_tokens': 4000,
+      'model': 'claude-opus-5-5',
+      'output_config': dict({
+        'effort': 'low',
+        'format': dict({
+          'schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'total': dict({
+                'title': 'Total',
+                'type': 'number',
+              }),
+            }),
+            'required': list([
+              'total',
+            ]),
+            'title': 'ReceiptTotal',
+            'type': 'object',
+          }),
+          'type': 'json_schema',
+        }),
+      }),
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'effort': 'low',
+  })
+# ---
+# name: test_shim_matrix_snapshot[opus-off-tools_auto]
+  dict({
+    'betas': list([
+      'server-side-fallback-2026-07-01',
+    ]),
+    'body': dict({
+      'fallbacks': 'default',
+      'max_tokens': 4000,
+      'model': 'claude-opus-5-5',
+      'output_config': dict({
+        'effort': 'low',
+      }),
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+      'tools': list([
+        dict({
+          'description': 'Look up an expense policy clause',
+          'input_schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'category': dict({
+                'type': 'string',
+              }),
+            }),
+            'required': list([
+              'category',
+            ]),
+            'type': 'object',
+          }),
+          'name': 'lookup_policy',
+        }),
+      ]),
+    }),
+    'effort': 'low',
+  })
+# ---
+# name: test_shim_matrix_snapshot[opus-off-tools_forced]
+  dict({
+    'betas': list([
+      'server-side-fallback-2026-07-01',
+    ]),
+    'body': dict({
+      'fallbacks': 'default',
+      'max_tokens': 4000,
+      'model': 'claude-opus-5-5',
+      'output_config': dict({
+        'effort': 'low',
+      }),
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+      'tool_choice': dict({
+        'type': 'auto',
+      }),
+      'tools': list([
+        dict({
+          'description': 'Look up an expense policy clause',
+          'input_schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'category': dict({
+                'type': 'string',
+              }),
+            }),
+            'required': list([
+              'category',
+            ]),
+            'type': 'object',
+          }),
+          'name': 'lookup_policy',
+          'strict': True,
+        }),
+      ]),
+    }),
+    'effort': 'low',
+  })
+# ---
+# name: test_shim_matrix_snapshot[sonnet-auto-structured]
+  dict({
+    'betas': list([
+      'server-side-fallback-2026-07-01',
+    ]),
+    'body': dict({
+      'fallbacks': 'default',
+      'max_tokens': 4000,
+      'model': 'claude-sonnet-5-5',
+      'output_config': dict({
+        'effort': 'low',
+        'format': dict({
+          'schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'total': dict({
+                'title': 'Total',
+                'type': 'number',
+              }),
+            }),
+            'required': list([
+              'total',
+            ]),
+            'title': 'ReceiptTotal',
+            'type': 'object',
+          }),
+          'type': 'json_schema',
+        }),
+      }),
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+    }),
+    'effort': 'low',
+  })
+# ---
+# name: test_shim_matrix_snapshot[sonnet-auto-tools_auto]
+  dict({
+    'betas': list([
+      'server-side-fallback-2026-07-01',
+    ]),
+    'body': dict({
+      'fallbacks': 'default',
+      'max_tokens': 4000,
+      'model': 'claude-sonnet-5-5',
+      'output_config': dict({
+        'effort': 'low',
+      }),
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+      'tools': list([
+        dict({
+          'description': 'Look up an expense policy clause',
+          'input_schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'category': dict({
+                'type': 'string',
+              }),
+            }),
+            'required': list([
+              'category',
+            ]),
+            'type': 'object',
+          }),
+          'name': 'lookup_policy',
+        }),
+      ]),
+    }),
+    'effort': 'low',
+  })
+# ---
+# name: test_shim_matrix_snapshot[sonnet-auto-tools_forced]
+  dict({
+    'betas': list([
+      'server-side-fallback-2026-07-01',
+    ]),
+    'body': dict({
+      'fallbacks': 'default',
+      'max_tokens': 4000,
+      'model': 'claude-sonnet-5-5',
+      'output_config': dict({
+        'effort': 'low',
+      }),
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'thinking': dict({
+        'type': 'adaptive',
+      }),
+      'tool_choice': dict({
+        'type': 'auto',
+      }),
+      'tools': list([
+        dict({
+          'description': 'Look up an expense policy clause',
+          'input_schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'category': dict({
+                'type': 'string',
+              }),
+            }),
+            'required': list([
+              'category',
+            ]),
+            'type': 'object',
+          }),
+          'name': 'lookup_policy',
+          'strict': True,
+        }),
+      ]),
+    }),
+    'effort': 'low',
+  })
+# ---
+# name: test_shim_matrix_snapshot[sonnet-off-structured]
+  dict({
+    'betas': list([
+      'server-side-fallback-2026-07-01',
+    ]),
+    'body': dict({
+      'fallbacks': 'default',
+      'max_tokens': 4000,
+      'model': 'claude-sonnet-5-5',
+      'output_config': dict({
+        'effort': 'low',
+        'format': dict({
+          'schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'total': dict({
+                'title': 'Total',
+                'type': 'number',
+              }),
+            }),
+            'required': list([
+              'total',
+            ]),
+            'title': 'ReceiptTotal',
+            'type': 'object',
+          }),
+          'type': 'json_schema',
+        }),
+      }),
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'thinking': dict({
+        'type': 'between_tools',
+      }),
+    }),
+    'effort': 'low',
+  })
+# ---
+# name: test_shim_matrix_snapshot[sonnet-off-tools_auto]
+  dict({
+    'betas': list([
+      'server-side-fallback-2026-07-01',
+    ]),
+    'body': dict({
+      'fallbacks': 'default',
+      'max_tokens': 4000,
+      'model': 'claude-sonnet-5-5',
+      'output_config': dict({
+        'effort': 'low',
+      }),
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'thinking': dict({
+        'type': 'between_tools',
+      }),
+      'tools': list([
+        dict({
+          'description': 'Look up an expense policy clause',
+          'input_schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'category': dict({
+                'type': 'string',
+              }),
+            }),
+            'required': list([
+              'category',
+            ]),
+            'type': 'object',
+          }),
+          'name': 'lookup_policy',
+        }),
+      ]),
+    }),
+    'effort': 'low',
+  })
+# ---
+# name: test_shim_matrix_snapshot[sonnet-off-tools_forced]
+  dict({
+    'betas': list([
+      'server-side-fallback-2026-07-01',
+    ]),
+    'body': dict({
+      'fallbacks': 'default',
+      'max_tokens': 4000,
+      'model': 'claude-sonnet-5-5',
+      'output_config': dict({
+        'effort': 'low',
+      }),
+      'system': list([
+        dict({
+          'cache_control': dict({
+            'type': 'ephemeral',
+          }),
+          'text': 'You extract receipt totals.',
+          'type': 'text',
+        }),
+      ]),
+      'thinking': dict({
+        'type': 'between_tools',
+      }),
+      'tool_choice': dict({
+        'type': 'auto',
+      }),
+      'tools': list([
+        dict({
+          'description': 'Look up an expense policy clause',
+          'input_schema': dict({
+            'additionalProperties': False,
+            'properties': dict({
+              'category': dict({
+                'type': 'string',
+              }),
+            }),
+            'required': list([
+              'category',
+            ]),
+            'type': 'object',
+          }),
+          'name': 'lookup_policy',
+          'strict': True,
+        }),
+      ]),
+    }),
+    'effort': 'low',
+  })
+# ---

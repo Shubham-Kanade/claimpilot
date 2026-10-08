@@ -75,3 +75,12 @@ Each entry gives the decision, the reason, and its consequences. Add new entries
 ### ADR-012: Self-hosted fonts instead of Google Fonts (2026-10-08)
 - **Decision:** use the `geist` npm package (`next/font/local`) instead of `next/font/google`.
 - **Why:** the Docker build could not reach fonts.googleapis.com (corporate proxy / TLS), so the web image failed to build. Self-hosting makes builds hermetic in Docker, CI and any hosting provider.
+
+### ADR-013: Bake-off uses synchronous calls, not the Batch API (2026-10-08)
+- **Decision:** the eval/bake-off runner (`claimpilot.evals.run`) makes synchronous calls (4 concurrent) and does not use the Message Batches API.
+- **Why:** at Haiku 5.5 prices a 20-receipt run costs well under $0.01, so the 50% batch discount saves almost nothing. Synchronous calls also give the real latency the Pareto choice needs. Batch remains an option for 1,000+ receipt runs.
+- **Consequences:** there are two spend guards. A free `count_tokens` estimate checks against `--max-usd` before the run, and a running-spend check aborts mid-run.
+
+### ADR-014: Live client hard-guarded; default tests ignore `.env` (2026-10-08)
+- **Decision:** `AnthropicLLM.from_settings` refuses unless `LLM_MODE=live`. The default pytest run ignores the developer's `.env`, and only `-m live` runs read it. `Settings` reads the repo-root `.env` first, then a local `.env`.
+- **Why:** these came from the reviewer agent's findings. Spend must be impossible without an explicit opt-in, and tests must be hermetic. A `REPO_ROOT` bug that crashed the container at `/app` was also fixed, with a regression test.

@@ -6,10 +6,16 @@ from collections.abc import AsyncIterator
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+from claimpilot.config import API_ROOT, Settings
+from claimpilot.llm.registry import ModelRegistry, load_registry
 from claimpilot.main import create_app
 
 # Never let the default test run spend money.
 os.environ.setdefault("LLM_MODE", "fake")
+# Hermetic by default: ignore the developer's .env (real keys, docker hostnames). Live tests
+# (LLM_MODE=live) still read it so they can find ANTHROPIC_API_KEY.
+if os.environ["LLM_MODE"] != "live":
+    Settings.model_config["env_file"] = None
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
@@ -19,6 +25,11 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
     for item in items:
         if "live" in item.keywords:
             item.add_marker(skip_live)
+
+
+@pytest.fixture(scope="session")
+def models_registry() -> ModelRegistry:
+    return load_registry(API_ROOT / "config" / "models.yaml")
 
 
 @pytest.fixture

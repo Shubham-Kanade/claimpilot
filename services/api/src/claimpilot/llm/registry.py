@@ -58,7 +58,9 @@ class ModelSpec(BaseModel):
     max_output_tokens: int
     price: Price
     thinking: Literal["budget_tokens", "adaptive"]
-    can_disable_thinking: bool
+    # How to turn thinking off: omit the field, send {type: disabled}, send {type: between_tools},
+    # or None when the model cannot run without thinking.
+    thinking_off: Literal["omit", "disabled", "between_tools"] | None
     effort_levels: tuple[Effort, ...]
     default_effort: Effort | None
     forced_tool_choice: bool

@@ -55,6 +55,10 @@ class ExpenseCategory(StrEnum):
     misc = "misc"
 
 
+# Fields finance cannot work without; errors here are weighted in evals and trigger escalation.
+CRITICAL_FIELDS = ("total", "date", "merchant_gstin", "merchant_name")
+
+
 class _Strict(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

@@ -2,6 +2,7 @@
 
 from claimpilot.domain.gstin import generate_gstin, is_valid_gstin, state_of, validate_gstin
 from claimpilot.domain.receipt import (
+    CRITICAL_FIELDS,
     DocType,
     ExpenseCategory,
     ExtractedReceipt,
@@ -12,6 +13,7 @@ from claimpilot.domain.receipt import (
 )
 
 __all__ = [
+    "CRITICAL_FIELDS",
     "DocType",
     "ExpenseCategory",
     "ExtractedReceipt",

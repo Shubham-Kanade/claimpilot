@@ -27,6 +27,7 @@ FORBIDDEN_FILES = [
     re.compile(r"(?i)business cases for ai innovation lab"),
     re.compile(r"(?i)(^|/)email\.txt$"),
 ]
+ALLOWLIST_MARKER = "pragma: allowlist secret"  # explicit, reviewable opt-out for fake test values
 GIT_WRITE = re.compile(r"\bgit\b(\s+-C\s+\S+)?\s+(commit|push)\b")
 
 
@@ -55,7 +56,7 @@ def main() -> int:
     added = [
         line[1:]
         for line in git("diff", "--cached", "--unified=0", "--no-color").splitlines()
-        if line.startswith("+") and not line.startswith("+++")
+        if line.startswith("+") and not line.startswith("+++") and ALLOWLIST_MARKER not in line
     ]
     for label, pattern in SECRET_PATTERNS.items():
         if any(pattern.search(line) for line in added):

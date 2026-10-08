@@ -3,7 +3,7 @@
 Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked · ★ must · ☆ stretch (cut first)
 Rule: milestones are listed up front. Low-level subtasks are added only when a milestone starts.
 
-**Current focus:** M1. M1.2 (synthetic generator) and M1.3 (capability shim + ledger) are running in parallel; next is M1.4 (extraction).
+**Current focus:** M1. M1.2 (synthetic generator) is being finished by an agent. Then M1.6: the first bake-off on the dev 20 (ask the user before spending).
 **Deadline:** submit by 12 Oct 2026. Aim for the morning of the 12th.
 
 ## Submission checklist (missing ANY item means elimination; run the `submission-check` skill)
@@ -31,10 +31,10 @@ Rule: milestones are listed up front. Low-level subtasks are added only when a m
 ## M1 Data & extraction (8 Oct) [~]
 - [x] M1.0 Model registry: **Claude Haiku 5.5** added (Models API + pricing page verified), Haiku 4.5 kept as a baseline, Sonnet cache-read price fixed, long-context tier + batch pricing (ADR-011)
 - [x] M1.1 Domain contract: `ExtractedReceipt` / `ReceiptTruth` schema + GSTIN validate/generate (`claimpilot.domain`), 41 tests
-- [~] M1.2 Synthetic generator `data/synth/`: scenarios → ground truth → render (≥8 doc types incl. Hindi/handwritten/UPI) → degrade → adversarial set → manifest (dev 20 / test rest) + committed fixtures *(agent)*
-- [~] M1.3 Capability shim `llm/client.py` (per-model request params), `LLMClient` with live / record-replay / fake modes, cost ledger (`llm_calls` + Alembic), snapshot tests *(agent)*
-- [ ] M1.4 Extraction: versioned prompt + `messages.parse(ExtractedReceipt)`, image downscale, Redis content-hash cache, worker job, injection-safe framing
-- [ ] M1.5 Eval harness `evals/` (metrics, cost estimate + `--max-usd`, Batch API), `evals.yml`, baseline on dev split
+- [~] M1.2 (agent resumed) Synthetic generator `data/synth/`: scenarios → ground truth → render (≥8 doc types incl. Hindi/handwritten/UPI) → degrade → adversarial set → manifest (dev 20 / test rest) + committed fixtures *(agent)*
+- [x] M1.3 Capability shim `llm/client.py` (per-model request params), `LLMClient` with live / record-replay / fake modes, cost ledger (`llm_calls` + Alembic), snapshot tests. Reviewed (request-changes → all fixed, ADR-014). Live smoke passed on all 4 models ($0.003)
+- [x] M1.4 Extraction: versioned prompt + `messages.parse(ExtractedReceipt)`, image downscale, Redis content-hash cache, injection-safe framing; Haiku→Sonnet escalation on unsure critical fields. Worker job moves to M2 (needs Storage + claims)
+- [~] M1.5 Eval harness: metrics, Pareto, dataset loader and runner with cost estimate + `--max-usd` (sync, ADR-013) are done. Still to do: `evals.yml` and the baseline on the dev split
 - [ ] M1.6 First bake-off (dev 20): haiku · haiku45 · sonnet-low · opus-low (+ cascade), Pareto chart → routes ADR
 - [ ] M1.7 OCR word boxes for click-to-verify (may slide to M3)
 - [ ] M1.8 TDD §3–4 + §7 numbers updated
@@ -59,3 +59,4 @@ Rule: milestones are listed up front. Low-level subtasks are added only when a m
 - 2026-10-07: M0 scaffold. API + web skeletons green (13 + 8 tests), model registry, CI, compose, Claude Code config. MinIO swapped for a local volume (ADR-009)
 - 2026-10-08: second email's submission rules adopted (ADR-010): TDD skeleton, submission-check skill, coverage gates
 - 2026-10-08: Haiku 5.5 in registry (ADR-011); CI fixes; self-hosted fonts (ADR-012); domain contract + GSTIN (41 API tests, 96.6% cov)
+- 2026-10-08: M1.3/M1.4 done + eval runner; reviewer blocker (REPO_ROOT crash in Docker) fixed; 216 API tests, 98.5% cov; stack healthy with migrations

@@ -1,5 +1,6 @@
 # syntax=docker/dockerfile:1
-# One image for both the API (uvicorn) and the worker (arq); compose picks the command.
+# One image for both the API (uvicorn) and the worker (arq). The default CMD migrates the database
+# and then starts the API; compose overrides the command for the worker (no migrations there).
 FROM python:3.13-slim AS base
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -17,6 +18,9 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 FROM deps AS runtime
 COPY README.md ./
 COPY config ./config
+COPY alembic.ini ./
+COPY alembic ./alembic
+COPY replay ./replay
 COPY src ./src
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --locked --no-dev \
@@ -27,4 +31,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE 8000
 HEALTHCHECK --interval=15s --timeout=3s --retries=5 \
   CMD python -c "import sys,urllib.request; sys.exit(urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=2).status != 200)"
-CMD ["uvicorn", "claimpilot.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "alembic upgrade head && exec uvicorn claimpilot.main:app --host 0.0.0.0 --port 8000"]
