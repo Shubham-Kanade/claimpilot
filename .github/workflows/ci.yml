@@ -18,7 +18,7 @@ env:
 
 jobs:
   api:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: services/api
@@ -49,7 +49,7 @@ jobs:
             echo "::error::apps/web/openapi.json is stale. Run the api-contract skill steps and commit."; exit 1; }
 
   web:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: apps/web
@@ -76,7 +76,7 @@ jobs:
           path: apps/web/coverage/
 
   synth:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: data/synth
@@ -92,7 +92,7 @@ jobs:
         run: uv run pytest -q
 
   mcp:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:
@@ -115,7 +115,7 @@ jobs:
         run: uv run pytest --cov --cov-report=term
 
   docker:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [api, web, mcp]
     steps:
       - uses: actions/checkout@v4
@@ -139,7 +139,7 @@ jobs:
     # (the Playwright suite in apps/web/e2e: upload, review, answer, submit, approve, accessibility,
     # phone layout). Every model answer must come from the committed recordings, so this also
     # catches recordings that stop matching on another machine.
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [api, web]
     steps:
       - uses: actions/checkout@v4
@@ -184,7 +184,7 @@ jobs:
         run: docker rm -f demo
 
   secrets:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
