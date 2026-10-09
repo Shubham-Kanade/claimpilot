@@ -71,6 +71,10 @@ def get_llm(
     if not settings.llm_record:
         return AnthropicLLM.from_settings(settings, registry, ledger=ledger, spend=spend)  # type: ignore[arg-type]
     live = AnthropicLLM.from_settings(settings, registry, spend=spend)  # type: ignore[arg-type]
-    return RecordReplayLLM(
-        registry, settings.replay_dir, inner=live, ledger=ledger
-    )  # the wrapper records
+    return RecordReplayLLM(  # the wrapper records, and replays what it already has
+        registry,
+        settings.replay_dir,
+        inner=live,
+        ledger=ledger,
+        latency_scale=settings.replay_latency_scale,
+    )

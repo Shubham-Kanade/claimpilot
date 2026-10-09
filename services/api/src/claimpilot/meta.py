@@ -1,4 +1,5 @@
-"""`/v1/meta`: runtime config the UI shows (which model serves each route, the LLM mode)."""
+"""`/v1/meta`: runtime config the UI shows (which model serves each route, the LLM mode, the
+upload limits)."""
 
 from __future__ import annotations
 
@@ -21,6 +22,10 @@ class RouteInfo(BaseModel):
 
 class MetaInfo(BaseModel):
     llm_mode: str
+    llm_record: bool  # live mode that replays what it has recorded and records the rest
+    daily_llm_budget_usd: float  # the cap on live LLM spend per 24 h (0 = no cap)
+    max_batch_files: int  # upload limits, so the UI checks against the server's real ones
+    max_upload_mb: int
     decision_engine: str
     demo: bool = False  # the public demo: "start over" exists and receipts come from recordings
     runtime: str = "distributed"
@@ -45,6 +50,10 @@ async def get_meta() -> MetaInfo:
         )
     return MetaInfo(
         llm_mode=settings.llm_mode,
+        llm_record=settings.llm_record,
+        daily_llm_budget_usd=settings.daily_llm_budget_usd,
+        max_batch_files=settings.max_batch_files,
+        max_upload_mb=settings.max_upload_mb,
         decision_engine=settings.decision_engine,
         demo=settings.demo_mode,
         runtime=settings.runtime,

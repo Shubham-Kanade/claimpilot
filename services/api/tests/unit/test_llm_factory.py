@@ -44,6 +44,13 @@ def test_live_mode_with_record_wraps_the_live_client(tmp_path):
     assert llm.mode == "live"
 
 
+def test_live_mode_with_record_replays_at_the_configured_pace(tmp_path):
+    """The hybrid demo profile: recordings still replay at the paced speed, not instantly."""
+    llm = get_llm(settings(tmp_path, llm_mode="live", llm_record=True, replay_latency_scale=0.6))
+    assert isinstance(llm, RecordReplayLLM)
+    assert llm._latency_scale == 0.6
+
+
 def test_live_mode_without_key_fails_fast(tmp_path):
     with pytest.raises(LLMAuthError):
         get_llm(Settings(llm_mode="live", replay_dir=tmp_path, anthropic_api_key=None))

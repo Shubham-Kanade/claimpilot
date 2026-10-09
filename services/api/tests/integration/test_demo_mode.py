@@ -17,8 +17,8 @@ from test_process_batch import (
 )
 
 from claimpilot.config import Settings
-from claimpilot.llm.errors import ReplayMissError
-from claimpilot.pipeline.process import DEMO_MISS, process_batch
+from claimpilot.llm.errors import LLMBudgetError, ReplayMissError
+from claimpilot.pipeline.process import DEMO_BUDGET, DEMO_MISS, process_batch
 
 pytestmark = pytest.mark.skipif(not FIXTURES.exists(), reason="synthetic fixtures not present")
 
@@ -100,6 +100,29 @@ async def test_an_unrecorded_receipt_in_the_demo_gets_a_plain_explanation(
     [document] = view.documents
     assert document.status == "failed" and document.error == DEMO_MISS
     assert "API key" in DEMO_MISS and "/app/" not in DEMO_MISS
+
+
+def over_budget(_request):
+    raise LLMBudgetError("daily live budget of $1.00 reached ($1.02 spent in 24 h)")
+
+
+async def test_a_used_up_live_budget_in_the_demo_gets_a_plain_explanation(
+    sessions,
+    models_registry,
+    fixtures,
+):
+    harness = build_harness(
+        sessions,
+        models_registry,
+        fixtures,
+        responder=over_budget,
+        settings=Settings(demo_today=TODAY, demo_mode=True),
+    )
+    view = await harness.run(await harness.upload_fixtures(CAB))
+
+    [document] = view.documents
+    assert document.status == "failed" and document.error == DEMO_BUDGET
+    assert "budget" in DEMO_BUDGET and "$" not in DEMO_BUDGET  # no amounts leak to visitors
 
 
 async def test_outside_the_demo_the_technical_reason_is_kept(

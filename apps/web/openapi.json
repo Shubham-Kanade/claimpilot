@@ -1298,6 +1298,10 @@
       },
       "MetaInfo": {
         "properties": {
+          "daily_llm_budget_usd": {
+            "title": "Daily Llm Budget Usd",
+            "type": "number"
+          },
           "decision_engine": {
             "title": "Decision Engine",
             "type": "string"
@@ -1310,6 +1314,18 @@
           "llm_mode": {
             "title": "Llm Mode",
             "type": "string"
+          },
+          "llm_record": {
+            "title": "Llm Record",
+            "type": "boolean"
+          },
+          "max_batch_files": {
+            "title": "Max Batch Files",
+            "type": "integer"
+          },
+          "max_upload_mb": {
+            "title": "Max Upload Mb",
+            "type": "integer"
           },
           "routes": {
             "items": {
@@ -1326,6 +1342,10 @@
         },
         "required": [
           "llm_mode",
+          "llm_record",
+          "daily_llm_budget_usd",
+          "max_batch_files",
+          "max_upload_mb",
           "decision_engine",
           "routes"
         ],

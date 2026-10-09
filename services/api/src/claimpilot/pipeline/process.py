@@ -38,7 +38,7 @@ from claimpilot.domain.claims import (
 from claimpilot.extraction import ReceiptExtractor, prepare_document
 from claimpilot.extraction.locate import FieldLocator, Located
 from claimpilot.extraction.preprocess import PreparedDocument
-from claimpilot.llm.errors import ReplayMissError
+from claimpilot.llm.errors import LLMBudgetError, ReplayMissError
 from claimpilot.pipeline import events as ev
 from claimpilot.pipeline.dupindex import DbDuplicateIndex, ScopedIndex
 from claimpilot.pipeline.finalize import refinalize
@@ -115,6 +115,10 @@ class _Read:
     cost_usd: float
 
 
+DEMO_BUDGET = (
+    "Today's budget for reading new receipts with the live model is used up. The sample receipts "
+    "still work, and the budget renews within 24 hours."
+)
 DEMO_MISS = (
     "This demo reads only its recorded sample receipts. To read your own, run ClaimPilot with "
     "your own API key (see the README)."
@@ -129,6 +133,8 @@ def _reason(deps: PipelineDeps, exc: BaseException) -> str:
     """What the employee is told about a document that could not be read."""
     if deps.settings.demo_mode and isinstance(exc, ReplayMissError):
         return DEMO_MISS
+    if deps.settings.demo_mode and isinstance(exc, LLMBudgetError):
+        return DEMO_BUDGET
     return _short(exc)
 
 

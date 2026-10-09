@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import shutil
 import signal
 import socket
 import subprocess
@@ -63,6 +64,23 @@ def migrate() -> None:
     )
 
 
+def prepare_replay_dir() -> None:
+    """Make the recordings writable when the demo records what it reads live.
+
+    ``LLM_RECORD=1`` (the "hybrid" profile: recorded answers are replayed for free, anything new goes
+    to the live model and is recorded) needs a writable recordings folder, but the image's own copy
+    is read-only for the Space's unprivileged user. Work on a copy in /data (ephemeral, like the
+    rest of the demo's state) and point the API at it.
+    """
+    if os.environ.get("LLM_RECORD", "").lower() not in {"1", "true", "yes", "on"}:
+        return
+    source = Path(os.environ.get("REPLAY_DIR", ROOT / "api" / "replay"))
+    target = Path(os.environ.get("RECORDINGS_COPY", "/data/replay"))
+    shutil.copytree(source, target, dirs_exist_ok=True)
+    os.environ["REPLAY_DIR"] = str(target)
+    print(f"[start] recording enabled: recordings copied to {target}", flush=True)
+
+
 def accepts(port: int) -> bool:
     try:
         with socket.create_connection(("127.0.0.1", port), timeout=0.5):
@@ -95,6 +113,7 @@ async def stop(processes: list[asyncio.subprocess.Process]) -> None:
 
 async def run() -> int:
     migrate()
+    prepare_replay_dir()
     processes: list[asyncio.subprocess.Process] = []
     loop = asyncio.get_running_loop()
     stopping = asyncio.Event()

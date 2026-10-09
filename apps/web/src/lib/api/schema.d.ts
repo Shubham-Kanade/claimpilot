@@ -907,6 +907,8 @@ export interface components {
         };
         /** MetaInfo */
         MetaInfo: {
+            /** Daily Llm Budget Usd */
+            daily_llm_budget_usd: number;
             /** Decision Engine */
             decision_engine: string;
             /**
@@ -916,6 +918,12 @@ export interface components {
             demo: boolean;
             /** Llm Mode */
             llm_mode: string;
+            /** Llm Record */
+            llm_record: boolean;
+            /** Max Batch Files */
+            max_batch_files: number;
+            /** Max Upload Mb */
+            max_upload_mb: number;
             /** Routes */
             routes: components["schemas"]["RouteInfo"][];
             /**

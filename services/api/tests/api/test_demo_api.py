@@ -94,6 +94,29 @@ async def test_meta_tells_the_ui_it_is_the_demo(client: AsyncClient, monkeypatch
     assert body["demo"] is True and body["runtime"] == "embedded"
 
 
+async def test_meta_publishes_the_llm_profile_and_the_upload_limits(
+    client: AsyncClient, monkeypatch
+):
+    from claimpilot import meta
+    from claimpilot.config import Settings
+
+    monkeypatch.setattr(
+        meta,
+        "get_settings",
+        lambda: Settings(
+            llm_mode="live",
+            llm_record=True,
+            daily_llm_budget_usd=2.5,
+            max_batch_files=20,
+            max_upload_mb=6,
+        ),
+    )
+    body = (await client.get("/v1/meta")).json()
+    assert body["llm_mode"] == "live" and body["llm_record"] is True
+    assert body["daily_llm_budget_usd"] == 2.5
+    assert (body["max_batch_files"], body["max_upload_mb"]) == (20, 6)
+
+
 async def test_meta_defaults_to_the_distributed_non_demo_setup(client: AsyncClient):
     body = (await client.get("/v1/meta")).json()
     assert body["demo"] is False and body["runtime"] == "distributed"
