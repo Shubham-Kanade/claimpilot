@@ -88,7 +88,7 @@ Legend as above. **Push points** (P0...) are where the user pushes; each leaves 
 - [~] **Step 4 D3** (P8): `GET /v1/ops/llm` [x] (`436235c`); tests (agent T3) [x]; `/operations` page + mock route (agent F, queued) [ ]
 - [ ] **Step 5 docs G1-G4** (P9): README, DEMO_SCRIPT, demo-pile README, TDD wording, ADR-033/034/035 (ADR-033 = production auth design)
 - [ ] **Step 6** optional: dormant `POST /v1/auth/token` (only if time is left)
-- [ ] **Step 7 A5 + G5**: hybrid-mode test run (under $0.05), PDF render check, counts, `submission-check`, clean-clone build, re-record video, tag `v1.1.0`
+- [ ] **Step 7 A5 + G5**: hybrid-mode test run (under $0.05), PDF render check, counts, `submission-check`, clean-clone build, tag `v1.1.0`. **The demo video is NOT re-recorded (or recorded) by Claude on its own: discuss with the user first** (what to show, which stack, who records)
 - Deferred until the user nods: E1/E2 (Jev recording and ledger), F1 (finance dashboard). Not doing: C1 login, A3, OpenTelemetry/Langfuse, MCP token mode.
 - **Cut order if behind:** step 6, then D3 down to tables, then D3, then A5 to a manual check. Never cut B1, step 2 or the docs.
 
