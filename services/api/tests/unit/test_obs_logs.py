@@ -311,10 +311,21 @@ def test_uvicorn_loggers_are_routed_through_the_root_handler(
 
     with bound_ids(trace_id="t1"):
         logging.getLogger("uvicorn.error").info("Started server process [1]")
-        logging.getLogger("uvicorn.access").info('127.0.0.1 - "GET /healthz HTTP/1.1" 200')
+        logging.getLogger("uvicorn.access").warning("slow client")
     first, second = records(capsys)
     assert (first["logger"], first["event"]) == ("uvicorn.error", "Started server process [1]")
     assert second["logger"] == "uvicorn.access" and second["trace_id"] == "t1"
+
+
+def test_chatty_libraries_are_quieted_to_warnings(capsys):
+    """uvicorn's access line repeats the middleware's request line; HTTP clients log every call."""
+    configure_logging("json")
+
+    for name in ("uvicorn.access", "httpx", "httpx2", "httpcore", "mcp"):
+        logging.getLogger(name).info("chatter")
+        logging.getLogger(name).warning("worth keeping")
+
+    assert [r["event"] for r in records(capsys)] == ["worth keeping"] * 5
 
 
 def test_the_handler_writes_to_stderr_not_stdout(capsys):

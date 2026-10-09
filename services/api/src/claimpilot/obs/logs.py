@@ -20,6 +20,7 @@ import structlog.processors
 import structlog.stdlib
 
 LogFormat = Literal["json", "console"]
+QUIET_LOGGERS = ("uvicorn.access", "httpx", "httpx2", "httpcore", "mcp")
 _HANDLER_FLAG = "_claimpilot_handler"  # marks the one handler we install, so calls are idempotent
 
 
@@ -62,3 +63,7 @@ def configure_logging(fmt: LogFormat = "json", level: str = "INFO") -> None:
         uvicorn_logger = logging.getLogger(name)
         uvicorn_logger.handlers = []
         uvicorn_logger.propagate = True
+    # The middleware logs every request itself (with ids and duration), so uvicorn's access line is
+    # a duplicate, and the HTTP clients log one line per MCP call: keep warnings, drop the chatter.
+    for name in QUIET_LOGGERS:
+        logging.getLogger(name).setLevel(logging.WARNING)
