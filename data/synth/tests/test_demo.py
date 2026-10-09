@@ -442,7 +442,9 @@ def test_formats_follow_the_preset_and_the_folder_is_small(
     for doc in docs:
         suffix = "pdf" if doc.spec.is_pdf else "png" if doc.spec.degrade == "clean" else "jpg"
         document = rendered / "docs" / f"{doc.id}.{suffix}"
-        assert document.stat().st_size > 20_000, doc.id
+        # A sanity floor, not a quality bar: a PDF is mostly vector text, and its size depends on
+        # the browser build that rendered it (19.8 KB on Linux CI, over 20 KB on Windows).
+        assert document.stat().st_size > (5_000 if suffix == "pdf" else 20_000), doc.id
         if suffix == "pdf":
             assert document.read_bytes().startswith(b"%PDF")
         else:
