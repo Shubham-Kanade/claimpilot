@@ -30,6 +30,29 @@ upload the file to YouTube (Public or Unlisted).
 **2. Record the screen yourself** and follow the table. Use this if you want to show the Jev
 segment or the architecture and test slides in one take.
 
+## Full-stack segments (what the hosted demo cannot show)
+
+The hosted demo replays recordings, so it reads only its 15 sample receipts and never uses Jev. Record
+these short segments from the real stack and cut them into the video (about 60 to 75 seconds in
+all). Use your own machine and your own keys, with synthetic receipts only.
+
+1. **A receipt the demo has never seen, read live.** Start the stack with live models:
+   `cp .env.example .env`, set `ANTHROPIC_API_KEY`, `LLM_MODE=live`, optionally `JEV_API_KEY` and
+   `DECISION_ENGINE=jev`, then `docker compose -f infra/compose.yml up --build`. Upload one
+   receipt from `data/synth/fixtures` (not in the demo pile). Say: "This receipt was never
+   recorded: Claude reads it now, for about a twentieth of a cent." Show the engine label (*Jev + LLM*
+   when Jev is on) and the cost on the progress card.
+2. **ClaimPilot inside Claude Desktop, over MCP.** Add the server from
+   `services/mcp-claimpilot/README.md` (stdio config, `CLAIMPILOT_API_URL=http://localhost:8000`).
+   Ask: "What expense claims do I have?", "What is wrong with the Mumbai trip?", answer the one
+   question in chat, then ask it to submit: it asks you to confirm first. Switch the persona
+   to the approver and ask for the approval queue. Say: "The same rules apply here: the API
+   enforces them, not the chat."
+3. **The system underneath.** Show `docker compose ps` (api, worker, Postgres, Redis, two MCP
+   servers, web), the **AI ops** page (`/operations`: calls by model, live vs recorded, latency,
+   failures) and a green CI run on GitHub. Say: "Every model call is traced to the receipt that
+   caused it."
+
 | Time | On screen | Say (about) |
 |---|---|---|
 | 0:00 | Upload screen, persona *Asha Menon* | "Asha just got back from a client trip. She has fifteen receipts: photos, PDFs, a UPI screenshot, a handwritten auto fare. Expense reports cost people hours and finance teams even more. ClaimPilot does it in about thirty seconds." |

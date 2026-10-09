@@ -10,7 +10,7 @@ Built for **AI Innovation Lab, Season 2** (Business Case 1: Expense & Reimbursem
 | **Demo video** | _YouTube link: added at submission_ |
 | **Live demo** | _Hugging Face Space link: added at submission_ (no login; pick a demo persona) |
 | **Technical design document** | [docs/TECHNICAL_DESIGN.md](docs/TECHNICAL_DESIGN.md) (architecture and flow diagrams, AI design, setup, code walkthrough, assumptions) |
-| **Decisions** | [docs/DECISIONS.md](docs/DECISIONS.md) (32 short ADRs with the evidence behind each choice) |
+| **Decisions** | [docs/DECISIONS.md](docs/DECISIONS.md) (36 short ADRs with the evidence behind each choice) |
 
 ## What it does
 
@@ -54,7 +54,9 @@ flowchart LR
 
 ## Run it
 
-**Hosted demo:** open the live-demo link above. Choose *Asha Menon*, press **Try with sample receipts**, answer the one question, confirm, then switch to *Ravi Iyer* to approve. The samples are read from recorded model answers, so the hosted demo costs nothing to run.
+**Hosted demo:** open the live-demo link above (no login). Choose *Asha Menon*, press **Try with sample receipts**, answer the one question, confirm, then switch to *Ravi Iyer* to approve. Every browser gets its own private copy of the data, so several reviewers can use it at the same time without disturbing each other. The sample receipts are read from recorded model answers, so the hosted demo costs nothing to run and behaves the same every time; it can read only those 15 receipts. The **demo video** shows what the hosted demo cannot: a receipt it has never seen read live by Claude, Jev making the decisions, ClaimPilot used from Claude Desktop over MCP, and the full Docker stack (Postgres, Redis, worker) running.
+
+**Operations:** the **AI ops** page (`/operations`) shows how the model calls are going: volume, live vs recorded, errors, latency percentiles per model, cache share, recent failures, and every call traced back to the upload that caused it. Logs are JSON, one line per event, with the same ids.
 
 **Everything on your machine (Docker):**
 ```bash
@@ -63,7 +65,7 @@ docker compose -f infra/compose.yml up --build         # web :3000 · api :8000 
 uv run --project services/api python scripts/smoke.py  # drives a pile of receipts all the way to an approved claim
 ```
 
-**Read your own receipts:** set `ANTHROPIC_API_KEY` and `LLM_MODE=live` in `.env`. Optionally add `JEV_API_KEY` and `DECISION_ENGINE=jev` for System One. Model choice per task is configuration: `ROUTE_EXTRACTION=sonnet`.
+**Read your own receipts:** set `ANTHROPIC_API_KEY` and `LLM_MODE=live` in `.env` (the hosted demo can also be run in a "hybrid" profile that replays the samples and reads new receipts live within a daily spend cap: [deploy/hf-space/DEPLOY.md](deploy/hf-space/DEPLOY.md)). Optionally add `JEV_API_KEY` and `DECISION_ENGINE=jev` for System One. Model choice per task is configuration: `ROUTE_EXTRACTION=sonnet`.
 
 **Development without Docker:**
 ```bash
