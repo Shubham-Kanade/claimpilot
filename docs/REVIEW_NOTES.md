@@ -1,6 +1,6 @@
 # Review notes (9 Oct 2026)
 
-A quick pass over the finished build. This file lists issues only; nothing here has been fixed yet.
+A quick pass over the finished build (9 Oct). **Status after the 9 Oct work:** #1 fixed (sandboxes, ADR-034), #2 CI now green (run #3), #4 fixed (limits from `/v1/meta`), #5 and #6 fixed (trace ids on every ledger row, JSON logs, ADR-035) plus an AI-ops page, #7 documented (ADR-033: production auth design), #9 and #11 documented; #3 (PDF check) and #12 (Space sleeps) are done at the end; #8 open and accepted; #10, #13, #14 not planned.
 The severity is about the 12 Oct submission, not about production use.
 
 ## High: can cost us during judging
@@ -17,7 +17,7 @@ The severity is about the 12 Oct submission, not about production use.
 | 5 | **LLM calls cannot be traced back to a receipt.** `llm_calls` holds the route, model, tokens, cost, latency, error and request hash, but no `batch_id` or `document_id`. When a document fails you can see that a call failed, but not which document's call it was without matching timestamps. | `db/models.py` `LlmCall`, `llm/ledger.py` | Add `batch_id`, `document_id` and `trace_id` columns (a migration). Pass them through a context variable set in `process_batch`. |
 | 6 | **No structured logs, no trace ids, no OpenTelemetry.** The plan named OpenTelemetry and Langfuse, but neither was built (the docs make no claim that they were). Logs are plain uvicorn output. | `main.py`, `wiring.py` | JSON logs with a request id and batch id. Optionally add an OTel GenAI span per LLM call, sent to Langfuse. |
 | 7 | **The persona header is the only identity.** `X-Persona` is a plain header, so any caller can act as any employee or as the approver. This is acceptable for a synthetic demo and documented in TDD §8, but separation of duties holds only within the demo's honesty system. | `api/deps.py` | See the answer on authentication. Keep it, but make sure the TDD calls it a demo-only shortcut. |
-| 8 | **Rare hydration error on `/batches/<id>`.** React error #418 appeared once on a cold first load while the machine was under heavy load. It did not reproduce in 30 further tries, and React recovers by rendering on the client. CI retries once. | `components/batch/BatchScreen.tsx`, `e2e/no-errors.spec.ts` | Watch CI. If it shows up there, render nothing data-dependent until `useHydrated()` is true on that screen. |
+| 8 | **Rare hydration error (React #418) on a cold first load.** Seen twice, each time during a full 20-minute browser run while the machine was busy (once on `/batches/<id>`, once in the client-side navigation test); not reproducible in 22 CPU-throttled loads, 8 repeats and 18 repeats of the dedicated spec. React recovers by rendering on the client, so nothing visible breaks. CI retries a failed test once. | `components/batch/BatchScreen.tsx`, `e2e/no-errors.spec.ts` | Watch CI. If it persists there, render nothing data-dependent until `useHydrated()` is true on the affected screen. **Status: open, accepted.** |
 
 ## Low
 | # | Issue | Where |
