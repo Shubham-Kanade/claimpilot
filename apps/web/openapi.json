@@ -1279,6 +1279,65 @@
         "title": "LineItem",
         "type": "object"
       },
+      "LlmOps": {
+        "properties": {
+          "failures": {
+            "items": {
+              "$ref": "#/components/schemas/OpsFailure"
+            },
+            "title": "Failures",
+            "type": "array"
+          },
+          "hours": {
+            "title": "Hours",
+            "type": "integer"
+          },
+          "routes": {
+            "items": {
+              "$ref": "#/components/schemas/OpsRoute"
+            },
+            "title": "Routes",
+            "type": "array"
+          },
+          "sampled": {
+            "title": "Sampled",
+            "type": "boolean"
+          },
+          "since": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Since"
+          },
+          "totals": {
+            "$ref": "#/components/schemas/OpsTotals"
+          },
+          "trace_calls": {
+            "items": {
+              "$ref": "#/components/schemas/OpsCall"
+            },
+            "title": "Trace Calls",
+            "type": "array"
+          }
+        },
+        "required": [
+          "hours",
+          "since",
+          "sampled",
+          "totals",
+          "routes",
+          "failures",
+          "trace_calls"
+        ],
+        "title": "LlmOps",
+        "type": "object"
+      },
       "Me": {
         "properties": {
           "employee": {
@@ -1392,6 +1451,282 @@
           "text"
         ],
         "title": "OpenQuestion",
+        "type": "object"
+      },
+      "OpsCall": {
+        "properties": {
+          "at": {
+            "format": "date-time",
+            "title": "At",
+            "type": "string"
+          },
+          "claim_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Claim Id"
+          },
+          "cost_usd": {
+            "title": "Cost Usd",
+            "type": "number"
+          },
+          "document_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Id"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "latency_ms": {
+            "title": "Latency Ms",
+            "type": "integer"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          },
+          "model_key": {
+            "title": "Model Key",
+            "type": "string"
+          },
+          "route": {
+            "title": "Route",
+            "type": "string"
+          }
+        },
+        "required": [
+          "at",
+          "route",
+          "model_key",
+          "mode",
+          "latency_ms",
+          "cost_usd",
+          "error",
+          "document_id",
+          "claim_id"
+        ],
+        "title": "OpsCall",
+        "type": "object"
+      },
+      "OpsFailure": {
+        "properties": {
+          "at": {
+            "format": "date-time",
+            "title": "At",
+            "type": "string"
+          },
+          "batch_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Batch Id"
+          },
+          "document_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Id"
+          },
+          "kind": {
+            "enum": [
+              "error",
+              "not_recorded",
+              "budget"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "model_key": {
+            "title": "Model Key",
+            "type": "string"
+          },
+          "route": {
+            "title": "Route",
+            "type": "string"
+          },
+          "trace_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trace Id"
+          }
+        },
+        "required": [
+          "at",
+          "route",
+          "model_key",
+          "kind",
+          "message",
+          "trace_id",
+          "batch_id",
+          "document_id"
+        ],
+        "title": "OpsFailure",
+        "type": "object"
+      },
+      "OpsRoute": {
+        "properties": {
+          "calls": {
+            "title": "Calls",
+            "type": "integer"
+          },
+          "errors": {
+            "title": "Errors",
+            "type": "integer"
+          },
+          "live_calls": {
+            "title": "Live Calls",
+            "type": "integer"
+          },
+          "live_cost_usd": {
+            "title": "Live Cost Usd",
+            "type": "number"
+          },
+          "model_key": {
+            "title": "Model Key",
+            "type": "string"
+          },
+          "p50_ms": {
+            "title": "P50 Ms",
+            "type": "integer"
+          },
+          "p95_ms": {
+            "title": "P95 Ms",
+            "type": "integer"
+          },
+          "recorded_cost_usd": {
+            "title": "Recorded Cost Usd",
+            "type": "number"
+          },
+          "route": {
+            "title": "Route",
+            "type": "string"
+          }
+        },
+        "required": [
+          "route",
+          "model_key",
+          "calls",
+          "live_calls",
+          "errors",
+          "p50_ms",
+          "p95_ms",
+          "live_cost_usd",
+          "recorded_cost_usd"
+        ],
+        "title": "OpsRoute",
+        "type": "object"
+      },
+      "OpsTotals": {
+        "properties": {
+          "budget_refusals": {
+            "title": "Budget Refusals",
+            "type": "integer"
+          },
+          "cache_read_share": {
+            "title": "Cache Read Share",
+            "type": "number"
+          },
+          "cache_read_tokens": {
+            "title": "Cache Read Tokens",
+            "type": "integer"
+          },
+          "calls": {
+            "title": "Calls",
+            "type": "integer"
+          },
+          "error_rate": {
+            "title": "Error Rate",
+            "type": "number"
+          },
+          "errors": {
+            "title": "Errors",
+            "type": "integer"
+          },
+          "input_tokens": {
+            "title": "Input Tokens",
+            "type": "integer"
+          },
+          "live_calls": {
+            "title": "Live Calls",
+            "type": "integer"
+          },
+          "live_cost_usd": {
+            "title": "Live Cost Usd",
+            "type": "number"
+          },
+          "not_recorded": {
+            "title": "Not Recorded",
+            "type": "integer"
+          },
+          "output_tokens": {
+            "title": "Output Tokens",
+            "type": "integer"
+          },
+          "recorded_calls": {
+            "title": "Recorded Calls",
+            "type": "integer"
+          },
+          "recorded_cost_usd": {
+            "title": "Recorded Cost Usd",
+            "type": "number"
+          }
+        },
+        "required": [
+          "calls",
+          "live_calls",
+          "recorded_calls",
+          "errors",
+          "not_recorded",
+          "budget_refusals",
+          "error_rate",
+          "live_cost_usd",
+          "recorded_cost_usd",
+          "input_tokens",
+          "output_tokens",
+          "cache_read_tokens",
+          "cache_read_share"
+        ],
+        "title": "OpsTotals",
         "type": "object"
       },
       "PaymentMethod": {
@@ -3597,6 +3932,108 @@
         "summary": "Get Meta",
         "tags": [
           "meta"
+        ]
+      }
+    },
+    "/v1/ops/llm": {
+      "get": {
+        "operationId": "llm_ops_v1_ops_llm_get",
+        "parameters": [
+          {
+            "description": "Look-back window in hours",
+            "in": "query",
+            "name": "hours",
+            "required": false,
+            "schema": {
+              "default": 24,
+              "description": "Look-back window in hours",
+              "maximum": 168,
+              "minimum": 1,
+              "title": "Hours",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Show the calls of one trace",
+            "in": "query",
+            "name": "trace_id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Show the calls of one trace",
+              "title": "Trace Id"
+            }
+          },
+          {
+            "description": "Acting persona (employee id)",
+            "in": "header",
+            "name": "x-persona",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Acting persona (employee id)",
+              "title": "X-Persona"
+            }
+          },
+          {
+            "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+            "in": "header",
+            "name": "x-sandbox",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+              "title": "X-Sandbox"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LlmOps"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "LLM calls: volume, cost, latency, failures, caching (recorded vs live)",
+        "tags": [
+          "ops"
         ]
       }
     },

@@ -344,6 +344,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/ops/llm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** LLM calls: volume, cost, latency, failures, caching (recorded vs live) */
+        get: operations["llm_ops_v1_ops_llm_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/stats": {
         parameters: {
             query?: never;
@@ -899,6 +916,22 @@ export interface components {
              */
             unit_price?: number | null;
         };
+        /** LlmOps */
+        LlmOps: {
+            /** Failures */
+            failures: components["schemas"]["OpsFailure"][];
+            /** Hours */
+            hours: number;
+            /** Routes */
+            routes: components["schemas"]["OpsRoute"][];
+            /** Sampled */
+            sampled: boolean;
+            /** Since */
+            since: string | null;
+            totals: components["schemas"]["OpsTotals"];
+            /** Trace Calls */
+            trace_calls: components["schemas"]["OpsCall"][];
+        };
         /** Me */
         Me: {
             employee: components["schemas"]["Employee"];
@@ -946,6 +979,105 @@ export interface components {
             kind: components["schemas"]["QuestionKind"];
             /** Text */
             text: string;
+        };
+        /** OpsCall */
+        OpsCall: {
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** Claim Id */
+            claim_id: string | null;
+            /** Cost Usd */
+            cost_usd: number;
+            /** Document Id */
+            document_id: string | null;
+            /** Error */
+            error: string | null;
+            /** Latency Ms */
+            latency_ms: number;
+            /** Mode */
+            mode: string;
+            /** Model Key */
+            model_key: string;
+            /** Route */
+            route: string;
+        };
+        /** OpsFailure */
+        OpsFailure: {
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /** Batch Id */
+            batch_id: string | null;
+            /** Document Id */
+            document_id: string | null;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "error" | "not_recorded" | "budget";
+            /** Message */
+            message: string;
+            /** Model Key */
+            model_key: string;
+            /** Route */
+            route: string;
+            /** Trace Id */
+            trace_id: string | null;
+        };
+        /** OpsRoute */
+        OpsRoute: {
+            /** Calls */
+            calls: number;
+            /** Errors */
+            errors: number;
+            /** Live Calls */
+            live_calls: number;
+            /** Live Cost Usd */
+            live_cost_usd: number;
+            /** Model Key */
+            model_key: string;
+            /** P50 Ms */
+            p50_ms: number;
+            /** P95 Ms */
+            p95_ms: number;
+            /** Recorded Cost Usd */
+            recorded_cost_usd: number;
+            /** Route */
+            route: string;
+        };
+        /** OpsTotals */
+        OpsTotals: {
+            /** Budget Refusals */
+            budget_refusals: number;
+            /** Cache Read Share */
+            cache_read_share: number;
+            /** Cache Read Tokens */
+            cache_read_tokens: number;
+            /** Calls */
+            calls: number;
+            /** Error Rate */
+            error_rate: number;
+            /** Errors */
+            errors: number;
+            /** Input Tokens */
+            input_tokens: number;
+            /** Live Calls */
+            live_calls: number;
+            /** Live Cost Usd */
+            live_cost_usd: number;
+            /** Not Recorded */
+            not_recorded: number;
+            /** Output Tokens */
+            output_tokens: number;
+            /** Recorded Calls */
+            recorded_calls: number;
+            /** Recorded Cost Usd */
+            recorded_cost_usd: number;
         };
         /**
          * PaymentMethod
@@ -2032,6 +2164,45 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MetaInfo"];
+                };
+            };
+        };
+    };
+    llm_ops_v1_ops_llm_get: {
+        parameters: {
+            query?: {
+                /** @description Look-back window in hours */
+                hours?: number;
+                /** @description Show the calls of one trace */
+                trace_id?: string | null;
+            };
+            header?: {
+                /** @description Acting persona (employee id) */
+                "x-persona"?: string | null;
+                /** @description Demo sandbox id: a visitor's private copy of the demo data (demo only) */
+                "x-sandbox"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LlmOps"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

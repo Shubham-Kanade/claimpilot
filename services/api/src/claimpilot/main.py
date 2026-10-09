@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from claimpilot import __version__, health, meta, problem
-from claimpilot.api import batches, claims, demo, documents, people, stats
+from claimpilot.api import batches, claims, demo, documents, ops, people, stats
 from claimpilot.config import get_settings
 from claimpilot.container import Container
 from claimpilot.obs.logs import configure_logging
@@ -62,7 +62,7 @@ def create_app(container: Container | None = None) -> FastAPI:
     )
     app.add_middleware(RequestContextMiddleware)  # outermost: the id covers CORS and errors too
     problem.install(app)
-    for module in (health, meta, batches, claims, documents, people, stats, demo):
+    for module in (health, meta, batches, claims, documents, people, stats, ops, demo):
         app.include_router(module.router)
     return app
 
