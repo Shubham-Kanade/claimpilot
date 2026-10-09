@@ -234,8 +234,28 @@ flowchart LR
 - **Anything quoted back to a person is sanitised** (`claims/labels.safe_text`): one line, no control characters, quotes normalised, length-capped, so a crafted merchant name cannot smuggle in a line break or a wall of text.
 - **Cost is guarded.** The live LLM client refuses to run unless `LLM_MODE=live`; the default test run ignores `.env`; the eval runner estimates cost first and aborts beyond `--max-usd` (ADR-013, ADR-014).
 - **The demo has no login.** The hosted app uses a persona switcher (an `X-Persona` header naming one of the synthetic employees), which the brief's "no access request" rule requires. It is not authentication, and the persona endpoints are the only thing it protects. Approver rights come from an allow-list in settings (`APPROVER_IDS`).
+- **Demo visitors are separated by sandbox** (ADR-034): a random id per browser (`X-Sandbox`) confines every query, the duplicate index, the approvals queue, the stats and "Start over" to that visitor's own copy of the data. It is a capability (knowing the id gives access), not a login.
 - **The mock MCP servers have no authentication** and bind to loopback only (`127.0.0.1` in Compose). They stand in for systems that sit behind a company network; a real deployment would put authentication in front of them.
 - **Secrets** live in `.env` (gitignored) and GitHub secrets; a commit guard hook and gitleaks in CI scan for them. Only synthetic data is in the repository.
+
+#### Production authentication (design, ADR-033)
+The demo does not log anyone in, on purpose. In production identity would come from the company identity provider, and only `api/deps.py` `get_persona` would change: it would return the same `Persona` from a validated token instead of from the header, so every route and every rule keeps working unchanged.
+
+```mermaid
+sequenceDiagram
+  participant B as Browser
+  participant I as Identity provider (OpenID Connect)
+  participant A as ClaimPilot API
+  participant M as MCP servers
+  B->>I: Sign in (authorization code with PKCE)
+  I-->>B: Access token (JWT)
+  B->>A: Request with Authorization Bearer token
+  A->>A: Check signature, issuer, audience, expiry against the provider's keys
+  A->>A: Employee from sub, approver role from a group claim
+  A->>M: Tool call with a service credential
+  M-->>A: Result
+  A-->>B: Response (visibility and separation of duties unchanged)
+```
 
 ## 3. AI design
 
@@ -439,7 +459,9 @@ flowchart LR
 - **What differs from the Compose stack:** SQLite instead of Postgres, an in-memory queue and event bus instead of Redis and a separate worker, model answers replayed from recordings (`LLM_MODE=replay`, each taking 60% of the time the recorded call took so the live progress can be watched: `REPLAY_LATENCY_SCALE`), `DEMO_MODE=1` (a "Start over" button, plain messages), duplicates compared per employee, and a pinned clock. The pipeline code is identical; only `wiring.py` differs.
 - **Deploy:** create a Docker Space and add `Dockerfile` and `README.md` from `deploy/hf-space/`; the build clones this repository. Steps in [deploy/hf-space/DEPLOY.md](../deploy/hf-space/DEPLOY.md). No secrets are needed.
 - **Verify a deployment:** `uv run --project services/api python scripts/smoke.py --api https://<space>.hf.space/api`.
-- **No login:** the persona switcher picks a synthetic employee or the approver. State resets when the Space restarts or when a visitor presses *Start over*.
+- **No login:** the persona switcher picks a synthetic employee or the approver. Each browser works in its own sandbox (ADR-034), so two reviewers never disturb each other. State resets when the Space restarts or when a visitor presses *Start over* (which clears only that visitor's sandbox).
+- **Two profiles, one image (ADR-036).** *Recorded* (default): `LLM_MODE=replay`, free, only the 15 sample receipts can be read. *Hybrid live*: `LLM_MODE=live`, `LLM_RECORD=1`, the Anthropic key as a Space secret and `DAILY_LLM_BUDGET_USD`; recorded requests still replay free, receipts a visitor uploads are read live by Claude, and the daily cap is shared by all visitors. The banner, upload box, cost labels and upload limits follow `/v1/meta`. Steps in [DEPLOY.md](../deploy/hf-space/DEPLOY.md).
+- **Observability.** One JSON log line per event with request, trace, sandbox, batch and document ids; every LLM call in the ledger carries the same ids; `/operations` shows calls, live vs recorded, errors, latency percentiles and recent failures (ADR-035).
 
 ## 6. Code walkthrough
 Backend package `services/api/src/claimpilot/`:
@@ -459,6 +481,8 @@ Backend package `services/api/src/claimpilot/`:
 | `mcp/` | typed clients, port adapters and the Claude tool bridge for the two MCP servers |
 | `evals/` | metrics, Pareto selection, bake-off runner, System One benchmark, golden-set helpers |
 | `db/` | SQLAlchemy 2 async models, Alembic migrations (drift-tested against the models) |
+| `telemetry.py`, `obs/` | ids carried in context variables (sandbox, trace, batch, document, claim), the request-id middleware, JSON logging; read by the cost ledger and the log lines |
+| `llm/ops.py`, `api/ops.py` | the AI-operations view of the ledger: totals, per route and model figures, failures, one trace's calls |
 | `ports.py`, `storage.py`, `net.py`, `problem.py` | small protocols for the enterprise systems and blob storage; OS-trust-store TLS; one error shape |
 
 Web app `apps/web` (Next.js 16, React 19, TypeScript strict, Tailwind v4, TanStack Query; screens: upload, live batch progress, claims, claim review, approvals, impact):
@@ -509,7 +533,8 @@ docker run -d -p 7860:7860 claimpilot-demo && cd apps/web && npm run e2e   # bro
 - The mock MCP servers are **unauthenticated** and bind to loopback; a real deployment would authenticate them.
 - All receipts are **synthetic**, brands are fictional, and the policy belongs to a fictional company. Results on real-world receipts may differ; the extraction numbers are on a small synthetic dev split (20) and the category numbers on 100- and 80-document sets, with the held-out figure quoted.
 - **Jev** is a recent early-access model. When it is unavailable or unsure, the LLM adapter answers the same typed questions, and below the confidence gate the employee is asked.
-- **Demo personas replace SSO** in the hosted demo so reviewers need no access request. The persona header is not authentication.
+- **Demo personas replace SSO** in the hosted demo so reviewers need no access request. The persona header is not authentication, and the sandbox id is a capability, not a login. The production design is in §2.8 (ADR-033).
+- **The AI-operations page is system-wide** for its totals (all visitors' calls) but shows failures and trace details only for the visitor's own sandbox. The ledger is in the demo's ephemeral database, so its figures restart with the Space.
 - The demo clock can be pinned (`DEMO_TODAY`) so the sample receipts stay inside the policy's submission window.
 - The auto-approval limit (₹10,000) and the confidence gate (0.7) are configuration choices, not tuned on real finance data.
 - Currency: INR only. Multi-currency and the per-diem and mileage "allowance" claim mode (which has no documents) are not built.
