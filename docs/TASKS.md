@@ -3,7 +3,7 @@
 Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked · ★ must · ☆ stretch (cut first)
 Rule: milestones are listed up front. Low-level subtasks are added only when a milestone starts.
 
-**Current focus (9 Oct, afternoon):** post-review work, in the order of the approved plan (`~/.claude/plans/business-cases-for-ai-async-newt.md`, summarised in "Post-review work" below). First GitHub CI run (`e729368`) failed on **web** (Prettier on `record-demo.mjs`) and **synth** (PDF size floor on Linux); both are fixed in local commits `99bd980`, `63d6504`, `1453b67` and wait for the user to push, after which the **demo** and **docker** jobs run for the first time. Step 1 (per-visitor demo sandboxes) is in progress, uncommitted: `telemetry.py`, ORM columns, Alembic 0003 and the ledger are written; repository, API, pipeline, tests and web are next. Decisions: login/OAuth dropped (documented as a production design instead), A3 (clock pin) dropped. **User actions:** push when told; create the Hugging Face Space; record the video; submit.
+**Current focus (9 Oct, 13:15):** post-review work, in the order of the approved plan (`~/.claude/plans/business-cases-for-ai-async-newt.md`, summarised in "Post-review work" below). The first GitHub CI run failed on web/synth; fixed and pushed, run #3 is fully green (baseline tag `baseline-2026-10-09`). Step 1 (per-visitor demo sandboxes) is in progress, uncommitted: `telemetry.py`, ORM columns, Alembic 0003 and the ledger are written; repository, API, pipeline, tests and web are next. Decisions: login/OAuth dropped (documented as a production design instead), A3 (clock pin) dropped. **User actions:** push when told; create the Hugging Face Space; record the video; submit.
 
 ### Resume notes (read first after a restart)
 - **Windows restarts abruptly.** Everything is on disk; agents' transcripts survive. Resume a stopped agent with SendMessage to its id. Commit coherent chunks often.
@@ -81,7 +81,7 @@ Contract frozen first (ADR-020), then four parallel streams. **Owners are workst
 
 ## Post-review work (9-11 Oct) — status
 Legend as above. **Push points** (P0...) are where the user pushes; each leaves `main` green and shippable.
-- [~] **Step 0 CI fixes** (P0: ready to push): Prettier on `record-demo.mjs` [x], synth PDF size floor [x], `ubuntu-24.04` pinned [x], REVIEW_NOTES.md committed [x]; then watch the demo/docker jobs and tag `baseline-2026-10-09` once green
+- [x] **Step 0 CI fixes** (P0 pushed, run #3 on `3bc2977`: all 9 jobs green incl. demo 17 min and docker; tag `baseline-2026-10-09` = rollback point). Known, harmless: 2 annotations from a pytest `PytestUnhandledThreadExceptionWarning` (an earlier test leaves an aiosqlite connection undisposed; surfaces in `test_runtime_checks.py`); Node 20 action deprecation warnings
 - [~] **Step 1 B1 sandboxes** (P1 API, P2 web/e2e): ORM + Alembic 0003 + ledger columns [x, uncommitted]; repository/dup index/locks/API/reset/stats [ ]; tests incl. request-hash invariance [ ]; web sandbox header, StartOver copy, mock CORS [ ]; e2e `isolation.spec.ts`, `smoke.py` fresh sandbox [ ]
 - [ ] **Step 2 A1, A2, B2, A4** (P3): banner/drop-zone per LLM profile, upload limits from `/v1/meta`, hybrid-profile fixes, DEPLOY.md profiles
 - [ ] **Step 3 D1-D2** (P7): `llm_calls` trace/batch/document/claim ids, request ids, JSON logs
