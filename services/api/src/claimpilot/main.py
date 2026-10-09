@@ -12,6 +12,8 @@ from claimpilot import __version__, health, meta, problem
 from claimpilot.api import batches, claims, demo, documents, people, stats
 from claimpilot.config import get_settings
 from claimpilot.container import Container
+from claimpilot.obs.logs import configure_logging
+from claimpilot.obs.middleware import RequestContextMiddleware
 
 
 def create_app(container: Container | None = None) -> FastAPI:
@@ -26,7 +28,9 @@ def create_app(container: Container | None = None) -> FastAPI:
             return
         from claimpilot.wiring import build_container  # imports Redis/Arq/MCP only when serving
 
-        built = await build_container(get_settings())
+        settings = get_settings()
+        configure_logging(settings.log_format, settings.log_level)  # real server only, not tests
+        built = await build_container(settings)
         app.state.container = built
         try:
             yield
@@ -52,9 +56,11 @@ def create_app(container: Container | None = None) -> FastAPI:
             "Idempotency-Key",
             "Content-Type",
             "Last-Event-ID",
+            "X-Request-ID",
         ],
-        expose_headers=["Content-Type"],
+        expose_headers=["Content-Type", "X-Request-ID"],
     )
+    app.add_middleware(RequestContextMiddleware)  # outermost: the id covers CORS and errors too
     problem.install(app)
     for module in (health, meta, batches, claims, documents, people, stats, demo):
         app.include_router(module.router)

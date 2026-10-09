@@ -92,7 +92,7 @@ async def reply(container: Container, persona: Persona, claim_id: str, text: str
         raise problem(status.HTTP_403_FORBIDDEN, "not_your_claim", "Only the owner can answer")
     if not view.unanswered:
         return ReplyOut(claim=view, understood={}, follow_up=None)
-    with bound_ids(sandbox=persona.sandbox, batch_id=view.batch_id):  # for the cost ledger
+    with bound_ids(sandbox=persona.sandbox, batch_id=view.batch_id, claim_id=claim_id):
         understood = await interpret_reply(container.llm, view, text)
     updated = await apply_answers(container, persona, claim_id, understood) if understood else view
     await container.repo.audit(

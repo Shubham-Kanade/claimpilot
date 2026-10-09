@@ -68,6 +68,9 @@ class CostLedger:
             error=call.error[:ERROR_MAX_CHARS] if call.error else None,
             sandbox=ids["sandbox"],
             batch_id=ids["batch_id"],
+            trace_id=ids["trace_id"],
+            document_id=ids["document_id"],
+            claim_id=ids["claim_id"],
         )
         async with self._sessions() as session:
             session.add(row)

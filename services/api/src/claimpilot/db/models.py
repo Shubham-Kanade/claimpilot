@@ -42,6 +42,9 @@ class LlmCall(Base):
     error: Mapped[str | None] = mapped_column(String(500))
     sandbox: Mapped[str | None] = mapped_column(String(64), index=True)  # who the call was for
     batch_id: Mapped[str | None] = mapped_column(String(36), index=True)  # (NOT the ``batch`` flag)
+    trace_id: Mapped[str | None] = mapped_column(String(64), index=True)  # the upload request
+    document_id: Mapped[str | None] = mapped_column(String(36), index=True)
+    claim_id: Mapped[str | None] = mapped_column(String(64), index=True)
 
 
 class Batch(Base):
@@ -59,6 +62,7 @@ class Batch(Base):
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     error: Mapped[str | None] = mapped_column(String(500))
     sandbox: Mapped[str | None] = mapped_column(String(64), index=True)  # a demo visitor's world
+    trace_id: Mapped[str | None] = mapped_column(String(64))  # the upload request that made it
 
 
 class Document(Base):

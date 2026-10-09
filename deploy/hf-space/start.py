@@ -42,9 +42,10 @@ def services() -> list[Service]:
         Service(
             "api",
             [venv_python("api"), "-m", "uvicorn", "claimpilot.main:app"]
-            + ["--host", "127.0.0.1", "--port", "8000"],
+            + ["--host", "127.0.0.1", "--port", "8000", "--no-access-log"],
             8000,
             cwd=ROOT / "api",
+            env={"LOG_FORMAT": "json"},  # one JSON line per event; the app logs each request itself
         ),
         Service(
             "web",

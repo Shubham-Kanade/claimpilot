@@ -17,6 +17,7 @@ from claimpilot.pipeline.events import PipelineEvent, stream_events
 from claimpilot.pipeline.repo import NewFile, new_id
 from claimpilot.pipeline.views import BatchView
 from claimpilot.problem import Problem, problem
+from claimpilot.telemetry import current_ids
 
 router = APIRouter(prefix="/v1/batches", tags=["batches"])
 
@@ -107,7 +108,11 @@ async def create_batch(
     for key, data in stored:
         await container.storage.put(key, data)
     _, doc_ids = await container.repo.create_batch(
-        persona.id, new_files, batch_id=batch_id, sandbox=persona.sandbox
+        persona.id,
+        new_files,
+        batch_id=batch_id,
+        sandbox=persona.sandbox,
+        trace_id=current_ids()["trace_id"],  # the request's id: the batch's work will carry it
     )
     await container.repo.audit(
         persona.id, "batch_uploaded", "batch", batch_id, {"files": len(new_files)}

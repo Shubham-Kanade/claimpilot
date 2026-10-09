@@ -21,9 +21,12 @@ async def ping(ctx: dict[str, Any]) -> str:
 
 
 async def startup(ctx: dict[str, Any]) -> None:
+    from claimpilot.obs.logs import configure_logging
     from claimpilot.wiring import build_pipeline_deps  # heavy imports only in the worker
 
-    ctx["deps"], ctx["close"] = await build_pipeline_deps(get_settings())
+    settings = get_settings()
+    configure_logging(settings.log_format, settings.log_level)
+    ctx["deps"], ctx["close"] = await build_pipeline_deps(settings)
 
 
 async def shutdown(ctx: dict[str, Any]) -> None:

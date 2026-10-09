@@ -82,6 +82,7 @@ class Repository:
         *,
         batch_id: str | None = None,
         sandbox: str | None = None,
+        trace_id: str | None = None,
     ) -> tuple[str, list[str]]:
         """Insert a queued batch with its documents; returns ``(batch_id, document_ids)``."""
         batch_id = batch_id or new_id()
@@ -94,6 +95,7 @@ class Repository:
                     status="queued",
                     total=len(files),
                     sandbox=sandbox,
+                    trace_id=trace_id,
                 )
             )
             await session.flush()  # the batch row must exist before its documents (FK)
@@ -149,6 +151,11 @@ class Repository:
         """The sandbox a batch belongs to (the pipeline runs a batch inside its own world)."""
         async with self._sessions() as session:
             return await session.scalar(select(Batch.sandbox).where(Batch.id == batch_id))
+
+    async def batch_trace_id(self, batch_id: str) -> str | None:
+        """The id of the upload request that made this batch (ties its work to that request)."""
+        async with self._sessions() as session:
+            return await session.scalar(select(Batch.trace_id).where(Batch.id == batch_id))
 
     async def batch_documents(self, batch_id: str) -> list[Document]:
         async with self._sessions() as session:

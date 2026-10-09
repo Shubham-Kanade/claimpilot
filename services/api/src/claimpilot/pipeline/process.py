@@ -47,7 +47,7 @@ from claimpilot.pipeline.views import BatchView
 from claimpilot.policy import Policy
 from claimpilot.ports import CalendarSource, EmployeeDirectory
 from claimpilot.storage import Storage
-from claimpilot.telemetry import bound_ids
+from claimpilot.telemetry import bound_ids, reset_ids
 from claimpilot.trust import DuplicateIndex, assess_document
 
 logger = logging.getLogger(__name__)
@@ -152,9 +152,12 @@ async def process_batch(deps: PipelineDeps, batch_id: str) -> None:
     if batch is None or batch.status in ("done", "failed"):
         return  # unknown, or a retried job for work that already finished
     sandbox = await deps.repo.batch_sandbox(batch_id)
+    trace_id = await deps.repo.batch_trace_id(batch_id)
+    reset_ids()  # start from this batch's row, not from the request that happened to start it
     try:
-        # Everything below (and every LLM call it makes) runs inside the batch's own world.
-        with bound_ids(sandbox=sandbox, batch_id=batch_id):
+        # Everything below (and every LLM call it makes) runs inside the batch's own world and
+        # carries the upload request's trace id, so logs and ledger rows line up with the request.
+        with bound_ids(sandbox=sandbox, batch_id=batch_id, trace_id=trace_id):
             await _run(deps, batch, sandbox)
     except asyncio.CancelledError:
         raise
@@ -211,32 +214,36 @@ async def _read_all(
     gate = asyncio.Semaphore(deps.concurrency)
     rereads = RereadBudget(len(rows))
 
+    async def read_row(row: Document) -> _Read | None:
+        try:
+            read = await _read_one(deps, row, rereads)
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            await _fail(deps, batch_id, row, exc)
+            return None
+        await deps.events.publish(
+            ev.DocumentExtracted(
+                batch_id=batch_id,
+                document_id=row.id,
+                filename=row.filename,
+                position=row.position,
+                doc_type=read.receipt.doc_type.value,
+                merchant=read.receipt.merchant_name,
+                total=read.receipt.total,
+                category=read.decisions.category.value,
+                category_confidence=read.decisions.category_confidence,
+                engine=read.decisions.engine,
+                cached=read.cost_usd == 0.0,
+                cost_usd=round(read.cost_usd, 6),
+            )
+        )
+        return read
+
     async def one(row: Document) -> _Read | None:
         async with gate:
-            try:
-                read = await _read_one(deps, row, rereads)
-            except asyncio.CancelledError:
-                raise
-            except Exception as exc:
-                await _fail(deps, batch_id, row, exc)
-                return None
-            await deps.events.publish(
-                ev.DocumentExtracted(
-                    batch_id=batch_id,
-                    document_id=row.id,
-                    filename=row.filename,
-                    position=row.position,
-                    doc_type=read.receipt.doc_type.value,
-                    merchant=read.receipt.merchant_name,
-                    total=read.receipt.total,
-                    category=read.decisions.category.value,
-                    category_confidence=read.decisions.category_confidence,
-                    engine=read.decisions.engine,
-                    cached=read.cost_usd == 0.0,
-                    cost_usd=round(read.cost_usd, 6),
-                )
-            )
-            return read
+            with bound_ids(document_id=row.id):  # this task's LLM calls are this document's
+                return await read_row(row)
 
     results = await asyncio.gather(*(one(row) for row in rows))
     reads = sorted((r for r in results if r is not None), key=lambda r: r.row.position)

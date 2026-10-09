@@ -31,6 +31,8 @@ class Settings(BaseSettings):
     # In replay mode, wait this fraction of each recorded call's latency (0 = instantly), so the
     # hosted demo's live progress can be watched. Never affects live calls.
     replay_latency_scale: float = 0.0
+    log_format: Literal["json", "console"] = "console"  # containers set LOG_FORMAT=json
+    log_level: str = "INFO"
 
     # System One
     decision_engine: Literal["jev", "llm", "fake"] = "llm"
