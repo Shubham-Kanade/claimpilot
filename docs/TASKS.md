@@ -3,7 +3,7 @@
 Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked · ★ must · ☆ stretch (cut first)
 Rule: milestones are listed up front. Low-level subtasks are added only when a milestone starts.
 
-**Current focus:** M5 submission polish (2026-10-08 night). Everything is built, committed locally and verified: API 1,742 tests at 98.7%, web 539 tests at 98% plus 110 Playwright runs against the real one-container demo, three MCP servers (86 + 130 + 350 tests, 100%), the hosted-demo image rebuilt with the final web app (`scripts/smoke.py` SMOKE OK), ClaimPilot as an MCP server (ADR-032, `services/mcp-claimpilot`), the demo capture tool `apps/web/scripts/record-demo.mjs` (about 3 min 20 s webm in `docs/demo/`, git-ignored). **Left for me:** README/TDD final pass, rebuild `docs/TECHNICAL_DESIGN.pdf`, run the `submission-check` skill, final commit. Known and accepted: one React #418 console error seen once in the e2e run under heavy machine load (not reproducible in 22 throttled loads; React recovers client-side); the UI says 30 files / 15 MB per upload while the hosted demo caps at 20 files / 6 MB (the server answers with a friendly 413). **The user must:** push `main` (nothing is pushed yet, so CI has never run on these commits), create the Hugging Face Space (`deploy/hf-space/DEPLOY.md`), upload `docs/demo/claimpilot-demo.webm` to YouTube (public or unlisted) or record their own with `docs/DEMO_SCRIPT.md`, put both links in README and TDD header, submit the form.
+**Current focus (9 Oct, afternoon):** post-review work, in the order of the approved plan (`~/.claude/plans/business-cases-for-ai-async-newt.md`, summarised in "Post-review work" below). First GitHub CI run (`e729368`) failed on **web** (Prettier on `record-demo.mjs`) and **synth** (PDF size floor on Linux); both are fixed in local commits `99bd980`, `63d6504`, `1453b67` and wait for the user to push, after which the **demo** and **docker** jobs run for the first time. Step 1 (per-visitor demo sandboxes) is in progress, uncommitted: `telemetry.py`, ORM columns, Alembic 0003 and the ledger are written; repository, API, pipeline, tests and web are next. Decisions: login/OAuth dropped (documented as a production design instead), A3 (clock pin) dropped. **User actions:** push when told; create the Hugging Face Space; record the video; submit.
 
 ### Resume notes (read first after a restart)
 - **Windows restarts abruptly.** Everything is on disk; agents' transcripts survive. Resume a stopped agent with SendMessage to its id. Commit coherent chunks often.
@@ -78,6 +78,19 @@ Contract frozen first (ADR-020), then four parallel streams. **Owners are workst
 ★ polish · 3–4 min demo video on YouTube (public or unlisted) · finish the TDD + PDF · README with metrics + links · `submission-check` · submit
 
 **Every milestone:** append its TDD sections · keep coverage gates green · reviewer agent pass before commit
+
+## Post-review work (9-11 Oct) — status
+Legend as above. **Push points** (P0...) are where the user pushes; each leaves `main` green and shippable.
+- [~] **Step 0 CI fixes** (P0: ready to push): Prettier on `record-demo.mjs` [x], synth PDF size floor [x], `ubuntu-24.04` pinned [x], REVIEW_NOTES.md committed [x]; then watch the demo/docker jobs and tag `baseline-2026-10-09` once green
+- [~] **Step 1 B1 sandboxes** (P1 API, P2 web/e2e): ORM + Alembic 0003 + ledger columns [x, uncommitted]; repository/dup index/locks/API/reset/stats [ ]; tests incl. request-hash invariance [ ]; web sandbox header, StartOver copy, mock CORS [ ]; e2e `isolation.spec.ts`, `smoke.py` fresh sandbox [ ]
+- [ ] **Step 2 A1, A2, B2, A4** (P3): banner/drop-zone per LLM profile, upload limits from `/v1/meta`, hybrid-profile fixes, DEPLOY.md profiles
+- [ ] **Step 3 D1-D2** (P7): `llm_calls` trace/batch/document/claim ids, request ids, JSON logs
+- [ ] **Step 4 D3** (P8): `/v1/ops/llm` + `/operations` page
+- [ ] **Step 5 docs G1-G4** (P9): README, DEMO_SCRIPT, demo-pile README, TDD wording, ADR-033/034/035 (ADR-033 = production auth design)
+- [ ] **Step 6** optional: dormant `POST /v1/auth/token` (only if time is left)
+- [ ] **Step 7 A5 + G5**: hybrid-mode test run (under $0.05), PDF render check, counts, `submission-check`, clean-clone build, re-record video, tag `v1.1.0`
+- Deferred until the user nods: E1/E2 (Jev recording and ledger), F1 (finance dashboard). Not doing: C1 login, A3, OpenTelemetry/Langfuse, MCP token mode.
+- **Cut order if behind:** step 6, then D3 down to tables, then D3, then A5 to a manual check. Never cut B1, step 2 or the docs.
 
 ## Done log
 - 2026-10-07: chose the Expense case and approved the plan (ADR-001…008)
