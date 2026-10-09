@@ -57,8 +57,14 @@ Dates are written with the month's name (06-Oct-2026) on purpose: 06/10 would re
 
 ## What should happen
 
-Fed to the real grouping, policy and trust code with perfect extraction, the pile makes
-6 claims. `services/api/tests/unit/test_demo_pile.py` asserts all of this offline.
+Fed to the real grouping, policy and trust code, the pile becomes claims. `services/api/tests/unit/
+test_demo_pile.py` asserts the findings and routing offline with perfect extraction. The hosted
+demo (recorded real-model run) shows **7 claims**: the Mumbai trip (train, hotel, cab, two dinners;
+alcohol finding and one question), the client dinner (clean, answered from the calendar), the
+second photo of that dinner (its own claim, flagged as a duplicate), local conveyance in Pune
+(Rs 1,623.00, with the edited-total finding), the cafe bill with the hidden note (prompt-injection
+finding), the Rs 120 UPI payment ("Miscellaneous", a question about its purpose) and the mobile
+bill (clean, low risk).
 
 | Claim | Documents | Total printed | Route |
 |---|---|---|---|
