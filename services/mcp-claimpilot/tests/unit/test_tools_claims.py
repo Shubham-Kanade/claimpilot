@@ -253,7 +253,7 @@ async def test_upload_receipts_sends_the_files_as_one_batch(
             paths=[str(tmp_path / "taxi.jpg"), str(tmp_path / "hotel.pdf")],
         )
     )
-    (post,) = api.calls
+    (post,) = api.calls_to("POST", "/v1/batches")
     assert [(p.name, p.filename, p.content_type, p.data) for p in post.parts] == [
         ("files", "taxi.jpg", "image/jpeg", JPEG),
         ("files", "hotel.pdf", "application/pdf", PDF),
@@ -293,27 +293,116 @@ async def test_a_bad_file_stops_everything_before_the_api_is_called(
     assert "Nothing was uploaded." in message
     assert "notes.txt: only JPEG, PNG, WebP and PDF" in message
     assert "nope.jpg: file not found" in message
-    assert api.calls == []
+    assert uploads_sent(api) == []
 
 
-async def test_the_limits_come_from_the_settings(
+def uploads_sent(api: FakeApi) -> list[Call]:
+    return api.calls_to("POST", "/v1/batches")
+
+
+def make_files(folder: Path, count: int, size: int = 40) -> list[str]:
+    paths = []
+    for i in range(count):
+        path = folder / f"r{i:02d}.jpg"
+        path.write_bytes(JPEG + bytes(size))
+        paths.append(str(path))
+    return paths
+
+
+async def test_the_limits_are_the_apis_own_from_meta(
+    api: FakeApi, server: MCPServer, tmp_path: Path
+):
+    api.json("GET", "/v1/meta", f.api_meta(max_batch_files=20, max_upload_mb=6))
+    message = error_of(await call(server, "upload_receipts", paths=make_files(tmp_path, 21)))
+    assert "At most 20 files per upload, got 21." in message
+    assert uploads_sent(api) == []  # refused before anything was read or sent
+
+
+async def test_a_file_over_the_apis_size_limit_is_refused_before_any_upload(
+    api: FakeApi, server: MCPServer, tmp_path: Path
+):
+    api.json("GET", "/v1/meta", f.api_meta(max_batch_files=20, max_upload_mb=6))
+    big = tmp_path / "big.pdf"
+    big.write_bytes(b"%PDF-" + b"0" * (7 * 1024 * 1024))
+    message = error_of(await call(server, "upload_receipts", paths=[str(big)]))
+    assert "larger than 6 MB" in message
+    assert uploads_sent(api) == []
+
+
+async def test_files_within_the_apis_limits_go_through(
+    api: FakeApi, server: MCPServer, tmp_path: Path
+):
+    api.json("GET", "/v1/meta", f.api_meta(max_batch_files=20, max_upload_mb=6))
+    api.json("POST", "/v1/batches", f.batch_created(["r"]), status=202)
+    assert data(await call(server, "upload_receipts", paths=make_files(tmp_path, 20)))["batch_id"]
+    assert len(uploads_sent(api)) == 1
+
+
+async def test_meta_is_remembered_for_a_minute_and_then_asked_again(
+    api: FakeApi, settings: Settings, client: ClaimPilotClient, tmp_path: Path
+):
+    now = [1000.0]
+    server = create_server(settings, client, allow_any_path=True, clock=lambda: now[0])
+    api.sequence(
+        "GET",
+        "/v1/meta",
+        [f.api_meta(max_batch_files=2), f.api_meta(max_batch_files=3)],
+    )
+    files = make_files(tmp_path, 3)
+    assert "At most 2 files" in error_of(await call(server, "upload_receipts", paths=files))
+    now[0] += 59
+    assert "At most 2 files" in error_of(await call(server, "upload_receipts", paths=files))
+    assert len(api.calls_to("GET", "/v1/meta")) == 1  # cached
+    now[0] += 2
+    api.json("POST", "/v1/batches", f.batch_created(["r"]), status=202)
+    assert data(await call(server, "upload_receipts", paths=files))["batch_id"]
+    assert len(api.calls_to("GET", "/v1/meta")) == 2  # asked again; the new limit applies
+
+
+async def test_the_settings_are_the_fallback_when_meta_fails(
     api: FakeApi, settings: Settings, client: ClaimPilotClient, tmp_path: Path
 ):
     server = create_server(
         settings.model_copy(update={"claimpilot_max_files": 1}), client, allow_any_path=True
     )
-    for name in ("a.jpg", "b.jpg"):
-        (tmp_path / name).write_bytes(JPEG)
-    result = await call(
-        server, "upload_receipts", paths=[str(tmp_path / "a.jpg"), str(tmp_path / "b.jpg")]
+    files = make_files(tmp_path, 2)
+    for failing in (
+        lambda _: f.problem(500, "boom", "Internal error"),
+        lambda _: (_ for _ in ()).throw(httpx.ConnectError("refused")),
+        lambda _: httpx.Response(200, text="not json"),
+    ):
+        api.respond("GET", "/v1/meta", failing)
+        message = error_of(await call(server, "upload_receipts", paths=files))
+        assert "At most 1 files per upload, got 2." in message
+    assert uploads_sent(api) == []
+
+
+async def test_the_settings_are_the_fallback_when_meta_lacks_the_limits(
+    api: FakeApi, settings: Settings, client: ClaimPilotClient, tmp_path: Path
+):
+    server = create_server(
+        settings.model_copy(update={"claimpilot_max_file_mb": 1}), client, allow_any_path=True
     )
-    assert "At most 1 files per upload, got 2." in error_of(result)
-    assert api.calls == []
+    api.json("GET", "/v1/meta", {"llm_mode": "replay", "decision_engine": "llm", "routes": []})
+    big = tmp_path / "big.pdf"
+    big.write_bytes(b"%PDF-" + b"0" * (2 * 1024 * 1024))
+    assert "larger than 1 MB" in error_of(await call(server, "upload_receipts", paths=[str(big)]))
+
+
+async def test_a_failure_to_read_meta_is_not_remembered(
+    api: FakeApi, server: MCPServer, tmp_path: Path
+):
+    files = make_files(tmp_path, 21)
+    api.respond("GET", "/v1/meta", lambda _: f.problem(503, "down", "Starting"))
+    api.json("POST", "/v1/batches", f.batch_created(["r"]), status=202)
+    assert data(await call(server, "upload_receipts", paths=files))["batch_id"]  # settings: 30
+    api.json("GET", "/v1/meta", f.api_meta(max_batch_files=5))
+    assert "At most 5 files" in error_of(await call(server, "upload_receipts", paths=files))
 
 
 async def test_an_empty_list_of_paths_is_rejected_by_the_schema(api: FakeApi, server: MCPServer):
     assert (await call(server, "upload_receipts", paths=[])).is_error
-    assert api.calls == []
+    assert uploads_sent(api) == []
 
 
 async def test_over_http_files_are_only_read_from_the_upload_folder(
@@ -329,14 +418,14 @@ async def test_over_http_files_are_only_read_from_the_upload_folder(
     assert "CLAIMPILOT_UPLOAD_ROOT" in error_of(
         await call(closed, "upload_receipts", paths=[str(inside / "taxi.jpg")])
     )
-    assert api.calls == []
+    assert uploads_sent(api) == []
 
     rooted = settings.model_copy(update={"claimpilot_upload_root": inside})
     server = create_server(rooted, client, allow_any_path=False)
     assert data(await call(server, "upload_receipts", paths=["taxi.jpg"]))["batch_id"]
     outside = await call(server, "upload_receipts", paths=[str(tmp_path / "private.jpg")])
     assert "outside the folder" in error_of(outside)
-    assert len(api.calls) == 1  # only the first upload reached the API
+    assert len(uploads_sent(api)) == 1  # only the first upload reached the API
 
 
 async def test_the_apis_own_refusals_are_passed_on(api: FakeApi, server: MCPServer, tmp_path: Path):

@@ -117,6 +117,13 @@ class ApiReply(ApiModel):
     follow_up: str | None
 
 
+class ApiMeta(ApiModel):
+    """``GET /v1/meta``: the runtime limits the API enforces (older APIs omit them)."""
+
+    max_batch_files: int | None = None
+    max_upload_mb: int | None = None
+
+
 class ApiEmployee(ApiModel):
     id: str
     name: str

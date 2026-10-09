@@ -32,6 +32,7 @@ from claimpilot_mcp.api_models import (
     ApiClaim,
     ApiDocument,
     ApiMe,
+    ApiMeta,
     ApiReply,
 )
 from claimpilot_mcp.errors import ApiProblem, ApiProtocolError, ApiUnavailable, ClaimPilotError
@@ -62,6 +63,7 @@ class Operation:
 
 
 READY = Operation("GET", "/readyz")
+META = Operation("GET", "/v1/meta")  # public: no persona
 ME = Operation("GET", "/v1/me", headers=(PERSONA_HEADER,))
 LIST_CLAIMS = Operation("GET", "/v1/claims", query=("status",), headers=(PERSONA_HEADER,))
 GET_CLAIM = Operation("GET", "/v1/claims/{claim_id}", headers=(PERSONA_HEADER,))
@@ -81,6 +83,7 @@ LIST_APPROVALS = Operation("GET", "/v1/approvals", query=("status",), headers=(P
 DECIDE = Operation("POST", "/v1/claims/{claim_id}/decision", headers=(PERSONA_HEADER,), body="json")
 OPERATIONS = (
     READY,
+    META,
     ME,
     LIST_CLAIMS,
     GET_CLAIM,
@@ -308,6 +311,9 @@ class ClaimPilotClient:
         except ClaimPilotError:
             return False
         return True
+
+    async def meta(self) -> ApiMeta:
+        return self._parse(META, ApiMeta, await self._send(META))
 
     async def me(self) -> ApiMe:
         return self._parse(ME, ApiMe, await self._send(ME))

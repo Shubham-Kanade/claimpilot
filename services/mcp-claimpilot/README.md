@@ -88,7 +88,7 @@ mount it read-only and set `CLAIMPILOT_UPLOAD_ROOT` (see the table below).
 | `CLAIMPILOT_API_URL` | `http://localhost:8000` | the API, with any path prefix (`http://localhost:7860/api` for the demo image) |
 | `CLAIMPILOT_PERSONA` | `DEMO-ASHA` | who to act as (sent as `X-Persona`); `DEMO-RAVI` is the approver |
 | `CLAIMPILOT_UPLOAD_ROOT` | unset | the only folder `upload_receipts` may read; unset = any absolute path over stdio, nothing over HTTP |
-| `CLAIMPILOT_MAX_FILES` / `CLAIMPILOT_MAX_FILE_MB` | `30` / `15` | upload limits; the API's own defaults (it enforces them, `/v1/meta` does not publish them) |
+| `CLAIMPILOT_MAX_FILES` / `CLAIMPILOT_MAX_FILE_MB` | `30` / `15` | fallback upload limits, used only when the API's `GET /v1/meta` cannot be read or lacks `max_batch_files` / `max_upload_mb` (it normally publishes them; they are read from there and remembered for a minute) |
 | `CLAIMPILOT_TIMEOUT_S` / `CLAIMPILOT_UPLOAD_TIMEOUT_S` | `30` / `120` | per request |
 | `MCP_HOST` / `MCP_PORT` | `127.0.0.1` / `8103` | HTTP bind (`--host`, `--port` override; the image sets `0.0.0.0`) |
 | `LOG_LEVEL` | `info` | HTTP server log level |
@@ -101,7 +101,7 @@ A bad value stops the server with a message that names the variable and never pr
 |---|---|---|---|
 | `list_claims` | `status?` | your claims, newest first, as summaries (`GET /v1/claims`) | read-only |
 | `get_claim` | `claim_id` | one claim in full: status, route, total, findings (severity, message, the policy clause), open and answered questions, documents with what was read from each (`GET /v1/claims/{id}` + `GET /v1/documents/{id}` per document) | read-only |
-| `upload_receipts` | `paths[]` | reads local files (JPEG, PNG, WebP, PDF; 30 files of 15 MB), uploads them as **one** batch (`POST /v1/batches`, multipart), returns the batch id | not idempotent |
+| `upload_receipts` | `paths[]` | reads local files (JPEG, PNG, WebP, PDF; within the API's file count and size limits), uploads them as **one** batch (`POST /v1/batches`, multipart), returns the batch id | not idempotent |
 | `get_batch` | `batch_id`, `wait_seconds=15` | progress, failed documents and, once finished, the claims formed; waits up to `wait_seconds` so the model need not poll in a loop (`GET /v1/batches/{id}`) | read-only |
 | `answer_question` | `claim_id`, `text` | the human's reply to the open question(s); returns what the assistant understood, what is still open and the one message to ask next (`POST /v1/claims/{id}/reply`) | idempotent |
 | `submit_claim` | `claim_id`, `confirmed=false` | **false: nothing is sent**, you get a summary to show the human. **true:** submits (`POST /v1/claims/{id}/submit`, `Idempotency-Key` derived from the claim id) | idempotent |
@@ -166,7 +166,7 @@ header or a response body.
 
 `upload_receipts` is the one tool that touches the machine it runs on, so it is strict: only
 JPEG, PNG, WebP and PDF (by extension *and* content: a renamed text file is refused), the API's
-limits, no folders, no duplicates, absolute paths only (relative ones are resolved inside
+limits (from `GET /v1/meta`), no folders, no duplicates, absolute paths only (relative ones are resolved inside
 `CLAIMPILOT_UPLOAD_ROOT` when set, and are refused otherwise), and nothing is read until every
 file passes. Over HTTP the server is not your machine, so without `CLAIMPILOT_UPLOAD_ROOT` it
 reads **nothing**. Over stdio, set `CLAIMPILOT_UPLOAD_ROOT` too if you want to confine what a model
@@ -216,7 +216,8 @@ same time; with a single open question the reply is the answer and no model is i
   field the parse models read against the committed `apps/web/openapi.json`; mutation tests
   tamper with a copy the way an API change would and the checks must notice. The fake API used by
   the tool tests holds every request to the same document, so each tool test is a contract test
-  too. If `/v1/meta` ever publishes the upload limits, a test fails: read them from there.
+  too. `/v1/meta` publishes the upload limits and the server reads them from there; a test pins
+  the field names.
 * Stateless streamable HTTP with plain JSON responses (as the other two servers): a restart never
   strands a client; `curl` works. Bound to loopback it rejects foreign `Host` headers
   (DNS-rebinding protection).

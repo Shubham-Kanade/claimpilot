@@ -73,6 +73,13 @@ def test_the_defaults_in_the_configuration_table_are_the_real_defaults():
     )
 
 
+def test_the_readme_says_the_limits_come_from_the_api_and_the_settings_are_the_fallback():
+    row = next(r for r in table_after("### Configuration") if "CLAIMPILOT_MAX_FILES" in r[0])
+    assert "GET /v1/meta" in row[2]
+    assert "max_batch_files" in row[2] and "max_upload_mb" in row[2]
+    assert "fallback" in row[2]
+
+
 async def test_the_tool_table_lists_exactly_the_tools_the_server_has(server: MCPServer):
     documented = {backticked(row[0])[0] for row in table_after("## Tools")}
     async with Client(server) as mcp:

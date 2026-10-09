@@ -29,8 +29,9 @@ class Settings(BaseSettings):
     claimpilot_persona: str = "DEMO-ASHA"
     claimpilot_timeout_s: float = Field(default=30.0, gt=0)
     claimpilot_upload_timeout_s: float = Field(default=120.0, gt=0)
-    # Upload limits: the API's own defaults. The API enforces them; checking first saves reading and
-    # sending files it would refuse (they are not published by /v1/meta).
+    # Upload limits, used only when GET /v1/meta cannot be read or does not publish them (it
+    # normally does). The API enforces its limits either way; checking first saves sending files
+    # it would refuse. The defaults are the API's own.
     claimpilot_max_files: int = Field(default=30, ge=1)
     claimpilot_max_file_mb: int = Field(default=15, ge=1)
     # The only folder upload_receipts may read from. Unset: any absolute path over stdio (your own

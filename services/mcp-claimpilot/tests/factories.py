@@ -168,3 +168,19 @@ def reply(*, claim_payload: dict[str, Any] | None = None, **over: Any) -> dict[s
         "follow_up": None,
         **over,
     }
+
+
+def api_meta(**over: Any) -> dict[str, Any]:
+    """``GET /v1/meta`` with every required field; the limits are the API's defaults."""
+    return {
+        "llm_mode": "replay",
+        "llm_record": False,
+        "daily_llm_budget_usd": 1.0,
+        "max_batch_files": 30,
+        "max_upload_mb": 15,
+        "decision_engine": "llm",
+        "demo": False,
+        "runtime": "distributed",
+        "routes": [],
+        **over,
+    }

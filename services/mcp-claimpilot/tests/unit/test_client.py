@@ -136,6 +136,21 @@ async def test_approvals_and_decisions(api: FakeApi, client: ClaimPilotClient):
     assert api.calls[1].body == {"approved": False, "comment": "Attach the invoice"}
 
 
+async def test_meta_publishes_the_upload_limits_without_the_persona(
+    api: FakeApi, client: ClaimPilotClient
+):
+    api.json("GET", "/v1/meta", f.api_meta(max_batch_files=20, max_upload_mb=6))
+    meta = await client.meta()
+    assert (meta.max_batch_files, meta.max_upload_mb) == (20, 6)
+    assert "x-persona" not in api.calls[0].headers
+
+
+async def test_an_older_meta_without_limits_still_parses(api: FakeApi, client: ClaimPilotClient):
+    api.json("GET", "/v1/meta", {"llm_mode": "replay", "decision_engine": "llm", "routes": []})
+    meta = await client.meta()
+    assert (meta.max_batch_files, meta.max_upload_mb) == (None, None)
+
+
 async def test_me_says_whether_the_persona_is_an_approver(api: FakeApi, client: ClaimPilotClient):
     api.json("GET", "/v1/me", f.me(approver=True))
     me = await client.me()
@@ -455,7 +470,7 @@ def test_every_error_is_a_claimpilot_error():
 
 
 def test_the_operation_table_is_complete_and_unique():
-    assert len({(op.method, op.path) for op in OPERATIONS}) == len(OPERATIONS) == 11
+    assert len({(op.method, op.path) for op in OPERATIONS}) == len(OPERATIONS) == 12
 
 
 async def test_the_whole_client_surface_stays_inside_the_operation_table(
@@ -475,6 +490,7 @@ async def test_the_whole_client_surface_stays_inside_the_operation_table(
     api.json("POST", "/v1/claims/{claim_id}/decision", f.submitted_claim(status="approved"))
 
     await client.ready()
+    await client.meta()
     await client.me()
     await client.list_claims("ready")
     await client.get_claim("c")

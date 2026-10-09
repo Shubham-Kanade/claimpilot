@@ -13,13 +13,10 @@ from mcp import Client
 from mcp.server.mcpserver import MCPServer
 from mcp.types import Tool
 
-from claimpilot_mcp.client import ClaimPilotClient
 from claimpilot_mcp.server import (
     DATA_NOTE,
     DEFAULT_WAIT_S,
-    create_server,
 )
-from claimpilot_mcp.settings import Settings
 
 TOOL_NAMES = {
     "list_claims",
@@ -70,18 +67,9 @@ async def test_required_and_optional_parameters(tools: dict[str, Tool]):
     }
 
 
-async def test_the_upload_tool_states_the_limits_in_force(
-    settings: Settings, client: ClaimPilotClient
-):
-    server = create_server(
-        settings.model_copy(update={"claimpilot_max_files": 7, "claimpilot_max_file_mb": 3}),
-        client,
-        allow_any_path=True,
-    )
-    async with Client(server) as mcp:
-        described = {t.name: t.description for t in (await mcp.list_tools()).tools}
-    assert "Limits: 7 files of 3 MB." in (described["upload_receipts"] or "")
-    assert "Limits:" not in (described["get_claim"] or "")
+async def test_the_upload_tool_says_the_limits_are_the_apis_own(tools: dict[str, Tool]):
+    assert "limits are the API's own" in (tools["upload_receipts"].description or "")
+    assert "limits are the API's own" not in (tools["get_claim"].description or "")
 
 
 async def test_the_confirmation_flag_defaults_to_false(tools: dict[str, Tool]):

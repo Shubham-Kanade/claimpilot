@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import asyncio
 import inspect
+import time
 from collections.abc import AsyncIterator, Awaitable, Callable, Iterator
 from contextlib import asynccontextmanager, contextmanager
 from functools import partial
@@ -143,6 +144,8 @@ ClaimStatusFilter = Literal["draft", "needs_info", "ready", "submitted", "approv
 ApprovalStatus = Literal["submitted", "approved", "rejected"]
 
 Sleep = Callable[[float], Awaitable[None]]
+Clock = Callable[[], float]
+LIMITS_TTL_S = 60.0  # how long the API's upload limits are remembered
 
 
 def idempotency_key(claim_id: str) -> str:
@@ -178,11 +181,15 @@ class ClaimPilotTools:
         *,
         allow_any_path: bool,
         sleep: Sleep = anyio.sleep,
+        clock: Clock = time.monotonic,
     ) -> None:
         self._client = client
         self._settings = settings
         self._anywhere = allow_any_path
         self._sleep = sleep
+        self._clock = clock
+        self._limits: tuple[int, int] | None = None  # (files, MB) as the API published them
+        self._limits_until = 0.0
 
     async def list_claims(
         self,
@@ -227,16 +234,18 @@ class ClaimPilotTools:
         The assistant reads them, checks them against the policy and groups them into claims.
         Returns a batch_id: follow it with get_batch. Upload each receipt once: a second copy is
         flagged as a duplicate. Works over stdio, or over HTTP when the server was given an
-        upload folder.
+        upload folder. The count and size limits are the API's own; an upload over them is refused
+        up front and the message says which limit.
         """
         settings = self._settings
+        max_files, max_file_mb = await self._upload_limits()
         with _as_tool_error():
             uploads = await anyio.to_thread.run_sync(
                 partial(
                     load_uploads,
                     paths,
-                    max_files=settings.claimpilot_max_files,
-                    max_file_mb=settings.claimpilot_max_file_mb,
+                    max_files=max_files,
+                    max_file_mb=max_file_mb,
                     root=settings.claimpilot_upload_root,
                     anywhere=self._anywhere,
                 )
@@ -388,6 +397,26 @@ class ClaimPilotTools:
 
     # -- helpers ---------------------------------------------------------------------------
 
+    async def _upload_limits(self) -> tuple[int, int]:
+        """The API's file count and size limits (``GET /v1/meta``), remembered for a minute.
+
+        When the API cannot be asked, or does not publish them, the settings are the fallback;
+        the API enforces its limits either way, so this only saves a doomed upload.
+        """
+        if self._limits is not None and self._clock() < self._limits_until:
+            return self._limits
+        settings = self._settings
+        fallback = (settings.claimpilot_max_files, settings.claimpilot_max_file_mb)
+        try:
+            meta = await self._client.meta()
+        except ClaimPilotError:
+            return fallback
+        if meta.max_batch_files is None or meta.max_upload_mb is None:
+            return fallback
+        self._limits = (meta.max_batch_files, meta.max_upload_mb)
+        self._limits_until = self._clock() + LIMITS_TTL_S
+        return self._limits
+
     async def _require_approver(self) -> None:
         if not (await self._client.me()).is_approver:
             raise ClaimPilotError(NOT_AN_APPROVER)
@@ -445,6 +474,7 @@ def create_server(
     *,
     allow_any_path: bool,
     sleep: Sleep = anyio.sleep,
+    clock: Clock = time.monotonic,
 ) -> MCPServer:
     """Build the MCP server (tools, prompt, health routes) over ``client``.
 
@@ -466,7 +496,9 @@ def create_server(
         version=__version__,
         lifespan=lifespan,
     )
-    tools = ClaimPilotTools(client, settings, allow_any_path=allow_any_path, sleep=sleep)
+    tools = ClaimPilotTools(
+        client, settings, allow_any_path=allow_any_path, sleep=sleep, clock=clock
+    )
     registrations = (
         (tools.list_claims, _hints("List claims", read_only=True, idempotent=True)),
         (tools.get_claim, _hints("Get claim", read_only=True, idempotent=True)),
@@ -480,16 +512,8 @@ def create_server(
             _hints("Decide claim", read_only=False, idempotent=True, destructive=True),
         ),
     )
-    limits = (
-        f"Limits: {settings.claimpilot_max_files} files of {settings.claimpilot_max_file_mb} MB."
-    )
-    extra = {"upload_receipts": limits}
     for fn, hints in registrations:
-        description = " ".join(
-            part
-            for part in (inspect.cleandoc(fn.__doc__ or ""), extra.get(fn.__name__), DATA_NOTE)
-            if part
-        )
+        description = f"{inspect.cleandoc(fn.__doc__ or '')} {DATA_NOTE}"
         server.add_tool(fn, title=hints.title, description=description, annotations=hints)
 
     server.prompt(

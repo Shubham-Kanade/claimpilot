@@ -20,6 +20,8 @@ from typing import Any, cast
 
 import httpx
 
+from tests.factories import api_meta
+
 OPENAPI_PATH = Path(__file__).resolve().parents[3] / "apps" / "web" / "openapi.json"
 
 
@@ -157,6 +159,8 @@ class FakeApi:
         self._openapi = OpenApi(load_openapi())
         self._routes: dict[tuple[str, str], Handler] = {}
         self.transport = httpx.MockTransport(self._handle)
+        # Every API publishes its limits; tests that care script their own.
+        self.json("GET", "/v1/meta", api_meta())
 
     def respond(self, method: str, template: str, handler: Handler) -> None:
         self._routes[(method, template)] = handler

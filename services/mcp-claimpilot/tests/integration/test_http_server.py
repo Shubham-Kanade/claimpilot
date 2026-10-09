@@ -106,7 +106,7 @@ async def test_files_are_not_read_by_an_http_server_unless_it_has_an_upload_fold
         refused = await mcp.call_tool("upload_receipts", {"paths": [str(tmp_path / "taxi.jpg")]})
     assert refused.is_error
     assert "CLAIMPILOT_UPLOAD_ROOT" in refused.content[0].text  # type: ignore[union-attr]
-    assert api.calls == []
+    assert api.calls_to("POST", "/v1/batches") == []
 
     rooted = settings.model_copy(update={"claimpilot_upload_root": tmp_path})
     async with serve(create_app(rooted, client)) as base, Client(f"{base}/mcp") as mcp:

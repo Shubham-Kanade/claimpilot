@@ -28,6 +28,7 @@ from claimpilot_mcp.client import (
     LIST_APPROVALS,
     LIST_CLAIMS,
     ME,
+    META,
     OPERATIONS,
     PERSONA_HEADER,
     READY,
@@ -47,6 +48,7 @@ API = OpenApi(SPEC)
 RESPONSES: dict[Operation, tuple[str, bool]] = {
     READY: ("Readiness", False),
     ME: ("Me", False),
+    META: ("MetaInfo", False),
     LIST_CLAIMS: ("ClaimView", True),
     GET_CLAIM: ("ClaimView", False),
     GET_DOCUMENT: ("DocumentView", False),
@@ -73,6 +75,7 @@ MODELS: dict[type[BaseModel], str] = {
     m.ApiReply: "ReplyOut",
     m.ApiEmployee: "Employee",
     m.ApiMe: "Me",
+    m.ApiMeta: "MetaInfo",
 }
 
 BODY_TYPES = {"json": "application/json", "multipart": "multipart/form-data"}
@@ -175,10 +178,14 @@ def test_the_error_body_has_the_fields_the_client_reads():
     assert {"type", "title", "status"} <= set(problem["required"])
 
 
-def test_upload_limits_are_not_published_by_the_api_so_they_are_settings():
-    """If /v1/meta ever publishes the limits, this fails: read them from there instead."""
+def test_the_api_publishes_its_upload_limits_in_meta_and_the_server_reads_them_from_there():
+    """Pins the names. If one is renamed or dropped the server would silently use its settings."""
     meta = API.resolve(SCHEMAS["MetaInfo"])
-    assert not {name for name in meta["properties"] if "upload" in name or "max" in name}
+    for name in ("max_batch_files", "max_upload_mb"):
+        assert meta["properties"][name]["type"] == "integer"
+        assert name in meta["required"]
+    assert set(m.ApiMeta.model_fields) == {"max_batch_files", "max_upload_mb"}
+    assert META.headers == ()  # public: no persona
 
 
 # -- the guard bites -----------------------------------------------------------------------------
