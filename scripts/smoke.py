@@ -6,6 +6,9 @@ first broken step, so it doubles as the post-deploy check.
 
     uv run --project services/api python scripts/smoke.py [--api URL] [--dir PATH] [--persona ID]
 
+Every run works in its own demo sandbox (a fresh random id, ``--sandbox`` to pin one), so it is
+safe to repeat against a stack that already holds data and never disturbs anyone else's.
+
 This spends real money when the stack runs with ``LLM_MODE=live`` (see infra/compose.record.yml);
 with ``LLM_MODE=replay`` and recorded responses it is free.
 """
@@ -14,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import secrets
 import sys
 import time
 from pathlib import Path
@@ -119,7 +123,7 @@ def show_claims(claims: list[dict[str, Any]]) -> None:
     for c in claims:
         flags = [f["code"] for f in c["findings"]]
         print(
-            f"  {c['id'][:14]:14} {c['mode']:7} {c['status']:10} {str(c.get('route')):15} "
+            f"  {c['id'][:14]:14} {c['mode']:7} {c['status']:10} {c.get('route')!s:15} "
             f"{c['total']:>10,.2f}  {c['title'][:44]:44} questions {len(c['open_questions'])} "
             f"flags {flags}"
         )
@@ -172,8 +176,8 @@ def submit_all(
     return submitted
 
 
-def decide(client: httpx.Client, ids: list[str]) -> None:
-    approver = {"X-Persona": APPROVER}
+def decide(client: httpx.Client, ids: list[str], sandbox: str) -> None:
+    approver = {"X-Persona": APPROVER, "X-Sandbox": sandbox}
     queue = call(client, "GET", "/v1/approvals", headers=approver)
     queued = {c["id"] for c in queue}
     expect(set(ids) <= queued, f"approver queue misses claims: {sorted(set(ids) - queued)}")
@@ -206,6 +210,11 @@ def main() -> None:
         "--dir", type=Path, default=next((p for p in PILES if p.is_dir()), PILES[-1])
     )
     parser.add_argument("--persona", default="DEMO-ASHA", help="employee id sent as X-Persona")
+    parser.add_argument(
+        "--sandbox",
+        default=f"smoke-{secrets.token_hex(12)}",
+        help="demo sandbox id sent as X-Sandbox (default: a fresh random one)",
+    )
     parser.add_argument("--limit", type=int, default=0, help="upload only the first N files")
     parser.add_argument(
         "--timeout", type=float, default=300.0, help="seconds to wait for the batch"
@@ -216,7 +225,7 @@ def main() -> None:
     files = sorted(p for p in args.dir.iterdir() if p.suffix.lower() in MEDIA)
     files = files[: args.limit] if args.limit else files
     expect(bool(files), f"no receipts found in {args.dir}")
-    persona = {"X-Persona": args.persona}
+    persona = {"X-Persona": args.persona, "X-Sandbox": args.sandbox}
 
     with httpx.Client(base_url=args.api, timeout=60) as client:
         step(f"API at {args.api}")
@@ -263,7 +272,7 @@ def main() -> None:
 
         if not args.no_decide:
             step("Approver decisions")
-            decide(client, submitted)
+            decide(client, submitted, args.sandbox)
 
         step("Impact")
         stats = call(client, "GET", "/v1/stats", headers=persona)
