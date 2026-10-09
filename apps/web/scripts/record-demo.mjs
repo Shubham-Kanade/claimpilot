@@ -199,8 +199,12 @@ try {
   await open(/Mumbai trip/i);
   await sleep(1500);
   // The alcohol finding sits on the dinner receipt, below the fold: bring it to the middle
-  await page.getByText(/Policy clause 6\.1/).first()
-    .evaluate((el) => el.scrollIntoView({ block: "center", behavior: "smooth" }), null, { timeout: 5000 })
+  await page
+    .getByText(/Policy clause 6\.1/)
+    .first()
+    .evaluate((el) => el.scrollIntoView({ block: "center", behavior: "smooth" }), null, {
+      timeout: 5000,
+    })
     .catch(() => {}); // a missing scroll must never lose the recording
   await sleep(900);
   await say("Alcohol is never reimbursed. Every finding quotes the policy clause behind it.", 5500);
