@@ -208,6 +208,10 @@ Dates are written with the month's name (06-Oct-2026) on purpose: 06/10 would re
 Fed to the real grouping, policy and trust code with perfect extraction, the pile makes
 {claim_count} claims. `services/api/tests/unit/test_demo_pile.py` asserts all of this offline.
 
+(The hosted demo replays a real-model run, where the category of the Rs 120 UPI payment (11) is
+read as "miscellaneous": it then forms a seventh claim of its own, with a question about its
+purpose, and the Pune conveyance claim totals Rs 1,623.00 instead.)
+
 {claims}
 
 Two questions are left for Asha; everything else is answered from the calendar or needs no answer:
