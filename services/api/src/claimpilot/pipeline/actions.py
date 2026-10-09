@@ -28,10 +28,11 @@ from claimpilot.pipeline.finalize import refinalize
 from claimpilot.pipeline.reply import follow_up_message, interpret_reply
 from claimpilot.pipeline.views import ClaimView
 from claimpilot.problem import problem
+from claimpilot.telemetry import bound_ids
 
 
 async def visible_claim(container: Container, persona: Persona, claim_id: str) -> ClaimView:
-    view = await container.repo.get_claim(claim_id)
+    view = await container.repo.get_claim(claim_id, sandbox=persona.sandbox)
     if view is None or not persona.can_see(view.employee_id):
         raise problem(status.HTTP_404_NOT_FOUND, "claim_not_found", "No such claim")
     return view
@@ -91,7 +92,8 @@ async def reply(container: Container, persona: Persona, claim_id: str, text: str
         raise problem(status.HTTP_403_FORBIDDEN, "not_your_claim", "Only the owner can answer")
     if not view.unanswered:
         return ReplyOut(claim=view, understood={}, follow_up=None)
-    understood = await interpret_reply(container.llm, view, text)
+    with bound_ids(sandbox=persona.sandbox, batch_id=view.batch_id):  # for the cost ledger
+        understood = await interpret_reply(container.llm, view, text)
     updated = await apply_answers(container, persona, claim_id, understood) if understood else view
     await container.repo.audit(
         persona.id, "claim_replied", "claim", claim_id, {"answered": sorted(understood)}

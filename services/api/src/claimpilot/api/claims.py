@@ -27,7 +27,9 @@ async def list_claims(
     employee_id: Annotated[str | None, Query(description="Approvers only")] = None,
 ) -> list[ClaimView]:
     owner = employee_id if persona.is_approver else persona.id
-    return await container.repo.list_claims(employee_id=owner, status=status, route=route)
+    return await container.repo.list_claims(
+        employee_id=owner, status=status, route=route, sandbox=persona.sandbox
+    )
 
 
 @router.get(
@@ -117,7 +119,7 @@ async def approvals(
     approver: ApproverDep,
     status: Annotated[str, Query(description="submitted | approved | rejected")] = "submitted",
 ) -> list[ClaimView]:
-    return await container.repo.list_claims(status=status)
+    return await container.repo.list_claims(status=status, sandbox=approver.sandbox)
 
 
 @router.post(

@@ -40,13 +40,14 @@ from claimpilot.extraction.locate import FieldLocator, Located
 from claimpilot.extraction.preprocess import PreparedDocument
 from claimpilot.llm.errors import ReplayMissError
 from claimpilot.pipeline import events as ev
-from claimpilot.pipeline.dupindex import DbDuplicateIndex, EmployeeScopedIndex
+from claimpilot.pipeline.dupindex import DbDuplicateIndex, ScopedIndex
 from claimpilot.pipeline.finalize import refinalize
-from claimpilot.pipeline.repo import Repository
+from claimpilot.pipeline.repo import UNSCOPED, Repository
 from claimpilot.pipeline.views import BatchView
 from claimpilot.policy import Policy
 from claimpilot.ports import CalendarSource, EmployeeDirectory
 from claimpilot.storage import Storage
+from claimpilot.telemetry import bound_ids
 from claimpilot.trust import DuplicateIndex, assess_document
 
 logger = logging.getLogger(__name__)
@@ -79,10 +80,10 @@ class PipelineDeps:
     # save writes to it, so two batches of the same receipts must take turns or each misses the
     # other's copy. In-process (embedded runtime, one worker process); with several worker
     # processes a database advisory lock would take its place.
-    employee_locks: dict[str, asyncio.Lock] = field(default_factory=dict)
+    employee_locks: dict[tuple[str | None, str], asyncio.Lock] = field(default_factory=dict)
 
-    def lock_for(self, employee_id: str) -> asyncio.Lock:
-        return self.employee_locks.setdefault(employee_id, asyncio.Lock())
+    def lock_for(self, employee_id: str, sandbox: str | None = None) -> asyncio.Lock:
+        return self.employee_locks.setdefault((sandbox, employee_id), asyncio.Lock())
 
     def today(self) -> date:
         return self.settings.demo_today or self.clock()
@@ -131,20 +132,24 @@ def _reason(deps: PipelineDeps, exc: BaseException) -> str:
     return _short(exc)
 
 
-def _index_for(deps: PipelineDeps, employee_id: str) -> DuplicateIndex:
-    """The duplicate index as this employee should see it (company-wide or just their own)."""
-    if deps.settings.duplicate_scope == "employee" and isinstance(deps.index, DbDuplicateIndex):
-        return EmployeeScopedIndex(deps.index, employee_id)
+def _index_for(deps: PipelineDeps, sandbox: str | None, employee_id: str) -> DuplicateIndex:
+    """The duplicate index as this employee in this sandbox should see it."""
+    if isinstance(deps.index, DbDuplicateIndex):
+        only_theirs = employee_id if deps.settings.duplicate_scope == "employee" else None
+        return ScopedIndex(deps.index, sandbox=sandbox, employee_id=only_theirs)
     return deps.index
 
 
 async def process_batch(deps: PipelineDeps, batch_id: str) -> None:
     """Run the whole pipeline for one batch; never raises (failures become events and status)."""
-    batch = await deps.repo.get_batch(batch_id)
+    batch = await deps.repo.get_batch(batch_id, sandbox=UNSCOPED)  # the pipeline serves every world
     if batch is None or batch.status in ("done", "failed"):
         return  # unknown, or a retried job for work that already finished
+    sandbox = await deps.repo.batch_sandbox(batch_id)
     try:
-        await _run(deps, batch)
+        # Everything below (and every LLM call it makes) runs inside the batch's own world.
+        with bound_ids(sandbox=sandbox, batch_id=batch_id):
+            await _run(deps, batch, sandbox)
     except asyncio.CancelledError:
         raise
     except Exception as exc:  # one bad batch must not take the worker down
@@ -157,7 +162,7 @@ async def process_batch(deps: PipelineDeps, batch_id: str) -> None:
         await deps.events.publish(ev.BatchFailed(batch_id=batch_id, error=_short(exc)))
 
 
-async def _run(deps: PipelineDeps, batch: BatchView) -> None:
+async def _run(deps: PipelineDeps, batch: BatchView, sandbox: str | None) -> None:
     employee = await deps.directory.get(batch.employee_id)
     if employee is None:
         raise LookupError(f"unknown employee {batch.employee_id}")
@@ -168,14 +173,14 @@ async def _run(deps: PipelineDeps, batch: BatchView) -> None:
     reads, read_failures = await _read_all(
         deps, batch.id, [r for r in rows if r.status == "queued"]
     )
-    checked, check_failures = await _check_all(deps, batch.id, reads)
+    checked, check_failures = await _check_all(deps, batch.id, reads, sandbox)
 
     earlier = [
         ProcessedDocument.model_validate(r.data) for r in rows if r.status == "processed" and r.data
     ]
     position = {r.id: r.position for r in rows}
     documents = sorted([*earlier, *checked], key=lambda d: position[d.id])
-    claims = await _form_claims(deps, batch.id, employee, documents)
+    claims = await _form_claims(deps, batch.id, employee, documents, sandbox)
 
     failed = sum(r.status == "failed" for r in rows) + read_failures + check_failures
     cost = sum(read.cost_usd for read in reads)
@@ -305,16 +310,17 @@ async def _fail(deps: PipelineDeps, batch_id: str, row: Document, exc: BaseExcep
 
 
 async def _check_all(
-    deps: PipelineDeps, batch_id: str, reads: Sequence[_Read]
+    deps: PipelineDeps, batch_id: str, reads: Sequence[_Read], sandbox: str | None
 ) -> tuple[list[ProcessedDocument], int]:
     if not reads:
         return [], 0
-    async with deps.lock_for(reads[0].row.employee_id):  # one employee's checks take turns
-        return await _check_in_turn(deps, batch_id, reads)
+    # one employee's checks take turns (in their own sandbox: visitors never wait for each other)
+    async with deps.lock_for(reads[0].row.employee_id, sandbox):
+        return await _check_in_turn(deps, batch_id, reads, sandbox)
 
 
 async def _check_in_turn(
-    deps: PipelineDeps, batch_id: str, reads: Sequence[_Read]
+    deps: PipelineDeps, batch_id: str, reads: Sequence[_Read], sandbox: str | None
 ) -> tuple[list[ProcessedDocument], int]:
     documents: list[ProcessedDocument] = []
     failures = 0
@@ -328,7 +334,7 @@ async def _check_in_turn(
                 prepared=read.prepared,
                 receipt=read.receipt,
                 employee_id=row.employee_id,
-                index=_index_for(deps, row.employee_id),
+                index=_index_for(deps, sandbox, row.employee_id),
             )
             processed = ProcessedDocument(
                 id=row.id,
@@ -385,7 +391,11 @@ async def _check_in_turn(
 
 
 async def _form_claims(
-    deps: PipelineDeps, batch_id: str, employee: Employee, documents: Sequence[ProcessedDocument]
+    deps: PipelineDeps,
+    batch_id: str,
+    employee: Employee,
+    documents: Sequence[ProcessedDocument],
+    sandbox: str | None,
 ) -> list[Claim]:
     if not documents:
         return []
@@ -407,7 +417,7 @@ async def _form_claims(
         )
         finished.append(claim)
     routes = {c.id: route(c) for c in finished}
-    await deps.repo.save_claims(batch_id, employee.id, finished, routes)
+    await deps.repo.save_claims(batch_id, employee.id, finished, routes, sandbox=sandbox)
     await deps.events.publish(ev.ClaimsReady(batch_id=batch_id, claim_ids=[c.id for c in finished]))
     return finished
 

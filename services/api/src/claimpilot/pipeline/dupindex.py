@@ -2,10 +2,10 @@
 
 The trust layer asks "have we seen this receipt before?" through the ``DuplicateIndex`` protocol.
 Here "seen" means any processed document in the database, from this employee or another (a
-split bill or a shared receipt is just as worth flagging); ``EmployeeScopedIndex`` narrows that
-to one person for the hosted demo. The pipeline checks documents one at a time and saves each
-right after its check, so two copies uploaded together are caught: the second finds the first
-already in the table.
+split bill or a shared receipt is just as worth flagging); ``ScopedIndex`` narrows that to
+one demo sandbox (and, for the hosted demo, to one person). The pipeline checks documents one at
+a time and saves each right after its check, so two copies uploaded together are caught: the
+second finds the first already in the table.
 
 Scale note: matching loads the hashes of processed documents and compares them in Python. That
 is exactly right at demo scale (thousands of rows); a BK-tree or pgvector index would replace
@@ -17,6 +17,7 @@ from __future__ import annotations
 from sqlalchemy import select
 
 from claimpilot.db import Document, SessionFactory
+from claimpilot.pipeline.repo import Scope, in_sandbox
 from claimpilot.trust.duplicates import DuplicateMatch, SeenDocument, classify_match
 from claimpilot.trust.phash import hamming, is_phash
 
@@ -34,10 +35,10 @@ class DbDuplicateIndex:
     async def add(self, record: SeenDocument) -> None:
         """Nothing to do: the pipeline saves the document row right after its check."""
 
-    async def _candidates(self) -> dict[str, SeenDocument]:
+    async def _candidates(self, sandbox: Scope) -> dict[str, SeenDocument]:
         query = select(
             Document.id, Document.sha256, Document.phash, Document.fingerprint, Document.employee_id
-        ).where(Document.status == "processed")
+        ).where(Document.status == "processed", in_sandbox(Document.sandbox, sandbox))
         async with self._sessions() as session:
             rows = (await session.execute(query)).all()
         return {
@@ -46,10 +47,15 @@ class DbDuplicateIndex:
         }
 
     async def find_similar(
-        self, *, phash: str, fingerprint: str | None, max_distance: int
+        self,
+        *,
+        phash: str,
+        fingerprint: str | None,
+        max_distance: int,
+        sandbox: Scope = None,
     ) -> list[DuplicateMatch]:
         matches = []
-        for record in (await self._candidates()).values():
+        for record in (await self._candidates(sandbox)).values():
             distance = _distance(phash, record.phash)
             kind = classify_match(
                 distance=distance,
@@ -69,24 +75,33 @@ class DbDuplicateIndex:
                 )
         return matches
 
-    async def find_exact(self, *, sha256: str) -> list[DuplicateMatch]:
+    async def find_exact(self, *, sha256: str, sandbox: Scope = None) -> list[DuplicateMatch]:
         return [
             DuplicateMatch(r.document_id, r.employee_id, "exact", 0, r.fingerprint)
-            for r in (await self._candidates()).values()
+            for r in (await self._candidates(sandbox)).values()
             if r.sha256 == sha256
         ]
 
 
-class EmployeeScopedIndex:
-    """Only the same employee's earlier receipts count as duplicates.
+class ScopedIndex:
+    """The duplicate index as one demo sandbox (and optionally one employee) sees it.
 
-    The hosted demo has visitors sharing one set of sample receipts; without this, the second
-    visitor's perfectly fresh upload would be flagged as a copy of the first visitor's.
+    The hosted demo has many visitors uploading the same sample receipts; each lives in their own
+    sandbox, so one visitor's fresh upload is never flagged as a copy of another's. With an
+    ``employee_id`` only that person's earlier receipts count (``DUPLICATE_SCOPE=employee``).
     """
 
-    def __init__(self, inner: DbDuplicateIndex, employee_id: str) -> None:
+    def __init__(
+        self, inner: DbDuplicateIndex, *, sandbox: str | None, employee_id: str | None = None
+    ) -> None:
         self._inner = inner
+        self._sandbox = sandbox
         self._employee_id = employee_id
+
+    def _mine(self, found: list[DuplicateMatch]) -> list[DuplicateMatch]:
+        if self._employee_id is None:
+            return found
+        return [m for m in found if m.employee_id == self._employee_id]
 
     async def add(self, record: SeenDocument) -> None:
         await self._inner.add(record)
@@ -95,10 +110,9 @@ class EmployeeScopedIndex:
         self, *, phash: str, fingerprint: str | None, max_distance: int
     ) -> list[DuplicateMatch]:
         found = await self._inner.find_similar(
-            phash=phash, fingerprint=fingerprint, max_distance=max_distance
+            phash=phash, fingerprint=fingerprint, max_distance=max_distance, sandbox=self._sandbox
         )
-        return [m for m in found if m.employee_id == self._employee_id]
+        return self._mine(found)
 
     async def find_exact(self, *, sha256: str) -> list[DuplicateMatch]:
-        found = await self._inner.find_exact(sha256=sha256)
-        return [m for m in found if m.employee_id == self._employee_id]
+        return self._mine(await self._inner.find_exact(sha256=sha256, sandbox=self._sandbox))

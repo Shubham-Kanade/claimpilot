@@ -46,7 +46,13 @@ def create_app(container: Container | None = None) -> FastAPI:
         CORSMiddleware,
         allow_origins=settings.cors_origins,
         allow_methods=["GET", "POST", "OPTIONS"],
-        allow_headers=["X-Persona", "Idempotency-Key", "Content-Type", "Last-Event-ID"],
+        allow_headers=[
+            "X-Persona",
+            "X-Sandbox",
+            "Idempotency-Key",
+            "Content-Type",
+            "Last-Event-ID",
+        ],
         expose_headers=["Content-Type"],
     )
     problem.install(app)

@@ -106,7 +106,9 @@ async def create_batch(
 
     for key, data in stored:
         await container.storage.put(key, data)
-    _, doc_ids = await container.repo.create_batch(persona.id, new_files, batch_id=batch_id)
+    _, doc_ids = await container.repo.create_batch(
+        persona.id, new_files, batch_id=batch_id, sandbox=persona.sandbox
+    )
     await container.repo.audit(
         persona.id, "batch_uploaded", "batch", batch_id, {"files": len(new_files)}
     )
@@ -122,7 +124,7 @@ async def create_batch(
 
 
 async def _visible_batch(container: ContainerDep, persona: PersonaDep, batch_id: str) -> BatchView:
-    batch = await container.repo.get_batch(batch_id)
+    batch = await container.repo.get_batch(batch_id, sandbox=persona.sandbox)
     if batch is None or not persona.can_see(batch.employee_id):
         raise problem(status.HTTP_404_NOT_FOUND, "batch_not_found", "No such batch")
     return batch

@@ -1,8 +1,9 @@
 """The public demo's "start over": delete what a visitor has uploaded so the samples can be re-run.
 
 Only available with ``DEMO_MODE=1``. An employee persona clears their own uploads and claims; the
-approver persona clears everyone's (the approvals queue is theirs to empty). Nothing here can
-spend money: LLM costs are never touched, and the endpoint does not call a model.
+approver persona clears the whole sandbox (the approvals queue is theirs to empty). Either way the
+reset reaches only the caller's own sandbox: other visitors' data is never touched. Nothing here
+can spend money: LLM costs are never touched, and the endpoint does not call a model.
 """
 
 from __future__ import annotations
@@ -31,7 +32,9 @@ class ResetResult(BaseModel):
 async def reset(container: ContainerDep, persona: PersonaDep) -> ResetResult:
     if not container.settings.demo_mode:
         raise problem(status.HTTP_404_NOT_FOUND, "demo_disabled", "Start over is for the demo only")
-    deleted = await container.repo.delete_data(None if persona.is_approver else persona.id)
+    deleted = await container.repo.delete_data(
+        None if persona.is_approver else persona.id, sandbox=persona.sandbox
+    )
     for key in deleted.storage_keys:
         await container.storage.delete(key)
     await container.repo.audit(
@@ -39,6 +42,10 @@ async def reset(container: ContainerDep, persona: PersonaDep) -> ResetResult:
         "demo_reset",
         "employee",
         persona.id,
-        {"everyone": persona.is_approver, "documents": deleted.documents, "claims": deleted.claims},
+        {
+            "whole_sandbox": persona.is_approver,
+            "documents": deleted.documents,
+            "claims": deleted.claims,
+        },
     )
     return ResetResult(batches=deleted.batches, documents=deleted.documents, claims=deleted.claims)

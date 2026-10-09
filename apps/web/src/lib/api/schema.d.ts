@@ -1195,6 +1195,8 @@ export interface operations {
             header?: {
                 /** @description Acting persona (employee id) */
                 "x-persona"?: string | null;
+                /** @description Demo sandbox id: a visitor's private copy of the demo data (demo only) */
+                "x-sandbox"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -1227,6 +1229,8 @@ export interface operations {
             header?: {
                 /** @description Acting persona (employee id) */
                 "x-persona"?: string | null;
+                /** @description Demo sandbox id: a visitor's private copy of the demo data (demo only) */
+                "x-sandbox"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -1272,6 +1276,8 @@ export interface operations {
             header?: {
                 /** @description Acting persona (employee id) */
                 "x-persona"?: string | null;
+                /** @description Demo sandbox id: a visitor's private copy of the demo data (demo only) */
+                "x-sandbox"?: string | null;
             };
             path: {
                 batch_id: string;
@@ -1316,6 +1322,8 @@ export interface operations {
                 "Last-Event-ID"?: string | null;
                 /** @description Acting persona (employee id) */
                 "x-persona"?: string | null;
+                /** @description Demo sandbox id: a visitor's private copy of the demo data (demo only) */
+                "x-sandbox"?: string | null;
             };
             path: {
                 batch_id: string;
@@ -1362,6 +1370,8 @@ export interface operations {
             header?: {
                 /** @description Acting persona (employee id) */
                 "x-persona"?: string | null;
+                /** @description Demo sandbox id: a visitor's private copy of the demo data (demo only) */
+                "x-sandbox"?: string | null;
             };
             path: {
                 batch_id: string;
@@ -1412,6 +1422,8 @@ export interface operations {
             header?: {
                 /** @description Acting persona (employee id) */
                 "x-persona"?: string | null;
+                /** @description Demo sandbox id: a visitor's private copy of the demo data (demo only) */
+                "x-sandbox"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -1444,6 +1456,8 @@ export interface operations {
             header?: {
                 /** @description Acting persona (employee id) */
                 "x-persona"?: string | null;
+                /** @description Demo sandbox id: a visitor's private copy of the demo data (demo only) */
+                "x-sandbox"?: string | null;
             };
             path: {
                 claim_id: string;
@@ -1487,6 +1501,8 @@ export interface operations {
             header?: {
                 /** @description Acting persona (employee id) */
                 "x-persona"?: string | null;
+                /** @description Demo sandbox id: a visitor's private copy of the demo data (demo only) */
+                "x-sandbox"?: string | null;
             };
             path: {
                 claim_id: string;
@@ -1552,6 +1568,8 @@ export interface operations {
             header?: {
                 /** @description Acting persona (employee id) */
                 "x-persona"?: string | null;
+                /** @description Demo sandbox id: a visitor's private copy of the demo data (demo only) */
+                "x-sandbox"?: string | null;
             };
             path: {
                 claim_id: string;
@@ -1617,6 +1635,8 @@ export interface operations {
             header?: {
                 /** @description Acting persona (employee id) */
                 "x-persona"?: string | null;
+                /** @description Demo sandbox id: a visitor's private copy of the demo data (demo only) */
+                "x-sandbox"?: string | null;
             };
             path: {
                 claim_id: string;
@@ -1660,6 +1680,8 @@ export interface operations {
             header?: {
                 /** @description Acting persona (employee id) */
                 "x-persona"?: string | null;
+                /** @description Demo sandbox id: a visitor's private copy of the demo data (demo only) */
+                "x-sandbox"?: string | null;
             };
             path: {
                 claim_id: string;
@@ -1726,6 +1748,8 @@ export interface operations {
                 "Idempotency-Key"?: string | null;
                 /** @description Acting persona (employee id) */
                 "x-persona"?: string | null;
+                /** @description Demo sandbox id: a visitor's private copy of the demo data (demo only) */
+                "x-sandbox"?: string | null;
             };
             path: {
                 claim_id: string;
@@ -1791,6 +1815,8 @@ export interface operations {
             header?: {
                 /** @description Acting persona (employee id) */
                 "x-persona"?: string | null;
+                /** @description Demo sandbox id: a visitor's private copy of the demo data (demo only) */
+                "x-sandbox"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -1832,6 +1858,8 @@ export interface operations {
             header?: {
                 /** @description Acting persona (employee id) */
                 "x-persona"?: string | null;
+                /** @description Demo sandbox id: a visitor's private copy of the demo data (demo only) */
+                "x-sandbox"?: string | null;
             };
             path: {
                 document_id: string;
@@ -1875,6 +1903,8 @@ export interface operations {
             header?: {
                 /** @description Acting persona (employee id) */
                 "x-persona"?: string | null;
+                /** @description Demo sandbox id: a visitor's private copy of the demo data (demo only) */
+                "x-sandbox"?: string | null;
             };
             path: {
                 document_id: string;
@@ -1941,6 +1971,8 @@ export interface operations {
             header?: {
                 /** @description Acting persona (employee id) */
                 "x-persona"?: string | null;
+                /** @description Demo sandbox id: a visitor's private copy of the demo data (demo only) */
+                "x-sandbox"?: string | null;
             };
             path?: never;
             cookie?: never;
@@ -2002,6 +2034,8 @@ export interface operations {
             header?: {
                 /** @description Acting persona (employee id) */
                 "x-persona"?: string | null;
+                /** @description Demo sandbox id: a visitor's private copy of the demo data (demo only) */
+                "x-sandbox"?: string | null;
             };
             path?: never;
             cookie?: never;

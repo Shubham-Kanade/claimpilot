@@ -18,7 +18,7 @@ router = APIRouter(prefix="/v1/documents", tags=["documents"])
 async def _visible_document(
     container: ContainerDep, persona: PersonaDep, document_id: str
 ) -> Document:
-    row = await container.repo.get_document(document_id)
+    row = await container.repo.get_document(document_id, sandbox=persona.sandbox)
     if row is None or not persona.can_see(row.employee_id):
         raise problem(status.HTTP_404_NOT_FOUND, "document_not_found", "No such document")
     return row

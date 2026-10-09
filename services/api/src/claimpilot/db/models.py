@@ -40,6 +40,8 @@ class LlmCall(Base):
     request_hash: Mapped[str] = mapped_column(String(64))
     batch: Mapped[bool] = mapped_column(Boolean, default=False)
     error: Mapped[str | None] = mapped_column(String(500))
+    sandbox: Mapped[str | None] = mapped_column(String(64), index=True)  # who the call was for
+    batch_id: Mapped[str | None] = mapped_column(String(36), index=True)  # (NOT the ``batch`` flag)
 
 
 class Batch(Base):
@@ -56,6 +58,7 @@ class Batch(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     error: Mapped[str | None] = mapped_column(String(500))
+    sandbox: Mapped[str | None] = mapped_column(String(64), index=True)  # a demo visitor's world
 
 
 class Document(Base):
@@ -76,6 +79,7 @@ class Document(Base):
     data: Mapped[dict[str, Any] | None] = mapped_column(JSON)  # ProcessedDocument as JSON
     trust: Mapped[dict[str, Any] | None] = mapped_column(JSON)  # {score, verdict}
     error: Mapped[str | None] = mapped_column(String(500))
+    sandbox: Mapped[str | None] = mapped_column(String(64), index=True)  # a demo visitor's world
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
 
 
@@ -92,6 +96,7 @@ class ClaimRow(Base):
     data: Mapped[dict[str, Any]] = mapped_column(JSON)
     idempotency_key: Mapped[str | None] = mapped_column(String(80), unique=True)
     submission_reference: Mapped[str | None] = mapped_column(String(40), index=True)
+    sandbox: Mapped[str | None] = mapped_column(String(64), index=True)  # a demo visitor's world
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow, onupdate=_utcnow

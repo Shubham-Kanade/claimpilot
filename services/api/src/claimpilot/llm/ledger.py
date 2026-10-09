@@ -14,6 +14,7 @@ from sqlalchemy import func, select
 
 from claimpilot.db import LlmCall, SessionFactory
 from claimpilot.llm.types import CallInfo, LLMMode
+from claimpilot.telemetry import current_ids
 
 ERROR_MAX_CHARS = 500  # matches llm_calls.error String(500)
 
@@ -48,6 +49,7 @@ class CostLedger:
         self._sessions = session_factory
 
     async def record(self, call: CallInfo) -> None:
+        ids = current_ids()  # whose call this was (the demo sandbox, the batch), if anyone's
         row = LlmCall(
             route=call.route,
             model_key=call.model_key,
@@ -64,6 +66,8 @@ class CostLedger:
             request_hash=call.request_hash,
             batch=call.batch,
             error=call.error[:ERROR_MAX_CHARS] if call.error else None,
+            sandbox=ids["sandbox"],
+            batch_id=ids["batch_id"],
         )
         async with self._sessions() as session:
             session.add(row)

@@ -10,7 +10,7 @@ import uuid
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, Final
 
 from sqlalchemy import delete, func, select, true
 
@@ -36,6 +36,32 @@ class Deleted:
     storage_keys: list[str]
 
 
+class _Unscoped:
+    """Marker for "every sandbox": only the pipeline's own lookups may ask for that."""
+
+    def __repr__(self) -> str:
+        return "UNSCOPED"
+
+
+UNSCOPED: Final = _Unscoped()
+Scope = str | None | _Unscoped
+"""Which demo sandbox a query is about. ``None`` is the shared, sandbox-less world (everything
+outside the public demo): it means ``IS NULL``, never "no filter". A visitor's rows carry their
+sandbox id and are invisible to every other scope. Leaving the argument out therefore fails
+closed (sandboxed data is not found), never open."""
+
+
+def in_sandbox(column: Any, sandbox: Scope) -> Any:
+    """The SQL condition for "this row belongs to ``sandbox``"."""
+    if isinstance(sandbox, _Unscoped):
+        return true()
+    return column.is_(None) if sandbox is None else column == sandbox
+
+
+def _same_sandbox(row_sandbox: str | None, sandbox: Scope) -> bool:
+    return isinstance(sandbox, _Unscoped) or row_sandbox == sandbox
+
+
 def new_id() -> str:
     return uuid.uuid4().hex
 
@@ -50,14 +76,25 @@ class Repository:
 
     # --- batches & documents ---------------------------------------------------------------
     async def create_batch(
-        self, employee_id: str, files: Sequence[NewFile], *, batch_id: str | None = None
+        self,
+        employee_id: str,
+        files: Sequence[NewFile],
+        *,
+        batch_id: str | None = None,
+        sandbox: str | None = None,
     ) -> tuple[str, list[str]]:
         """Insert a queued batch with its documents; returns ``(batch_id, document_ids)``."""
         batch_id = batch_id or new_id()
         doc_ids = [new_id() for _ in files]
         async with self._sessions() as session:
             session.add(
-                Batch(id=batch_id, employee_id=employee_id, status="queued", total=len(files))
+                Batch(
+                    id=batch_id,
+                    employee_id=employee_id,
+                    status="queued",
+                    total=len(files),
+                    sandbox=sandbox,
+                )
             )
             await session.flush()  # the batch row must exist before its documents (FK)
             for position, (doc_id, file) in enumerate(zip(doc_ids, files, strict=True)):
@@ -71,15 +108,16 @@ class Repository:
                         storage_key=file.storage_key,
                         position=position,
                         status="queued",
+                        sandbox=sandbox,
                     )
                 )
             await session.commit()
         return batch_id, doc_ids
 
-    async def get_batch(self, batch_id: str) -> BatchView | None:
+    async def get_batch(self, batch_id: str, *, sandbox: Scope = None) -> BatchView | None:
         async with self._sessions() as session:
             batch = await session.get(Batch, batch_id)
-            if batch is None:
+            if batch is None or not _same_sandbox(batch.sandbox, sandbox):
                 return None
             docs = (
                 await session.scalars(
@@ -106,6 +144,11 @@ class Repository:
                 documents=[document_view(d) for d in docs],
                 claims=[claim_view(c) for c in claims],
             )
+
+    async def batch_sandbox(self, batch_id: str) -> str | None:
+        """The sandbox a batch belongs to (the pipeline runs a batch inside its own world)."""
+        async with self._sessions() as session:
+            return await session.scalar(select(Batch.sandbox).where(Batch.id == batch_id))
 
     async def batch_documents(self, batch_id: str) -> list[Document]:
         async with self._sessions() as session:
@@ -164,9 +207,10 @@ class Repository:
             row.status, row.error = "failed", error[:500]
             await session.commit()
 
-    async def get_document(self, document_id: str) -> Document | None:
+    async def get_document(self, document_id: str, *, sandbox: Scope = None) -> Document | None:
         async with self._sessions() as session:
-            return await session.get(Document, document_id)
+            row = await session.get(Document, document_id)
+            return row if row is not None and _same_sandbox(row.sandbox, sandbox) else None
 
     async def processed_documents(self, ids: Sequence[str]) -> list[ProcessedDocument]:
         """The processed documents with these ids, in the order given."""
@@ -192,6 +236,8 @@ class Repository:
         employee_id: str,
         claims: Sequence[Claim],
         routes: dict[str, str],
+        *,
+        sandbox: str | None = None,
     ) -> None:
         async with self._sessions() as session:
             for claim in claims:
@@ -203,14 +249,15 @@ class Repository:
                         status=claim.status.value,
                         route=routes.get(claim.id),
                         data=claim.model_dump(mode="json"),
+                        sandbox=sandbox,
                     )
                 )
             await session.commit()
 
-    async def get_claim(self, claim_id: str) -> ClaimView | None:
+    async def get_claim(self, claim_id: str, *, sandbox: Scope = None) -> ClaimView | None:
         async with self._sessions() as session:
             row = await session.get(ClaimRow, claim_id)
-            return claim_view(row) if row else None
+            return claim_view(row) if row and _same_sandbox(row.sandbox, sandbox) else None
 
     async def list_claims(
         self,
@@ -218,8 +265,13 @@ class Repository:
         employee_id: str | None = None,
         status: str | None = None,
         route: str | None = None,
+        sandbox: Scope = None,
     ) -> list[ClaimView]:
-        query = select(ClaimRow).order_by(ClaimRow.created_at.desc(), ClaimRow.id)
+        query = (
+            select(ClaimRow)
+            .where(in_sandbox(ClaimRow.sandbox, sandbox))
+            .order_by(ClaimRow.created_at.desc(), ClaimRow.id)
+        )
         if employee_id:
             query = query.where(ClaimRow.employee_id == employee_id)
         if status:
@@ -276,8 +328,12 @@ class Repository:
             )
             await session.commit()
 
-    async def delete_data(self, employee_id: str | None = None) -> Deleted:
-        """Delete uploads, documents and claims of one employee (or of everyone): "start over".
+    async def delete_data(
+        self, employee_id: str | None = None, *, sandbox: Scope = None
+    ) -> Deleted:
+        """Delete uploads, documents and claims of one employee (or of everyone) in one sandbox.
+
+        This is "start over": a visitor's reset reaches only their own sandbox.
 
         The audit trail of what was deleted goes with it; the LLM cost ledger stays, because the
         money was spent either way.
@@ -286,7 +342,8 @@ class Repository:
         async with self._sessions() as session:
 
             def owned(table: Any) -> Any:
-                return table.employee_id == employee_id if employee_id is not None else true()
+                here = in_sandbox(table.sandbox, sandbox)
+                return here if employee_id is None else here & (table.employee_id == employee_id)
 
             keys = (
                 await session.scalars(select(Document.storage_key).where(owned(Document)))
@@ -345,39 +402,55 @@ def claim_view(row: ClaimRow) -> ClaimView:
 ASSUMED_MANUAL_MINUTES_PER_DOCUMENT = 4.0  # collect, type in, categorise and check one receipt
 
 
-async def collect_stats(sessions: SessionFactory) -> dict[str, Any]:
-    """Aggregates behind the impact meter (documents, claims, routing, LLM spend, time saved)."""
+async def collect_stats(sessions: SessionFactory, *, sandbox: Scope = None) -> dict[str, Any]:
+    """Aggregates behind the impact meter (documents, claims, routing, LLM spend, time saved).
+
+    Counted per sandbox: a demo visitor sees the numbers of their own session, not of everyone's.
+    """
     async with sessions() as session:
         docs = dict(
             (
                 await session.execute(
-                    select(Document.status, func.count()).group_by(Document.status)
+                    select(Document.status, func.count())
+                    .where(in_sandbox(Document.sandbox, sandbox))
+                    .group_by(Document.status)
                 )
             ).all()
         )
         claims = dict(
             (
                 await session.execute(
-                    select(ClaimRow.status, func.count()).group_by(ClaimRow.status)
+                    select(ClaimRow.status, func.count())
+                    .where(in_sandbox(ClaimRow.sandbox, sandbox))
+                    .group_by(ClaimRow.status)
                 )
             ).all()
         )
         auto = (
-            await session.scalar(select(func.count()).where(ClaimRow.route == "auto_approve")) or 0
+            await session.scalar(
+                select(func.count()).where(
+                    ClaimRow.route == "auto_approve", in_sandbox(ClaimRow.sandbox, sandbox)
+                )
+            )
+            or 0
         )
         finished = (
             await session.execute(
                 select(Batch.created_at, Batch.finished_at).where(
-                    Batch.status == "done", Batch.finished_at.is_not(None)
+                    Batch.status == "done",
+                    Batch.finished_at.is_not(None),
+                    in_sandbox(Batch.sandbox, sandbox),
                 )
             )
         ).all()
         # The cost of reading the receipts that are still here: calls since the oldest remaining
         # batch. (After "Start over" the documents are gone but the ledger is not, and counting its
         # old rows against the few receipts left would inflate the cost per receipt.)
-        since = await session.scalar(select(func.min(Batch.created_at)))
+        since = await session.scalar(
+            select(func.min(Batch.created_at)).where(in_sandbox(Batch.sandbox, sandbox))
+        )
         costs = select(func.count(), func.coalesce(func.sum(LlmCall.cost_usd), 0.0)).where(
-            LlmCall.error.is_(None)
+            LlmCall.error.is_(None), in_sandbox(LlmCall.sandbox, sandbox)
         )
         if since is None:
             llm_calls, llm_cost = 0, 0.0

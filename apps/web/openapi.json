@@ -1942,6 +1942,24 @@
               "description": "Acting persona (employee id)",
               "title": "X-Persona"
             }
+          },
+          {
+            "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+            "in": "header",
+            "name": "x-sandbox",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+              "title": "X-Sandbox"
+            }
           }
         ],
         "responses": {
@@ -1996,6 +2014,24 @@
               ],
               "description": "Acting persona (employee id)",
               "title": "X-Persona"
+            }
+          },
+          {
+            "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+            "in": "header",
+            "name": "x-sandbox",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+              "title": "X-Sandbox"
             }
           }
         ],
@@ -2076,6 +2112,24 @@
               ],
               "description": "Acting persona (employee id)",
               "title": "X-Persona"
+            }
+          },
+          {
+            "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+            "in": "header",
+            "name": "x-sandbox",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+              "title": "X-Sandbox"
             }
           }
         ],
@@ -2163,6 +2217,24 @@
               "description": "Acting persona (employee id)",
               "title": "X-Persona"
             }
+          },
+          {
+            "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+            "in": "header",
+            "name": "x-sandbox",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+              "title": "X-Sandbox"
+            }
           }
         ],
         "responses": {
@@ -2241,6 +2313,24 @@
               ],
               "description": "Acting persona (employee id)",
               "title": "X-Persona"
+            }
+          },
+          {
+            "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+            "in": "header",
+            "name": "x-sandbox",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+              "title": "X-Sandbox"
             }
           }
         ],
@@ -2395,6 +2485,24 @@
               "description": "Acting persona (employee id)",
               "title": "X-Persona"
             }
+          },
+          {
+            "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+            "in": "header",
+            "name": "x-sandbox",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+              "title": "X-Sandbox"
+            }
           }
         ],
         "responses": {
@@ -2458,6 +2566,24 @@
               ],
               "description": "Acting persona (employee id)",
               "title": "X-Persona"
+            }
+          },
+          {
+            "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+            "in": "header",
+            "name": "x-sandbox",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+              "title": "X-Sandbox"
             }
           }
         ],
@@ -2528,6 +2654,24 @@
               ],
               "description": "Acting persona (employee id)",
               "title": "X-Persona"
+            }
+          },
+          {
+            "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+            "in": "header",
+            "name": "x-sandbox",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+              "title": "X-Sandbox"
             }
           }
         ],
@@ -2629,6 +2773,24 @@
               "description": "Acting persona (employee id)",
               "title": "X-Persona"
             }
+          },
+          {
+            "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+            "in": "header",
+            "name": "x-sandbox",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+              "title": "X-Sandbox"
+            }
           }
         ],
         "requestBody": {
@@ -2729,6 +2891,24 @@
               "description": "Acting persona (employee id)",
               "title": "X-Persona"
             }
+          },
+          {
+            "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+            "in": "header",
+            "name": "x-sandbox",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+              "title": "X-Sandbox"
+            }
           }
         ],
         "responses": {
@@ -2798,6 +2978,24 @@
               ],
               "description": "Acting persona (employee id)",
               "title": "X-Persona"
+            }
+          },
+          {
+            "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+            "in": "header",
+            "name": "x-sandbox",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+              "title": "X-Sandbox"
             }
           }
         ],
@@ -2915,6 +3113,24 @@
               "description": "Acting persona (employee id)",
               "title": "X-Persona"
             }
+          },
+          {
+            "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+            "in": "header",
+            "name": "x-sandbox",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+              "title": "X-Sandbox"
+            }
           }
         ],
         "requestBody": {
@@ -3006,6 +3222,24 @@
               "description": "Acting persona (employee id)",
               "title": "X-Persona"
             }
+          },
+          {
+            "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+            "in": "header",
+            "name": "x-sandbox",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+              "title": "X-Sandbox"
+            }
           }
         ],
         "responses": {
@@ -3076,6 +3310,24 @@
               "description": "Acting persona (employee id)",
               "title": "X-Persona"
             }
+          },
+          {
+            "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+            "in": "header",
+            "name": "x-sandbox",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+              "title": "X-Sandbox"
+            }
           }
         ],
         "responses": {
@@ -3145,6 +3397,24 @@
               ],
               "description": "Acting persona (employee id)",
               "title": "X-Persona"
+            }
+          },
+          {
+            "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+            "in": "header",
+            "name": "x-sandbox",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+              "title": "X-Sandbox"
             }
           }
         ],
@@ -3231,6 +3501,24 @@
               "description": "Acting persona (employee id)",
               "title": "X-Persona"
             }
+          },
+          {
+            "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+            "in": "header",
+            "name": "x-sandbox",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+              "title": "X-Sandbox"
+            }
           }
         ],
         "responses": {
@@ -3312,6 +3600,24 @@
               ],
               "description": "Acting persona (employee id)",
               "title": "X-Persona"
+            }
+          },
+          {
+            "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+            "in": "header",
+            "name": "x-sandbox",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Demo sandbox id: a visitor's private copy of the demo data (demo only)",
+              "title": "X-Sandbox"
             }
           }
         ],
