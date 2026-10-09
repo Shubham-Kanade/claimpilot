@@ -35,13 +35,17 @@ const pace = Number(args.pace ?? 1);
 const channel =
   process.env.BROWSER_CHANNEL ?? (process.platform === "win32" ? "msedge" : undefined);
 
+// One fixed demo sandbox for the whole recording: the same id for the reset below and for the
+// browser (localStorage), so the video always starts from, and stays in, its own sandbox.
+const SANDBOX = "record-demo-sandbox-0000000001";
+
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms * pace));
 
 if (args.keep !== "true") {
-  // The approver's reset empties everyone's data. Outside demo mode the route does not exist: fine.
+  // The approver's reset empties this sandbox. Outside demo mode the route does not exist: fine.
   const reset = await fetch(`${api}/v1/demo/reset`, {
     method: "POST",
-    headers: { "X-Persona": "DEMO-RAVI" },
+    headers: { "X-Persona": "DEMO-RAVI", "X-Sandbox": SANDBOX },
   }).catch(() => null);
   console.log(reset ? `demo reset: HTTP ${reset.status}` : "demo reset: API not reachable");
 }
@@ -52,7 +56,10 @@ const context = await browser.newContext({
   viewport: { width: 1920, height: 1080 },
   recordVideo: { dir: outDir, size: { width: 1920, height: 1080 } },
 });
-await context.addInitScript(() => {
+await context.addInitScript((sandbox) => {
+  try {
+    localStorage.setItem("claimpilot.sandbox", sandbox);
+  } catch {}
   try {
     if (!localStorage.getItem("claimpilot.persona"))
       localStorage.setItem("claimpilot.persona", "DEMO-ASHA");
@@ -89,7 +96,7 @@ await context.addInitScript(() => {
   if (document.documentElement) mount();
   else addEventListener("DOMContentLoaded", mount);
   new MutationObserver(mount).observe(document, { childList: true });
-});
+}, SANDBOX);
 
 const page = await context.newPage();
 const caption = (text) =>

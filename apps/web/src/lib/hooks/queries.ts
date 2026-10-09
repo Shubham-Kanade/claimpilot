@@ -4,6 +4,7 @@ import { useMutation, useQueryClient, type QueryClient } from "@tanstack/react-q
 
 import { api as publicApi, createApi } from "../api/client";
 import type { ApprovalStatus, ClaimView } from "../api/types";
+import { limitsFromMeta, type UploadLimits } from "../upload/limits";
 import { usePersona } from "../persona/PersonaProvider";
 import { useApiQuery } from "./hydration";
 
@@ -22,6 +23,7 @@ export const qk = {
   approvals: (p: string, status?: ApprovalStatus) =>
     status ? (["p", p, "approvals", status] as const) : (["p", p, "approvals"] as const),
   stats: (p: string) => ["p", p, "stats"] as const,
+  ops: (p: string, hours: number, traceId: string) => ["p", p, "ops", hours, traceId] as const,
 };
 
 /** Engines and models in use (GET /v1/meta). Public: needs no persona. */
@@ -31,6 +33,11 @@ export function useMeta() {
     queryFn: ({ signal }) => publicApi.meta(signal),
     staleTime: 5 * 60_000,
   });
+}
+
+/** The upload limits the API states (GET /v1/meta), or its defaults while that is loading. */
+export function useUploadLimits(): UploadLimits {
+  return limitsFromMeta(useMeta().data);
 }
 
 /** All claims the acting persona may see, newest first. Filtering happens in the UI. */
@@ -102,6 +109,20 @@ export function useStats() {
   });
 }
 
+/** The AI-calls report (GET /v1/ops/llm) for a window, and the calls of one trace if given. */
+export function useLlmOps(hours: number, traceId: string | null) {
+  const { api, personaId } = usePersona();
+  const trace = traceId?.trim() ?? "";
+  return useApiQuery({
+    queryKey: qk.ops(personaId ?? "", hours, trace),
+    queryFn: ({ signal }) => api.llmOps({ hours, traceId: trace || null }, signal),
+    enabled: personaId !== null,
+    // the numbers move while people use the demo: refresh now and then, keep the old ones on screen
+    refetchInterval: 30_000,
+    placeholderData: (previous) => previous,
+  });
+}
+
 function refreshAfterClaimChange(queryClient: QueryClient, personaId: string, claim: ClaimView) {
   queryClient.setQueryData(qk.claim(personaId, claim.id), claim);
   void queryClient.invalidateQueries({ queryKey: qk.claims(personaId) });
@@ -152,7 +173,7 @@ export function useDecision() {
 }
 
 /**
- * POST /v1/demo/reset ("Start over", public demo only). An approver clears everyone's data, so
+ * POST /v1/demo/reset ("Start over", public demo only). An approver clears the whole demo session, so
  * every persona-scoped cache entry is dropped or refreshed, not just the acting persona's.
  * `persona` resets as someone else: used right after the app switched to the sample owner,
  * before React has re-rendered with the new acting persona.

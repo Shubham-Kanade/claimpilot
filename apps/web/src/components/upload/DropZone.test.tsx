@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import { DropZone } from "./DropZone";
+import { DropZone, SAMPLES_ONLY_NOTE } from "./DropZone";
 
 const png = (name = "receipt.png") => new File(["x"], name, { type: "image/png" });
 
@@ -27,6 +27,25 @@ describe("DropZone", () => {
     expect(accept).toContain("image/jpeg");
     expect(accept).toContain("application/pdf");
     expect(screen.getByText(/up to 30 files · 15 MB each/)).toBeInTheDocument();
+  });
+
+  it("shows the limits it is given (the hosted demo: 20 files, 6 MB)", () => {
+    render(<DropZone onFiles={vi.fn()} limits={{ maxFiles: 20, maxFileMb: 6 }} />);
+    expect(screen.getByText(/up to 20 files · 6 MB each/)).toBeInTheDocument();
+  });
+
+  it("says the demo only reads the samples, and stays usable", () => {
+    const { rerender } = render(<DropZone onFiles={vi.fn()} />);
+    expect(screen.queryByText(SAMPLES_ONLY_NOTE)).not.toBeInTheDocument();
+    rerender(<DropZone onFiles={vi.fn()} samplesOnly />);
+    expect(
+      screen.getByText(
+        "In this demo only the sample receipts can be read: use Try with sample receipts.",
+      ),
+    ).toBeInTheDocument();
+    const input = screen.getByLabelText("Choose receipts to upload");
+    expect(input).toBeEnabled();
+    expect(input.getAttribute("aria-describedby")).toContain(" ");
   });
 
   it("passes picked files to the parent and lets the same file be picked again", async () => {

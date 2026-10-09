@@ -4,6 +4,7 @@ import { Info, X } from "lucide-react";
 import { useSyncExternalStore } from "react";
 
 import { useMeta } from "@/lib/hooks/queries";
+import { formatUSD } from "@/lib/format";
 import { README_URL } from "@/lib/config";
 import {
   dismissBanner,
@@ -26,6 +27,10 @@ export function DemoBanner() {
   );
 
   if (!meta.data?.demo || dismissed) return null;
+  // llm_mode "replay": recorded profile. "live": the model is really called, for the samples too
+  // (fully live) or only for receipts that are not samples (hybrid: llm_record).
+  const live = meta.data.llm_mode === "live";
+  const budget = formatUSD(meta.data.daily_llm_budget_usd);
 
   return (
     // A labelled region: page content must sit inside a landmark (axe "region" rule).
@@ -37,9 +42,19 @@ export function DemoBanner() {
       <div className="mx-auto flex max-w-6xl items-start gap-2.5 px-4 py-2 text-xs leading-relaxed sm:items-center sm:px-6 sm:text-sm lg:px-8">
         <Info className="mt-0.5 size-4 shrink-0 text-sky-300 sm:mt-0" aria-hidden="true" />
         <p className="flex-1">
-          <strong className="font-semibold text-white">Demo:</strong> the sample receipts are
-          replayed from recordings, nothing here is real data. To read your own receipts run
-          ClaimPilot locally with your own API key.{" "}
+          <strong className="font-semibold text-white">Demo:</strong>{" "}
+          {live ? (
+            <>
+              {meta.data.llm_record
+                ? "the sample receipts come from recordings. "
+                : "nothing here is real data. "}
+              Receipts you upload yourself are read by Anthropic&apos;s Claude API, with a shared
+              daily budget of {budget} for everyone. Upload only synthetic or non-personal receipts,
+              no real company data.
+            </>
+          ) : (
+            "the sample receipts are replayed from recordings, nothing here is real data. To read your own receipts run ClaimPilot locally with your own API key."
+          )}{" "}
           <a
             href={README_URL}
             target="_blank"

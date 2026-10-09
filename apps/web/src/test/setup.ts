@@ -5,6 +5,7 @@ import { createElement } from "react";
 import { afterAll, afterEach, beforeAll, vi } from "vitest";
 
 import { setStartedOverNotice } from "@/lib/demo/notice";
+import { resetSandboxFallback } from "@/lib/sandbox/store";
 import { clearToasts } from "@/lib/toast";
 
 import { navigationMock, navigationState, router } from "./navigation";
@@ -34,6 +35,7 @@ afterEach(() => {
   window.sessionStorage.clear();
   setStartedOverNotice(null);
   clearToasts();
+  resetSandboxFallback();
   vi.restoreAllMocks();
 });
 

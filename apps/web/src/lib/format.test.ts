@@ -164,3 +164,16 @@ describe("humanize and pluralize", () => {
     expect(pluralize(2, "flag", "flags!")).toBe("2 flags!");
   });
 });
+
+describe("operations formatters", () => {
+  it("formats latency, rates and times for people", async () => {
+    const { formatDateTime, formatLatency, formatRate } = await import("./format");
+    expect(formatLatency(850)).toBe("850 ms");
+    expect(formatLatency(2400)).toBe("2.4 s");
+    expect(formatRate(0.0123)).toBe("1.2%");
+    expect(formatRate(0)).toBe("0.0%");
+    expect(formatDateTime("2026-10-09T09:15:00")).toMatch(/^\d{1,2} Oct, \d{2}:\d{2}$/);
+    expect(formatDateTime(null)).toBe("—");
+    expect(formatDateTime("nonsense")).toBe("—");
+  });
+});

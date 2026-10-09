@@ -101,6 +101,28 @@ export function parseApiTimestamp(value: string | null | undefined): number {
   return Date.parse(needsZone ? `${trimmed}Z` : trimmed);
 }
 
+/** Milliseconds -> "850 ms" / "2.4 s". */
+export function formatLatency(ms: number): string {
+  return ms < 1000 ? `${Math.round(ms)} ms` : `${(ms / 1000).toFixed(1)} s`;
+}
+
+/** A fraction with one decimal, so a small error rate is not rounded away: 0.0123 -> "1.2%". */
+export function formatRate(fraction: number): string {
+  return `${(fraction * 100).toFixed(1)}%`;
+}
+
+/** An API date-time as "9 Oct, 14:05" in the viewer's time zone ("—" when unknown). */
+export function formatDateTime(value: string | null | undefined): string {
+  const ms = parseApiTimestamp(value);
+  if (Number.isNaN(ms)) return "—";
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(ms));
+}
+
 /** Seconds -> "0:07" / "1:05" (a running clock). */
 export function formatClock(totalSeconds: number): string {
   const s = Math.max(0, Math.floor(totalSeconds));

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { answerClaim, findClaim, seedPile, submitClaim } from "./pile";
+import { answerClaim, callApi, findClaim, seedPile, submitClaim } from "./pile";
 import {
   actAs,
   CLAIM,
@@ -81,7 +81,11 @@ test("the camera button appears on phones only; the drop zone works at any size"
   if (isMobile) await expect(camera).toBeVisible();
   else await expect(camera).toBeHidden();
   await expect(page.getByLabel("Choose receipts to upload")).toBeAttached();
-  await expect(page.getByText(/up to 30 files · 15 MB each/)).toBeVisible();
+  // the hint states the limits the API reports (the hosted demo: 20 files, 6 MB)
+  const meta = await callApi<{ max_batch_files: number; max_upload_mb: number }>("GET", "/v1/meta");
+  await expect(
+    page.getByText(`up to ${meta.max_batch_files} files · ${meta.max_upload_mb} MB each`),
+  ).toBeVisible();
 });
 
 /**

@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { findClaim, SAMPLES_DIR, seedPile, submitClaim } from "./pile";
+import { callApi, findClaim, SAMPLES_DIR, seedPile, submitClaim } from "./pile";
 import {
   actAs,
   CLAIM,
@@ -50,9 +50,18 @@ test("a slim demo notice explains the recordings and can be dismissed for the se
   await page.goto("/");
   const banner = page.getByTestId("demo-banner");
   await expect(banner).toBeVisible();
-  await expect(banner).toContainText(
-    "Demo: the sample receipts are replayed from recordings, nothing here is real data. To read your own receipts run ClaimPilot locally with your own API key.",
-  );
+  // the wording follows the LLM profile: recorded (this suite's stack) or hybrid/live
+  const meta = await callApi<{ llm_mode: string }>("GET", "/v1/meta");
+  if (meta.llm_mode === "replay") {
+    await expect(banner).toContainText(
+      "Demo: the sample receipts are replayed from recordings, nothing here is real data. To read your own receipts run ClaimPilot locally with your own API key.",
+    );
+  } else {
+    await expect(banner).toContainText(
+      "Receipts you upload yourself are read by Anthropic's Claude API",
+    );
+    await expect(banner).toContainText("Upload only synthetic or non-personal receipts");
+  }
   await expect(banner.getByRole("link", { name: "See the README" })).toHaveAttribute(
     "href",
     /github\.com/,
@@ -127,7 +136,9 @@ test("Start over empties the list, after asking first", async ({ page }) => {
   await page.getByRole("button", { name: "Start over" }).click();
   const dialog = page.getByRole("dialog", { name: "Start over?" });
   await expect(dialog).toBeVisible();
-  await expect(dialog).toContainText("deletes your uploaded receipts and claims");
+  await expect(dialog).toContainText(
+    "deletes the receipts and claims you uploaded in this demo session",
+  );
   await expect(dialog.getByRole("button", { name: "Cancel" })).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
@@ -156,7 +167,7 @@ test("the approver's Start over empties the whole queue, after a warning", async
 
   await page.getByRole("button", { name: "Start over" }).click();
   const dialog = page.getByRole("dialog", { name: "Start over?" });
-  await expect(dialog).toContainText("clears everyone's uploaded receipts and claims");
+  await expect(dialog).toContainText("clears everything in this demo session");
   await dialog.getByRole("button", { name: "Delete and start over" }).click();
   await expect(page).toHaveURL(/\/$/);
 

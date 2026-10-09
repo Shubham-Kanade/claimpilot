@@ -7,6 +7,17 @@ const err = (status: number, type: string, title = "title", detail?: Record<stri
   new ApiError(status, { type, title, status, ...(detail ? { detail } : {}) });
 
 describe("friendlyError", () => {
+  it("names the server's own file-count limit", () => {
+    const friendly = friendlyError(
+      new ApiError(413, {
+        type: "too_many_files",
+        title: "At most 20 files per upload",
+        status: 413,
+      }),
+    );
+    expect(friendly.message).toBe("At most 20 files per upload. Split the pile into two uploads.");
+  });
+
   it("maps every documented problem type to friendly copy", () => {
     const types = [
       "network_error",

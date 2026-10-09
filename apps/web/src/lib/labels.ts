@@ -191,3 +191,18 @@ export function categoryLabel(category: string): string {
 export function docTypeLabel(docType: string): string {
   return DOC_TYPE_LABELS[docType as DocType] ?? humanize(docType);
 }
+
+/**
+ * Where the LLM costs shown come from, by GET /v1/meta: `recorded` (llm_mode replay: the cost
+ * recorded with the replayed answers, nothing is spent now), `recorded-and-live` (the hybrid
+ * profile: live + llm_record, samples replay and other receipts are read live) or `live`.
+ */
+export type CostProfile = "recorded" | "recorded-and-live" | "live";
+
+export function costProfile(
+  meta: { llm_mode?: string; llm_record?: boolean } | null | undefined,
+): CostProfile {
+  if (meta?.llm_mode === "replay") return "recorded";
+  if (meta?.llm_mode === "live" && meta.llm_record) return "recorded-and-live";
+  return "live";
+}

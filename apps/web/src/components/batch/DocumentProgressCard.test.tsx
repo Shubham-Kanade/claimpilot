@@ -35,11 +35,15 @@ function card(): HTMLElement {
   return document.querySelector<HTMLElement>("li[data-phase]")!;
 }
 
-function renderCard(doc: Partial<DocProgress>, started = true, replay = false) {
+function renderCard(
+  doc: Partial<DocProgress>,
+  started = true,
+  profile: "recorded" | "recorded-and-live" | "live" = "live",
+) {
   const { state, doc: full } = stateWith(doc, started);
   return render(
     <ul>
-      <DocumentProgressCard state={state} doc={full} replay={replay} />
+      <DocumentProgressCard state={state} doc={full} profile={profile} />
     </ul>,
   );
 }
@@ -84,10 +88,15 @@ describe("DocumentProgressCard", () => {
   });
 
   it("calls the cost recorded when the answers are replayed (it is not spent now)", () => {
-    const { unmount } = renderCard(READ, true, true);
+    const { unmount } = renderCard(READ, true, "recorded");
     expect(within(card()).getByText("Cab receipt · $0.0005 (recorded)")).toBeInTheDocument();
     unmount();
-    renderCard(READ, true, false);
+    const hybrid = renderCard(READ, true, "recorded-and-live");
+    expect(
+      within(card()).getByText("Cab receipt · $0.0005 (recorded or live)"),
+    ).toBeInTheDocument();
+    hybrid.unmount();
+    renderCard(READ, true, "live");
     expect(within(card()).getByText("Cab receipt · $0.0005")).toBeInTheDocument();
   });
 

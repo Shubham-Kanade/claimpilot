@@ -5,8 +5,8 @@ import {
   detectType,
   fileKey,
   isImageFile,
-  MAX_FILE_BYTES,
-  MAX_FILES,
+  DEFAULT_LIMITS,
+  limitsFromMeta,
   summarizeRejections,
   totalBytes,
   validateFiles,
@@ -19,9 +19,42 @@ function file(name: string, size = 1000, type = "", lastModified = 1) {
 }
 
 describe("upload limits mirror the API", () => {
-  it("allows 30 files of up to 15 MB", () => {
-    expect(MAX_FILES).toBe(30);
-    expect(MAX_FILE_BYTES).toBe(15 * 1024 * 1024);
+  it("defaults to the API's 30 files of up to 15 MB until /v1/meta says otherwise", () => {
+    expect(DEFAULT_LIMITS).toEqual({ maxFiles: 30, maxFileMb: 15 });
+    expect(limitsFromMeta(undefined)).toEqual(DEFAULT_LIMITS);
+    expect(limitsFromMeta(null)).toEqual(DEFAULT_LIMITS);
+  });
+
+  it("takes the limits the API states (the hosted demo: 20 files, 6 MB)", () => {
+    expect(limitsFromMeta({ max_batch_files: 20, max_upload_mb: 6 })).toEqual({
+      maxFiles: 20,
+      maxFileMb: 6,
+    });
+  });
+
+  it("ignores nonsense and keeps the default for it", () => {
+    expect(limitsFromMeta({ max_batch_files: 0, max_upload_mb: -3 })).toEqual(DEFAULT_LIMITS);
+    expect(limitsFromMeta({ max_batch_files: Number.NaN })).toEqual(DEFAULT_LIMITS);
+    expect(limitsFromMeta({ max_batch_files: 12.7, max_upload_mb: 2.5 })).toEqual({
+      maxFiles: 12,
+      maxFileMb: 2.5,
+    });
+  });
+
+  it("validates against the limits it is given, and says which ones", () => {
+    const limits = { maxFiles: 2, maxFileMb: 6 };
+    const files = [
+      file("a.png", 10, "image/png", 1),
+      file("b.png", 10, "image/png", 2),
+      file("c.png", 10, "image/png", 3),
+      file("huge.png", 7 * 1024 * 1024, "image/png", 4),
+    ];
+    const { accepted, rejected } = validateFiles([], files, limits);
+    expect(accepted.map((f) => f.name)).toEqual(["a.png", "b.png"]);
+    expect(rejected.map((r) => r.message)).toEqual([
+      "c.png: not added, 2 receipts is the most per upload.",
+      "huge.png: 7.0 MB is over the 6 MB limit per file.",
+    ]);
   });
 
   it("offers only the accepted types to the file picker", () => {
@@ -92,8 +125,8 @@ describe("validateFiles", () => {
     const { accepted, rejected } = validateFiles(
       [],
       [
-        file("big.png", MAX_FILE_BYTES + 1, "image/png"),
-        file("edge.png", MAX_FILE_BYTES, "image/png", 2),
+        file("big.png", DEFAULT_LIMITS.maxFileMb * 1024 * 1024 + 1, "image/png"),
+        file("edge.png", DEFAULT_LIMITS.maxFileMb * 1024 * 1024, "image/png", 2),
       ],
     );
     expect(accepted.map((f) => f.name)).toEqual(["edge.png"]);

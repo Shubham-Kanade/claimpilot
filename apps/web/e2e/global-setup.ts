@@ -1,4 +1,4 @@
-import { API, BASE_URL, resetEverything } from "./env";
+import { API, BASE_URL, E2E_SANDBOX, resetEverything } from "./env";
 
 interface Meta {
   demo?: boolean;
@@ -23,7 +23,10 @@ export default async function globalSetup(): Promise<() => Promise<void>> {
 
   let meta: Meta;
   try {
-    const response = await fetch(`${API}/v1/meta`, { signal: AbortSignal.timeout(20_000) });
+    const response = await fetch(`${API}/v1/meta`, {
+      headers: { "X-Sandbox": E2E_SANDBOX },
+      signal: AbortSignal.timeout(20_000),
+    });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     meta = (await response.json()) as Meta;
   } catch (error) {

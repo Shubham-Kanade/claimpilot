@@ -1,13 +1,29 @@
 import { formatBytes, pluralize } from "../format";
 
 /**
- * Client-side upload limits. They mirror the API (services/api config: MAX_UPLOAD_MB=15,
- * max_batch_files=30) so people get instant, friendly feedback instead of a failed upload; the
- * server stays the source of truth and its 413/422 problems are mapped in api/problems.ts.
+ * Client-side upload limits. They mirror the API so people get instant, friendly feedback instead
+ * of a failed upload; the server stays the source of truth and its 413/422 problems are mapped in
+ * api/problems.ts. The real limits come from GET /v1/meta (`max_batch_files`, `max_upload_mb`: the
+ * hosted demo says 20 files / 6 MB); until that has answered, the API's defaults apply.
  */
-export const MAX_FILES = 30;
-export const MAX_FILE_BYTES = 15 * 1024 * 1024;
-export const MAX_FILE_MB = MAX_FILE_BYTES / (1024 * 1024);
+export interface UploadLimits {
+  maxFiles: number;
+  maxFileMb: number;
+}
+
+export const DEFAULT_LIMITS: UploadLimits = { maxFiles: 30, maxFileMb: 15 };
+
+/** The limits a /v1/meta answer states, falling back to the defaults for anything missing. */
+export function limitsFromMeta(
+  meta: { max_batch_files?: number | null; max_upload_mb?: number | null } | null | undefined,
+): UploadLimits {
+  const positive = (value: number | null | undefined, fallback: number) =>
+    typeof value === "number" && Number.isFinite(value) && value > 0 ? value : fallback;
+  return {
+    maxFiles: Math.floor(positive(meta?.max_batch_files, DEFAULT_LIMITS.maxFiles)),
+    maxFileMb: positive(meta?.max_upload_mb, DEFAULT_LIMITS.maxFileMb),
+  };
+}
 
 const EXTENSION_TYPES: Record<string, string> = {
   jpg: "image/jpeg",
@@ -63,7 +79,9 @@ export interface ValidationResult {
 export function validateFiles(
   current: readonly File[],
   incoming: readonly File[],
+  limits: UploadLimits = DEFAULT_LIMITS,
 ): ValidationResult {
+  const maxBytes = limits.maxFileMb * 1024 * 1024;
   const accepted: File[] = [];
   const rejected: Rejection[] = [];
   const seen = new Set(current.map(fileKey));
@@ -81,11 +99,11 @@ export function validateFiles(
       });
       continue;
     }
-    if (file.size > MAX_FILE_BYTES) {
+    if (file.size > maxBytes) {
       rejected.push({
         name: file.name,
         reason: "size",
-        message: `${file.name}: ${formatBytes(file.size)} is over the ${MAX_FILE_MB} MB limit per file.`,
+        message: `${file.name}: ${formatBytes(file.size)} is over the ${limits.maxFileMb} MB limit per file.`,
       });
       continue;
     }
@@ -97,11 +115,11 @@ export function validateFiles(
       });
       continue;
     }
-    if (current.length + accepted.length >= MAX_FILES) {
+    if (current.length + accepted.length >= limits.maxFiles) {
       rejected.push({
         name: file.name,
         reason: "limit",
-        message: `${file.name}: not added, ${MAX_FILES} receipts is the most per upload.`,
+        message: `${file.name}: not added, ${limits.maxFiles} receipts is the most per upload.`,
       });
       continue;
     }

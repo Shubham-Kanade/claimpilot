@@ -2,7 +2,7 @@ import { expect } from "@playwright/test";
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
-import { API, PERSONA } from "./env";
+import { API, E2E_SANDBOX, PERSONA } from "./env";
 
 /**
  * The demo pile, driven through the API (not the UI). Most specs only need Asha's seven claims to
@@ -42,9 +42,18 @@ export interface ApiClaim {
 export async function callApi<T = unknown>(
   method: "GET" | "POST",
   route: string,
-  options: { persona?: string; body?: unknown; idempotencyKey?: string; ok?: number } = {},
+  options: {
+    persona?: string;
+    sandbox?: string;
+    body?: unknown;
+    idempotencyKey?: string;
+    ok?: number;
+  } = {},
 ): Promise<T> {
-  const headers: Record<string, string> = { "X-Persona": options.persona ?? PERSONA.asha };
+  const headers: Record<string, string> = {
+    "X-Persona": options.persona ?? PERSONA.asha,
+    "X-Sandbox": options.sandbox ?? E2E_SANDBOX,
+  };
   if (options.body !== undefined) headers["Content-Type"] = "application/json";
   if (options.idempotencyKey) headers["Idempotency-Key"] = options.idempotencyKey;
   const response = await fetch(`${API}${route}`, {
@@ -67,7 +76,7 @@ export async function seedPile(persona: string = PERSONA.asha): Promise<ApiClaim
   }
   const upload = await fetch(`${API}/v1/batches`, {
     method: "POST",
-    headers: { "X-Persona": persona },
+    headers: { "X-Persona": persona, "X-Sandbox": E2E_SANDBOX },
     body: form,
     signal: AbortSignal.timeout(60_000),
   });
@@ -128,4 +137,28 @@ export function submitClaim(claim: ApiClaim, persona: string = PERSONA.asha) {
     body: { confirmed: true },
     idempotencyKey: `e2e-${claim.id}`,
   });
+}
+
+/** Upload one file that is not a sample (the recorded profile cannot read it) and wait for the batch. */
+export async function uploadUnknownFile(persona: string = PERSONA.asha): Promise<string> {
+  const png = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+    "base64",
+  );
+  const form = new FormData();
+  form.append("files", new Blob([png], { type: "image/png" }), "my-own-lunch.png");
+  const upload = await fetch(`${API}/v1/batches`, {
+    method: "POST",
+    headers: { "X-Persona": persona, "X-Sandbox": E2E_SANDBOX },
+    body: form,
+    signal: AbortSignal.timeout(60_000),
+  });
+  expect(upload.status, await upload.clone().text()).toBe(202);
+  const { batch_id: batchId } = (await upload.json()) as { batch_id: string };
+  for (let i = 0; i < 120; i += 1) {
+    const batch = await callApi<{ status: string }>("GET", `/v1/batches/${batchId}`, { persona });
+    if (batch.status === "done" || batch.status === "failed") return batchId;
+    await new Promise((resolve) => setTimeout(resolve, 400));
+  }
+  throw new Error("the batch did not finish");
 }

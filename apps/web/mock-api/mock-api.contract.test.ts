@@ -486,6 +486,13 @@ describe("health, meta and personas", () => {
     expect(meta.body.llm_mode).toBe("replay");
     expect(meta.body.decision_engine).toBe("jev");
     expect(meta.body).toMatchObject({ demo: true, runtime: "embedded" });
+    // the upload limits and the LLM profile (recorded by default), as the real API reports them
+    expect(meta.body).toMatchObject({
+      llm_record: false,
+      daily_llm_budget_usd: 1,
+      max_batch_files: 30,
+      max_upload_mb: 15,
+    });
     expect(meta.body.routes.map((r) => r.route)).toEqual([
       "extraction",
       "extraction_retry",
@@ -2303,6 +2310,88 @@ describe("replying to several open questions at once", () => {
 });
 
 // =====================================================================================================
+describe("GET /v1/ops/llm (AI operations)", () => {
+  type Ops = {
+    hours: number;
+    sampled: boolean;
+    totals: { calls: number; live_calls: number; recorded_calls: number; errors: number };
+    routes: { route: string; calls: number }[];
+    failures: { kind: string; trace_id: string | null; message: string }[];
+    trace_calls: { route: string; error: string | null }[];
+  };
+
+  it("answers with a 24 hour window by default and system-wide history", async () => {
+    api.reset();
+    const res = await as(ASHA).get<Ops>("/v1/ops/llm");
+    expect(res.status).toBe(200);
+    expect(res.body.hours).toBe(24);
+    expect(res.body.sampled).toBe(false);
+    expect(res.body.totals.calls).toBeGreaterThan(0);
+    expect(res.body.totals.recorded_calls + res.body.totals.live_calls).toBe(res.body.totals.calls);
+    expect(res.body.routes.map((r) => r.route)).toContain("extraction");
+    expect(res.body.failures).toEqual([]);
+    expect(res.body.trace_calls).toEqual([]);
+  });
+
+  it("rejects a window outside 1..168 hours with a 422", async () => {
+    for (const hours of ["0", "169", "x", "1.5"]) {
+      const res = await as(ASHA).get(`/v1/ops/llm?hours=${hours}`);
+      expect(res.status, hours).toBe(422);
+    }
+    expect((await as(ASHA).get("/v1/ops/llm?hours=168")).status).toBe(200);
+    expect((await as(ASHA).get("/v1/ops/llm?hours=1")).status).toBe(200);
+  });
+
+  it("needs a persona", async () => {
+    expect((await as(null).get("/v1/ops/llm")).status).toBe(401);
+  });
+
+  it("lists the caller's own failures and the calls of a trace (the batch id)", async () => {
+    api.reset();
+    const run = await runBatch(ASHA, [
+      { name: "good-receipt.png", data: pngVariant(10) },
+      { name: "blurry.png", data: pngVariant(11) },
+    ]);
+    const mine = await as(ASHA).get<Ops>(`/v1/ops/llm?hours=168&trace_id=${run.created.batch_id}`);
+    expect(mine.body.failures).toHaveLength(1);
+    expect(mine.body.failures[0].trace_id).toBe(run.created.batch_id);
+    expect(mine.body.trace_calls.length).toBeGreaterThanOrEqual(2);
+    expect(mine.body.trace_calls.some((c) => c.error)).toBe(true);
+    // another persona sees the same totals, but none of Asha's failures or trace calls
+    const other = await as(RAVI).get<Ops>(`/v1/ops/llm?hours=168&trace_id=${run.created.batch_id}`);
+    expect(other.body.totals.calls).toBe(mine.body.totals.calls);
+    expect(other.body.failures).toEqual([]);
+    expect(other.body.trace_calls).toEqual([]);
+  });
+});
+
+// =====================================================================================================
+describe("meta: limits and LLM profile", () => {
+  it("reports configured limits and the hybrid profile", async () => {
+    const custom = await createMockApi({
+      port: 0,
+      maxFiles: 20,
+      maxFileBytes: 6 * 1024 * 1024,
+      llmMode: "live",
+      llmRecord: true,
+      dailyLlmBudgetUsd: 2.5,
+    });
+    try {
+      const res = await fetch(`${custom.url}/v1/meta`);
+      expect(await res.json()).toMatchObject({
+        llm_mode: "live",
+        llm_record: true,
+        daily_llm_budget_usd: 2.5,
+        max_batch_files: 20,
+        max_upload_mb: 6,
+      });
+    } finally {
+      await custom.close();
+    }
+  });
+});
+
+// =====================================================================================================
 describe("the live stream", () => {
   it("flushes the headers before the first event", async () => {
     const slow = await createMockApi({ port: 0, speed: 0.05 }); // first event after five seconds
@@ -2536,7 +2625,7 @@ describe("reset and CORS", () => {
       expect(res.headers["access-control-allow-origin"]).toBe(origin);
       expect(res.headers["access-control-allow-methods"]).toBe("GET, POST, OPTIONS");
       expect(res.headers["access-control-allow-headers"]).toBe(
-        "X-Persona, Idempotency-Key, Content-Type, Last-Event-ID",
+        "X-Persona, X-Sandbox, Idempotency-Key, Content-Type, Last-Event-ID",
       );
       expect(res.headers.vary).toContain("Origin");
     }

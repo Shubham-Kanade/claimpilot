@@ -27,6 +27,7 @@ import {
   sendJson,
 } from "./http.mjs";
 import { startOver } from "./demo.mjs";
+import { collectLlmOps } from "./ops.mjs";
 import { createBatch } from "./pipeline.mjs";
 import { routeFor } from "./policy.mjs";
 import { followUpMessage, interpretReply } from "./reply.mjs";
@@ -204,7 +205,11 @@ export const ROUTES = [
     handler: ({ ctx, res }) => {
       /** @type {Schemas["MetaInfo"]} */
       const body = {
-        llm_mode: META.llm_mode,
+        llm_mode: ctx.config.llmMode,
+        llm_record: ctx.config.llmRecord,
+        daily_llm_budget_usd: ctx.config.dailyLlmBudgetUsd,
+        max_batch_files: ctx.config.maxFiles,
+        max_upload_mb: ctx.config.maxFileBytes / (1024 * 1024),
         decision_engine: META.decision_engine,
         demo: ctx.config.demo,
         runtime: META.runtime,
@@ -238,6 +243,33 @@ export const ROUTES = [
     pattern: /^\/v1\/stats$/,
     persona: true,
     handler: ({ res, ctx }) => sendJson(res, 200, collectStats(ctx.state)),
+  },
+
+  // --- AI operations ---
+  {
+    method: "GET",
+    pattern: /^\/v1\/ops\/llm$/,
+    persona: true,
+    handler: ({ ctx, res, url, persona }) => {
+      const raw = url.searchParams.get("hours");
+      const hours = raw === null ? 24 : Number(raw);
+      if (!Number.isInteger(hours) || hours < 1 || hours > 168) {
+        throw new ValidationFailure([
+          {
+            type: hours > 168 ? "less_than_equal" : "greater_than_equal",
+            loc: ["query", "hours"],
+            msg: "Input should be between 1 and 168",
+            input: raw,
+          },
+        ]);
+      }
+      const trace = url.searchParams.get("trace_id");
+      sendJson(
+        res,
+        200,
+        collectLlmOps(ctx, persona.employee.id, hours, trace ? trace.slice(0, 64) : null),
+      );
+    },
   },
 
   // --- batches ---

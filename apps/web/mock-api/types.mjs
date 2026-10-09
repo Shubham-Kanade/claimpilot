@@ -153,7 +153,7 @@
  * @property {number} speed  Divides every simulated delay.
  * @property {AbortController} abort  Aborted on reset and close: stops every running simulation.
  * @property {() => Date} now
- * @property {{ maxFileBytes: number; maxFiles: number; categoryQuestions: boolean; demo: boolean; demoStrict: boolean }} config
+ * @property {{ maxFileBytes: number; maxFiles: number; categoryQuestions: boolean; demo: boolean; demoStrict: boolean; llmMode: string; llmRecord: boolean; dailyLlmBudgetUsd: number }} config
  * @property {Set<() => void>} streams  Open event streams; each callback ends one.
  */
 

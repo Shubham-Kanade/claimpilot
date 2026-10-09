@@ -24,7 +24,7 @@ const approvals = http.get(url("/v1/approvals"), ({ request }) => {
 });
 
 describe("ApprovalsScreen: Start over (public demo)", () => {
-  it("lets the approver clear everyone's demo data, after a warning, then returns to the upload screen", async () => {
+  it("lets the approver clear the whole demo session, after a warning, then returns to the upload screen", async () => {
     const user = userEvent.setup();
     let resets = 0;
     renderApp(<ApprovalsScreen />, {
@@ -41,7 +41,7 @@ describe("ApprovalsScreen: Start over (public demo)", () => {
     await user.click(await screen.findByRole("button", { name: "Start over" }));
     const dialog = await screen.findByRole("dialog", { name: "Start over?" });
     await waitFor(() =>
-      expect(dialog).toHaveAccessibleDescription(/clears everyone's uploaded receipts/),
+      expect(dialog).toHaveAccessibleDescription(/clears everything in this demo session/),
     );
     expect(resets).toBe(0); // asking first
     await user.click(within(dialog).getByRole("button", { name: "Delete and start over" }));

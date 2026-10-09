@@ -1,9 +1,9 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Locator, type Page } from "@playwright/test";
 
-import { API, BASE_URL, PERSONA, resetEverything } from "./env";
+import { API, BASE_URL, E2E_SANDBOX, PERSONA, resetEverything } from "./env";
 
-export { API, BASE_URL, PERSONA };
+export { API, BASE_URL, E2E_SANDBOX, PERSONA };
 
 /**
  * The claims the demo pile turns into (data/synth/demo/README.md, "What should happen"):
@@ -30,12 +30,17 @@ export async function resetDemo(): Promise<void> {
 
 /** Act as a persona from the first page load (the app saves the choice in localStorage). */
 export async function actAs(page: Page, personaId: string): Promise<void> {
-  await page.addInitScript((id) => {
-    // Only the very first load: a persona picked later in the test must survive reloads.
-    if (!window.localStorage.getItem("claimpilot.persona")) {
-      window.localStorage.setItem("claimpilot.persona", id);
-    }
-  }, personaId);
+  await page.addInitScript(
+    ([id, sandbox]) => {
+      // Every visitor has a sandbox: the suite's own, so API seeding and the browser agree.
+      window.localStorage.setItem("claimpilot.sandbox", sandbox);
+      // Only the very first load: a persona picked later in the test must survive reloads.
+      if (!window.localStorage.getItem("claimpilot.persona")) {
+        window.localStorage.setItem("claimpilot.persona", id);
+      }
+    },
+    [personaId, E2E_SANDBOX] as const,
+  );
 }
 
 /** Wait until the app knows who is acting (the header's persona picker is filled in). */

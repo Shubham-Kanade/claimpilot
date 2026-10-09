@@ -148,7 +148,8 @@ export function preflightHeaders(req) {
   if (typeof origin !== "string" || !ALLOWED_ORIGIN.test(origin)) return {};
   return {
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "X-Persona, Idempotency-Key, Content-Type, Last-Event-ID",
+    "Access-Control-Allow-Headers":
+      "X-Persona, X-Sandbox, Idempotency-Key, Content-Type, Last-Event-ID",
     "Access-Control-Max-Age": "600",
   };
 }

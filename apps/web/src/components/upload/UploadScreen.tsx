@@ -17,7 +17,7 @@ import {
   subscribeNotice,
 } from "@/lib/demo/notice";
 import { formatBytes, pluralize } from "@/lib/format";
-import { useCreateBatch, useDemoReset, useMeta } from "@/lib/hooks/queries";
+import { useCreateBatch, useDemoReset, useMeta, useUploadLimits } from "@/lib/hooks/queries";
 import { usePersona } from "@/lib/persona/PersonaProvider";
 import { summarizeRejections, totalBytes, validateFiles } from "@/lib/upload/limits";
 import { showToast } from "@/lib/toast";
@@ -45,7 +45,11 @@ export function UploadScreen() {
   } = usePersona();
   const createBatch = useCreateBatch();
   const reset = useDemoReset();
-  const demo = useMeta().data?.demo ?? false;
+  const meta = useMeta().data;
+  const demo = meta?.demo ?? false;
+  const limits = useUploadLimits();
+  // The recorded profile can only read the 15 samples: say so next to the drop zone.
+  const samplesOnly = demo && meta?.llm_mode === "replay";
   const startedOver = useSyncExternalStore(subscribeNotice, getStartedOverNotice, getServerNotice);
   const [files, setFiles] = useState<File[]>([]);
   const [notice, setNotice] = useState("");
@@ -57,12 +61,12 @@ export function UploadScreen() {
   // The public demo replays recordings that include Asha Menon's calendar, so the sample pile only
   // replays for her: the button switches to her first. Every trial then starts clean (her earlier
   // uploads are cleared). Without her in the directory the pile is uploaded as the acting persona,
-  // and an approver's reset (it would empty EVERYONE's queue) is never done silently.
+  // and an approver's reset (it would empty the whole session's queue) is never done silently.
   const sampleOwner = demo ? employees.find((e) => e.id === SAMPLE_PERSONA_ID) : undefined;
   const clearsFirst = demo && (sampleOwner !== undefined || !isApprover);
 
   function addFiles(incoming: File[]) {
-    const { accepted, rejected } = validateFiles(files, incoming);
+    const { accepted, rejected } = validateFiles(files, incoming, limits);
     setFiles((current) => [...current, ...accepted]);
     setNotice(summarizeRejections(rejected));
     createBatch.reset();
@@ -185,7 +189,12 @@ export function UploadScreen() {
         <h2 id="upload-heading" className="sr-only">
           Upload your own receipts
         </h2>
-        <DropZone onFiles={addFiles} disabled={busy || !ready} />
+        <DropZone
+          onFiles={addFiles}
+          disabled={busy || !ready}
+          limits={limits}
+          samplesOnly={samplesOnly}
+        />
 
         <p role="status" aria-live="polite" className="min-h-0 text-sm text-amber-900">
           {notice}

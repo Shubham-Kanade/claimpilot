@@ -12,7 +12,7 @@ import {
 } from "@/lib/batch/batchReducer";
 import { cn } from "@/lib/cn";
 import { formatINR, formatUSD } from "@/lib/format";
-import { categoryLabel, docTypeLabel } from "@/lib/labels";
+import { categoryLabel, docTypeLabel, type CostProfile } from "@/lib/labels";
 
 const STEPS: readonly { phase: Exclude<DocPhase, "failed">; label: string }[] = [
   { phase: "waiting", label: "Waiting" },
@@ -118,14 +118,14 @@ export function DocumentProgressCard({
   state,
   doc,
   demo = false,
-  replay = false,
+  profile = "live",
 }: {
   state: BatchState;
   doc: DocProgress;
   /** The public demo only reads its recorded samples, so "retake the photo" would mislead. */
   demo?: boolean;
-  /** The answers are replayed from recordings: a cost shown is the recorded one, not spent now. */
-  replay?: boolean;
+  /** Where a cost shown comes from: recorded with a replayed answer, or spent live (or both). */
+  profile?: CostProfile;
 }) {
   const phase = phaseOf(state, doc);
   const Icon = isPdf(doc.filename) ? FileText : FileImage;
@@ -179,7 +179,7 @@ export function DocumentProgressCard({
               {doc.docType ? docTypeLabel(doc.docType) : "Document"}
               {doc.cached ? " · cached (no LLM cost)" : null}
               {doc.costUsd !== null && !doc.cached
-                ? ` · ${formatUSD(doc.costUsd)}${replay ? " (recorded)" : ""}`
+                ? ` · ${formatUSD(doc.costUsd)}${profile === "recorded" ? " (recorded)" : profile === "recorded-and-live" ? " (recorded or live)" : ""}`
                 : null}
             </p>
             <div className="flex flex-wrap items-center gap-1.5">

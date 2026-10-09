@@ -6,6 +6,7 @@ import type {
   ClaimView,
   DocumentView,
   Employee,
+  LlmOps,
   Me,
   MetaInfo,
   PipelineEvent,
@@ -14,6 +15,8 @@ import type {
   ResetResult,
   Stats,
 } from "./types";
+
+import { getSandboxId } from "../sandbox/store";
 
 export type { MetaInfo, RouteInfo } from "./types";
 
@@ -142,6 +145,7 @@ export function createApi(options: ApiOptions = {}) {
       }
     }
     const headers: Record<string, string> = { Accept: opts.accept ?? "application/json" };
+    headers["X-Sandbox"] = getSandboxId(); // this visitor's demo sandbox (ignored outside demo mode)
     if (persona) headers["X-Persona"] = persona;
     if (opts.json !== undefined) headers["Content-Type"] = "application/json";
     Object.assign(headers, opts.headers);
@@ -189,6 +193,12 @@ export function createApi(options: ApiOptions = {}) {
     // --- persona ------------------------------------------------------------------------
     me: (signal?: AbortSignal) => json<Me>("/v1/me", { signal }),
     stats: (signal?: AbortSignal) => json<Stats>("/v1/stats", { signal }),
+    /**
+     * How the AI calls are going: totals and routes are system-wide, failures and the calls of
+     * `traceId` are the caller's own sandbox. `hours` is 1..168.
+     */
+    llmOps: (opts: { hours?: number; traceId?: string | null } = {}, signal?: AbortSignal) =>
+      json<LlmOps>("/v1/ops/llm", { query: { hours: opts.hours, trace_id: opts.traceId }, signal }),
 
     // --- batches -------------------------------------------------------------------------
     createBatch(files: readonly File[], signal?: AbortSignal) {

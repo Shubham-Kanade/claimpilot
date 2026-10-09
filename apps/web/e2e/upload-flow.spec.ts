@@ -43,6 +43,13 @@ test("the sample pile: live progress for 15 receipts, then 7 claims ready to rev
   await waitForPersona(page);
   await expect(page.getByRole("heading", { level: 1 })).toContainText("From a pile of receipts");
 
+  // the recorded profile can only read the samples: the drop zone says so
+  await expect(
+    page.getByText(
+      "In this demo only the sample receipts can be read: use Try with sample receipts.",
+    ),
+  ).toBeVisible();
+
   // what the pile is, in words (it is fine to say what it contains)
   await expect(
     page.getByText(

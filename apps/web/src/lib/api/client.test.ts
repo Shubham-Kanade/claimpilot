@@ -338,3 +338,103 @@ describe("demo reset", () => {
     });
   });
 });
+
+describe("X-Sandbox (one demo sandbox per visitor)", () => {
+  const FORMAT = /^[A-Za-z0-9_-]{16,64}$/;
+
+  /** Records the X-Sandbox / X-Persona headers of every request the handlers below see. */
+  function record() {
+    const seen: { path: string; sandbox: string | null; persona: string | null }[] = [];
+    const note = (request: Request) => {
+      seen.push({
+        path: new URL(request.url).pathname,
+        sandbox: request.headers.get("X-Sandbox"),
+        persona: request.headers.get("X-Persona"),
+      });
+    };
+    server.use(
+      http.get(url("/v1/meta"), ({ request }) => (note(request), HttpResponse.json(META))),
+      http.get(url("/v1/claims"), ({ request }) => (note(request), HttpResponse.json([]))),
+      http.post(url("/v1/demo/reset"), ({ request }) => {
+        note(request);
+        return HttpResponse.json({ batches: 0, documents: 0, claims: 0 });
+      }),
+      http.post(url("/v1/batches"), ({ request }) => {
+        note(request);
+        return HttpResponse.json(
+          { batch_id: "b", status: "queued", documents: [], events_url: "/e" },
+          { status: 202 },
+        );
+      }),
+      http.get(url("/v1/batches/b/events"), ({ request }) => {
+        note(request);
+        return new HttpResponse(streamOf(), { headers: { "Content-Type": "text/event-stream" } });
+      }),
+      http.get(url("/v1/documents/d/file"), ({ request }) => {
+        note(request);
+        return new HttpResponse(new Uint8Array([1]), { headers: { "Content-Type": "image/png" } });
+      }),
+    );
+    return seen;
+  }
+
+  it("is sent on JSON, upload, SSE, blob and reset requests, and on the persona-less client", async () => {
+    const seen = record();
+    const asha = createApi({ persona: "DEMO-ASHA" });
+    await asha.listClaims();
+    await asha.createBatch([new File(["x"], "a.png", { type: "image/png" })]);
+    await asha.batchEvents("b");
+    await asha.documentFile("d");
+    await asha.demoReset();
+    await api.meta();
+    expect(seen.map((s) => s.path)).toEqual([
+      "/v1/claims",
+      "/v1/batches",
+      "/v1/batches/b/events",
+      "/v1/documents/d/file",
+      "/v1/demo/reset",
+      "/v1/meta",
+    ]);
+    for (const s of seen) expect(s.sandbox, s.path).toMatch(FORMAT);
+    // one visitor, one sandbox: the same id on every request
+    expect(new Set(seen.map((s) => s.sandbox)).size).toBe(1);
+  });
+
+  it("is also sent by per-persona clients made on the fly (the persona override paths)", async () => {
+    const seen = record();
+    await createApi({ persona: "DEMO-ASHA" }).demoReset();
+    await createApi({ persona: "DEMO-RAVI" }).listClaims();
+    expect(seen.map((s) => s.persona)).toEqual(["DEMO-ASHA", "DEMO-RAVI"]);
+    expect(seen[0].sandbox).toBe(seen[1].sandbox);
+    expect(seen[0].sandbox).toMatch(FORMAT);
+  });
+
+  it("uses the id saved in localStorage, and keeps it across calls", async () => {
+    window.localStorage.setItem("claimpilot.sandbox", "e2e-sandbox-00000000000001");
+    const seen = record();
+    const client = createApi({ persona: "DEMO-ASHA" });
+    await client.listClaims();
+    await client.listClaims();
+    expect(seen.map((s) => s.sandbox)).toEqual([
+      "e2e-sandbox-00000000000001",
+      "e2e-sandbox-00000000000001",
+    ]);
+  });
+});
+
+describe("llmOps", () => {
+  it("asks for the window and the trace, and leaves out what is not set", async () => {
+    const asked: string[] = [];
+    server.use(
+      http.get(url("/v1/ops/llm"), ({ request }) => {
+        asked.push(new URL(request.url).search);
+        return HttpResponse.json({ hours: 24 });
+      }),
+    );
+    const client = createApi({ persona: "DEMO-ASHA" });
+    await client.llmOps();
+    await client.llmOps({ hours: 168, traceId: "abc" });
+    await client.llmOps({ hours: 1, traceId: null });
+    expect(asked).toEqual(["", "?hours=168&trace_id=abc", "?hours=1"]);
+  });
+});

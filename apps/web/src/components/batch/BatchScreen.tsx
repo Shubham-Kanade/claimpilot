@@ -12,6 +12,7 @@ import { ErrorState, PageSkeleton, Skeleton } from "@/components/ui/feedback";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { batchProgress, type BatchState } from "@/lib/batch/batchReducer";
 import { useBatchStream, useNow } from "@/lib/batch/useBatchStream";
+import { costProfile } from "@/lib/labels";
 import { formatClock, formatUSD, parseApiTimestamp, pluralize } from "@/lib/format";
 import { qk, useMeta } from "@/lib/hooks/queries";
 import { usePersona } from "@/lib/persona/PersonaProvider";
@@ -70,7 +71,7 @@ function BatchLive({ batchId, autoOpenSeconds }: { batchId: string; autoOpenSeco
   const meta = useMeta().data;
   const demo = meta?.demo ?? false;
   // Replayed answers carry the cost they had when they were recorded: it is not spent now.
-  const replay = meta?.llm_mode === "replay";
+  const profile = costProfile(meta);
   const running = state.phase !== "done" && state.phase !== "failed" && connection !== "error";
   const now = useNow(running);
   const progress = batchProgress(state);
@@ -161,7 +162,13 @@ function BatchLive({ batchId, autoOpenSeconds }: { batchId: string; autoOpenSeco
           </div>
           <div className="flex items-center gap-2">
             <Coins className="size-4 text-slate-500" aria-hidden="true" />
-            <dt className="text-slate-600">{replay ? "LLM cost (recorded)" : "LLM cost so far"}</dt>
+            <dt className="text-slate-600">
+              {profile === "recorded"
+                ? "LLM cost (recorded)"
+                : profile === "recorded-and-live"
+                  ? "LLM cost (recorded and live)"
+                  : "LLM cost so far"}
+            </dt>
             <dd className="font-semibold text-slate-900 tabular-nums">
               {formatUSD(state.costUsd)}
             </dd>
@@ -226,7 +233,7 @@ function BatchLive({ batchId, autoOpenSeconds }: { batchId: string; autoOpenSeco
               state={state}
               doc={state.docs[id]}
               demo={demo}
-              replay={replay}
+              profile={profile}
             />
           ))}
         </ul>

@@ -5,7 +5,11 @@ import { useId, useRef, useState, type ChangeEvent, type DragEvent } from "react
 
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
-import { ACCEPT_ATTRIBUTE, MAX_FILE_MB, MAX_FILES } from "@/lib/upload/limits";
+import { ACCEPT_ATTRIBUTE, DEFAULT_LIMITS, type UploadLimits } from "@/lib/upload/limits";
+
+/** Shown where the server can only read the recorded sample receipts (the recorded profile). */
+export const SAMPLES_ONLY_NOTE =
+  "In this demo only the sample receipts can be read: use Try with sample receipts.";
 
 /**
  * The big drop target. Works with drag and drop, a click, and the keyboard (the hidden input is
@@ -15,11 +19,18 @@ import { ACCEPT_ATTRIBUTE, MAX_FILE_MB, MAX_FILES } from "@/lib/upload/limits";
 export function DropZone({
   onFiles,
   disabled = false,
+  limits = DEFAULT_LIMITS,
+  samplesOnly = false,
 }: {
   /** Called with every file the user picked or dropped (validation happens in the parent). */
   onFiles: (files: File[]) => void;
   disabled?: boolean;
+  /** What the API accepts (GET /v1/meta); its defaults until that is known. */
+  limits?: UploadLimits;
+  /** The demo can only read its recorded samples: say so (the zone stays usable). */
+  samplesOnly?: boolean;
 }) {
+  const noteId = useId();
   const inputId = useId();
   const hintId = useId();
   const cameraRef = useRef<HTMLInputElement>(null);
@@ -81,7 +92,7 @@ export function DropZone({
         disabled={disabled}
         onChange={handleChange}
         aria-label="Choose receipts to upload"
-        aria-describedby={hintId}
+        aria-describedby={samplesOnly ? `${hintId} ${noteId}` : hintId}
         className="sr-only"
       />
       <label htmlFor={inputId} className="flex cursor-pointer flex-col items-center gap-3">
@@ -125,8 +136,13 @@ export function DropZone({
       </div>
 
       <p id={hintId} className="mt-4 text-xs text-slate-600">
-        JPEG, PNG, WebP or PDF · up to {MAX_FILES} files · {MAX_FILE_MB} MB each
+        JPEG, PNG, WebP or PDF · up to {limits.maxFiles} files · {limits.maxFileMb} MB each
       </p>
+      {samplesOnly ? (
+        <p id={noteId} className="mt-2 text-xs font-medium text-slate-700">
+          {SAMPLES_ONLY_NOTE}
+        </p>
+      ) : null}
     </div>
   );
 }

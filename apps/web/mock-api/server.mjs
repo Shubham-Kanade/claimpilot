@@ -116,7 +116,7 @@ import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { LIMITS } from "./data.mjs";
+import { LIMITS, META } from "./data.mjs";
 import { handle } from "./routes.mjs";
 import { loadSamples } from "./samples.mjs";
 import { createState } from "./state.mjs";
@@ -143,6 +143,10 @@ import { createState } from "./state.mjs";
  *   was for (default true).
  * @property {boolean} [demo]  Demo mode (default true): /v1/meta says `demo: true` and
  *   POST /v1/demo/reset ("start over") works; when false it answers 404 `demo_disabled`.
+ * @property {string} [llmMode]  `llm_mode` in /v1/meta (default "replay"; env MOCK_LLM_MODE).
+ * @property {boolean} [llmRecord]  `llm_record` in /v1/meta: with llmMode "live" it is the hybrid
+ *   profile (samples replay, other receipts are read live; env MOCK_LLM_RECORD=1).
+ * @property {number} [dailyLlmBudgetUsd]  `daily_llm_budget_usd` in /v1/meta (default 1; env MOCK_DAILY_BUDGET).
  * @property {boolean} [demoStrict]  Like the hosted demo, read ONLY the recorded sample receipts:
  *   any other file fails with `document_failed` (default false: other files get generated receipts).
  * @property {boolean} [log]  Print one line per request (METHOD path status time).
@@ -179,6 +183,9 @@ export async function createMockApi(options = {}) {
       categoryQuestions: options.categoryQuestions ?? true,
       demo: options.demo ?? true,
       demoStrict: options.demoStrict ?? false,
+      llmMode: options.llmMode ?? META.llm_mode,
+      llmRecord: options.llmRecord ?? false,
+      dailyLlmBudgetUsd: options.dailyLlmBudgetUsd ?? 1,
     },
     streams: new Set(),
   };
@@ -269,6 +276,10 @@ async function main() {
     categoryQuestions: process.env.MOCK_CATEGORY_QUESTIONS !== "0",
     demo: process.env.MOCK_DEMO !== "0",
     demoStrict: process.env.MOCK_DEMO_STRICT === "1",
+    llmMode: process.env.MOCK_LLM_MODE || undefined,
+    llmRecord: process.env.MOCK_LLM_RECORD === "1",
+    dailyLlmBudgetUsd: numberFrom(process.env.MOCK_DAILY_BUDGET, 1),
+    maxFiles: numberFrom(process.env.MOCK_MAX_FILES, LIMITS.maxBatchFiles),
     log: process.env.MOCK_LOG === "1",
   });
   console.log(`ClaimPilot mock API listening on ${api.url}`);

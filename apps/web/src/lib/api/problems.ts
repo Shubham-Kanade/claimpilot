@@ -95,11 +95,12 @@ const BY_TYPE: Record<string, Copy | CopyFactory> = {
     title: "Nothing to process",
     message: "Add at least one receipt (photo, PDF or screenshot) and try again.",
   },
-  too_many_files: {
+  // the server names its own limit ("At most 20 files per upload"): the hosted demo's differs
+  too_many_files: (error) => ({
     kind: "input",
     title: "Too many files",
-    message: "You can upload up to 30 receipts at a time. Split the pile into two uploads.",
-  },
+    message: `${error.title || "That is more receipts than one upload takes"}. Split the pile into two uploads.`,
+  }),
   file_too_large: (error) => ({
     kind: "input",
     title: "A file is too large",

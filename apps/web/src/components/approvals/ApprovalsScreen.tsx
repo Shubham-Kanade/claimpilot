@@ -103,7 +103,7 @@ export function ApprovalsScreen() {
             why.
           </p>
         </div>
-        {/* Public demo only. An approver's reset empties everyone's data, and says so first. */}
+        {/* Public demo only. An approver's reset empties the whole demo session (not other visitors'), and says so first. */}
         <StartOver />
       </div>
 

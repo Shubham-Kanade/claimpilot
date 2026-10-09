@@ -22,6 +22,7 @@ const NAV: readonly NavItem[] = [
   { href: "/claims", label: "My claims", match: ["/claims"] },
   { href: "/approvals", label: "Approvals", match: ["/approvals"], approverOnly: true },
   { href: "/impact", label: "Impact", match: ["/impact"] },
+  { href: "/operations", label: "AI ops", match: ["/operations"] },
 ];
 
 function isCurrent(item: NavItem, pathname: string): boolean {

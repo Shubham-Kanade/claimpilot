@@ -44,7 +44,7 @@ describe("StatsPanel", () => {
   });
 
   it("says the cost is the RECORDED one when the answers are replayed, not money spent now", () => {
-    render(<StatsPanel stats={makeStats()} variant="compact" replay />);
+    render(<StatsPanel stats={makeStats()} variant="compact" profile="recorded" />);
     expect(screen.getByText("LLM cost per receipt (as recorded)")).toBeInTheDocument();
     expect(
       screen.getByText(
@@ -111,7 +111,23 @@ describe("StatsWidget", () => {
   });
 });
 
-describe("StatsWidget and replay mode", () => {
+describe("StatsWidget and the LLM profile", () => {
+  it("says recorded AND live in the hybrid profile", async () => {
+    renderApp(<StatsWidget />, {
+      handlers: [
+        http.get(url("/v1/meta"), () =>
+          HttpResponse.json({ ...META, llm_mode: "live", llm_record: true }),
+        ),
+      ],
+    });
+    expect(
+      await screen.findByText("LLM cost per receipt (as recorded or live)"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/partly recorded with the replayed sample answers, partly spent live/),
+    ).toBeInTheDocument();
+  });
+
   it("labels the costs as recorded once the API says the answers are replayed", async () => {
     renderApp(<StatsWidget />); // the default test API runs in replay mode
     expect(await screen.findByText("LLM cost per receipt (as recorded)")).toBeInTheDocument();
@@ -145,6 +161,22 @@ describe("ImpactScreen", () => {
         /the answers are replayed from recordings, so these are the costs recorded with them, not money spent now/,
       ),
     ).toBeInTheDocument();
+  });
+
+  it("explains recorded and live costs in the hybrid profile", async () => {
+    renderApp(<ImpactScreen />, {
+      handlers: [
+        http.get(url("/v1/meta"), () =>
+          HttpResponse.json({ ...META, llm_mode: "live", llm_record: true }),
+        ),
+      ],
+    });
+    expect(
+      await screen.findByText(
+        /receipts you upload yourself are read live and cost real money, within a shared daily budget/,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/not money spent now/)).not.toBeInTheDocument();
   });
 
   it("does not say that when the model is really called", async () => {

@@ -10,6 +10,7 @@ import type {
   Employee,
   ExtractedReceipt,
   Finding,
+  LlmOps,
   MetaInfo,
   OpenQuestion,
   ProcessedDocument,
@@ -195,6 +196,10 @@ export function makeBatchView(overrides: Partial<BatchView> = {}): BatchView {
 
 export const META: MetaInfo = {
   llm_mode: "replay",
+  llm_record: false,
+  daily_llm_budget_usd: 1,
+  max_batch_files: 30,
+  max_upload_mb: 15,
   decision_engine: "jev",
   demo: false,
   runtime: "distributed",
@@ -225,6 +230,56 @@ export const META: MetaInfo = {
 
 /** The hosted public demo: replayed recordings, "Start over" available. */
 export const META_DEMO: MetaInfo = { ...META, demo: true, runtime: "embedded" };
+
+export function makeOps(overrides: Partial<LlmOps> = {}): LlmOps {
+  return {
+    hours: 24,
+    since: "2026-10-08T12:00:00",
+    sampled: false,
+    totals: {
+      calls: 200,
+      live_calls: 50,
+      recorded_calls: 150,
+      errors: 3,
+      not_recorded: 2,
+      budget_refusals: 1,
+      error_rate: 0.015,
+      live_cost_usd: 0.1234,
+      recorded_cost_usd: 0.5678,
+      input_tokens: 360000,
+      output_tokens: 48000,
+      cache_read_tokens: 151200,
+      cache_read_share: 0.42,
+    },
+    routes: [
+      {
+        route: "extraction",
+        model_key: "haiku",
+        calls: 120,
+        live_calls: 30,
+        errors: 2,
+        p50_ms: 2400,
+        p95_ms: 5200,
+        live_cost_usd: 0.09,
+        recorded_cost_usd: 0.4,
+      },
+      {
+        route: "agent_chat",
+        model_key: "sonnet",
+        calls: 80,
+        live_calls: 20,
+        errors: 0,
+        p50_ms: 850,
+        p95_ms: 1700,
+        live_cost_usd: 0.0334,
+        recorded_cost_usd: 0.1678,
+      },
+    ],
+    failures: [],
+    trace_calls: [],
+    ...overrides,
+  };
+}
 
 export function makeStats(overrides: Partial<Stats> = {}): Stats {
   return {

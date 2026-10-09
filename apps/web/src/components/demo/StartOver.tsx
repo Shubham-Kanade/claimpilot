@@ -20,7 +20,8 @@ export function describeReset(result: ResetResult): string {
 
 /**
  * "Start over" for the public demo (GET /v1/meta says `demo`): deletes the acting persona's
- * uploads and claims (an approver clears everyone's) so the sample receipts can be run again.
+ * uploads and claims IN THIS VISITOR'S DEMO SESSION (an approver clears the whole session, never
+ * another visitor's sandbox) so the sample receipts can be run again.
  * Destructive, so it always asks first; afterwards every cached query is refreshed and you land
  * on the upload screen with a confirmation. Renders nothing outside demo mode.
  */
@@ -81,8 +82,8 @@ export function StartOver({
         title="Start over?"
         description={
           isApprover
-            ? "As an approver this clears everyone's uploaded receipts and claims, including the approvals queue."
-            : "This deletes your uploaded receipts and claims so you can run the samples again."
+            ? "As an approver this clears everything in this demo session, including the approvals queue. Nobody else's data is affected."
+            : "This deletes the receipts and claims you uploaded in this demo session so you can run the samples again. Nobody else's data is affected."
         }
         dismissible={!reset.isPending}
         initialFocusRef={cancelRef}

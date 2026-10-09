@@ -9,6 +9,7 @@ import { StatusChip } from "@/components/ui/badges";
 import type { ClaimStatus, Stats } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 import { useMeta, useStats } from "@/lib/hooks/queries";
+import { costProfile, type CostProfile } from "@/lib/labels";
 import { formatMinutes, formatSeconds, formatUSD, pluralize } from "@/lib/format";
 
 const STATUS_ORDER: readonly ClaimStatus[] = [
@@ -19,6 +20,13 @@ const STATUS_ORDER: readonly ClaimStatus[] = [
   "approved",
   "rejected",
 ];
+
+const COST_NOTES: Record<CostProfile, string> = {
+  recorded: ", as recorded with the replayed answers. Nothing is spent when you try the demo.",
+  "recorded-and-live":
+    ", partly recorded with the replayed sample answers, partly spent live on receipts you uploaded.",
+  live: ".",
+};
 
 /** Share of claims that are low risk (one click for the approver), as a whole percentage. */
 export function autoApproveShare(stats: Pick<Stats, "claims" | "auto_approvable_claims">): number {
@@ -58,12 +66,12 @@ function Tile({
 export function StatsPanel({
   stats,
   variant,
-  replay = false,
+  profile = "live",
 }: {
   stats: Stats;
   variant: "compact" | "full";
-  /** The model answers are replayed from recordings: costs are the recorded ones, not spent now. */
-  replay?: boolean;
+  /** Where the costs come from (GET /v1/meta): recorded with replayed answers, live, or both. */
+  profile?: CostProfile;
 }) {
   const share = autoApproveShare(stats);
   const compact = variant === "compact";
@@ -95,13 +103,19 @@ export function StatsPanel({
         />
         <Tile
           icon={<Coins />}
-          label={replay ? "LLM cost per receipt (as recorded)" : "LLM cost per receipt"}
+          label={
+            profile === "recorded"
+              ? "LLM cost per receipt (as recorded)"
+              : profile === "recorded-and-live"
+                ? "LLM cost per receipt (as recorded or live)"
+                : "LLM cost per receipt"
+          }
           value={
             stats.llm_cost_per_document_usd === null
               ? "—"
               : formatUSD(stats.llm_cost_per_document_usd)
           }
-          note={`${formatUSD(stats.llm_cost_usd)} in total over ${pluralize(stats.llm_calls, "LLM call")}${replay ? ", as recorded with the replayed answers. Nothing is spent when you try the demo." : "."}`}
+          note={`${formatUSD(stats.llm_cost_usd)} in total over ${pluralize(stats.llm_calls, "LLM call")}${COST_NOTES[profile]}`}
         />
         <Tile
           icon={<Zap />}
@@ -141,7 +155,7 @@ export function StatsPanel({
 /** Impact meter, connected to GET /v1/stats. */
 export function StatsWidget({ variant = "compact" }: { variant?: "compact" | "full" }) {
   const query = useStats();
-  const replay = useMeta().data?.llm_mode === "replay";
+  const profile = costProfile(useMeta().data);
 
   if (query.isPending) {
     return (
@@ -163,7 +177,7 @@ export function StatsWidget({ variant = "compact" }: { variant?: "compact" | "fu
   }
   return (
     <Card>
-      <StatsPanel stats={query.data} variant={variant} replay={replay} />
+      <StatsPanel stats={query.data} variant={variant} profile={profile} />
     </Card>
   );
 }

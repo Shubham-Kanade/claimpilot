@@ -226,6 +226,52 @@ describe("UploadScreen", () => {
   });
 });
 
+describe("UploadScreen: limits and the samples-only note", () => {
+  it("uses the API's limits for the hint and for what it skips (the hosted demo: 20 files, 6 MB)", async () => {
+    const user = userEvent.setup({ applyAccept: false });
+    renderApp(<UploadScreen />, {
+      handlers: [
+        http.get(url("/v1/meta"), () =>
+          HttpResponse.json({ ...META_DEMO, max_batch_files: 20, max_upload_mb: 6 }),
+        ),
+      ],
+    });
+    expect(await screen.findByText(/up to 20 files · 6 MB each/)).toBeInTheDocument();
+    await user.upload(await ready(), [png("ok.png"), png("big.png", 7 * 1024 * 1024)]);
+    const status = screen
+      .getAllByRole("status")
+      .find((el) => /Skipped 1 file/.test(el.textContent ?? ""));
+    expect(status).toHaveTextContent("big.png: 7.0 MB is over the 6 MB limit per file.");
+  });
+
+  it("says the demo only reads the samples in the recorded profile, and not in a live one", async () => {
+    const { unmount } = renderApp(<UploadScreen />, {
+      handlers: [http.get(url("/v1/meta"), () => HttpResponse.json(META_DEMO))],
+    });
+    expect(
+      await screen.findByText(
+        "In this demo only the sample receipts can be read: use Try with sample receipts.",
+      ),
+    ).toBeInTheDocument();
+    unmount();
+    renderApp(<UploadScreen />, {
+      handlers: [
+        http.get(url("/v1/meta"), () =>
+          HttpResponse.json({ ...META_DEMO, llm_mode: "live", llm_record: true }),
+        ),
+      ],
+    });
+    await screen.findByText(/up to 30 files/);
+    expect(screen.queryByText(/only the sample receipts can be read/)).not.toBeInTheDocument();
+  });
+
+  it("does not say it outside the demo", async () => {
+    renderApp(<UploadScreen />); // META: not a demo
+    await screen.findByText(/up to 30 files/);
+    expect(screen.queryByText(/only the sample receipts can be read/)).not.toBeInTheDocument();
+  });
+});
+
 describe("UploadScreen in the public demo", () => {
   const demoMeta = () => http.get(url("/v1/meta"), () => HttpResponse.json(META_DEMO));
 
@@ -303,7 +349,7 @@ describe("UploadScreen in the public demo", () => {
     await clickSamples(user);
     await waitFor(() => expect(router.push).toHaveBeenCalledWith("/batches/bat-000003"));
     expect(getStoredPersona()).toBe(ASHA.id);
-    expect(order.actors.reset).toBe(ASHA.id); // never Ravi's: an approver's reset empties everyone's
+    expect(order.actors.reset).toBe(ASHA.id); // never Ravi's: an approver's reset empties the whole session
     expect(order.actors.upload).toBe(ASHA.id);
     expect(getToasts()).toHaveLength(1);
   });
@@ -319,7 +365,7 @@ describe("UploadScreen in the public demo", () => {
     expect(screen.queryByRole("button", { name: "Start over" })).not.toBeInTheDocument();
   });
 
-  it("never wipes everyone's data silently for an approver when Asha is not in the directory", async () => {
+  it("never wipes the whole session silently for an approver when Asha is not in the directory", async () => {
     const user = userEvent.setup();
     const order = recordCalls();
     renderApp(<UploadScreen />, {

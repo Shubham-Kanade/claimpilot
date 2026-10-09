@@ -36,7 +36,7 @@ describe("StartOver", () => {
     await user.click(await screen.findByRole("button", { name: "Start over" }));
     const dialog = screen.getByRole("dialog", { name: "Start over?" });
     expect(dialog).toHaveAccessibleDescription(
-      "This deletes your uploaded receipts and claims so you can run the samples again.",
+      "This deletes the receipts and claims you uploaded in this demo session so you can run the samples again. Nobody else's data is affected.",
     );
     expect(within(dialog).getByRole("button", { name: "Cancel" })).toHaveFocus();
     await user.click(within(dialog).getByRole("button", { name: "Cancel" }));
@@ -73,13 +73,13 @@ describe("StartOver", () => {
     expect(router.push).not.toHaveBeenCalled();
   });
 
-  it("warns an approver that it clears everyone's data, including the approvals queue", async () => {
+  it("tells an approver it clears the whole demo session, including the approvals queue, and nobody else's data", async () => {
     const user = userEvent.setup();
     renderApp(<StartOver />, { persona: RAVI.id, handlers: [demo(), reset()] });
     await user.click(await screen.findByRole("button", { name: "Start over" }));
     await waitFor(() =>
       expect(screen.getByRole("dialog")).toHaveAccessibleDescription(
-        "As an approver this clears everyone's uploaded receipts and claims, including the approvals queue.",
+        "As an approver this clears everything in this demo session, including the approvals queue. Nobody else's data is affected.",
       ),
     );
   });

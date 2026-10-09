@@ -1,7 +1,7 @@
 import { expect, test, type Browser, type Page, type TestInfo } from "@playwright/test";
 
 import { answerClaim, findClaim, seedPile, submitClaim } from "./pile";
-import { CLAIM, PERSONA, resetDemo, waitForPersona } from "./support";
+import { CLAIM, E2E_SANDBOX, PERSONA, resetDemo, waitForPersona } from "./support";
 
 /**
  * The browser console must stay clean. In particular React's "Minified React error #418"
@@ -57,6 +57,9 @@ async function freshContext(browser: Browser, info: TestInfo, saved?: { persona:
     timezoneId,
     reducedMotion: "reduce",
   });
+  await context.addInitScript((sandbox) => {
+    window.localStorage.setItem("claimpilot.sandbox", sandbox);
+  }, E2E_SANDBOX);
   if (saved) {
     await context.addInitScript((id) => {
       window.localStorage.setItem("claimpilot.persona", id);
