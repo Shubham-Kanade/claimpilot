@@ -1,6 +1,6 @@
 # Tasks
 
-Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[!]` blocked · ★ must · ☆ stretch (cut first)
+Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` skipped on purpose · `[!]` blocked · ★ must · ☆ stretch (cut first)
 Rule: milestones are listed up front. Low-level subtasks are added only when a milestone starts.
 
 **Current focus (9 Oct, 15:30):** post-review work, in the order of the approved plan (`~/.claude/plans/business-cases-for-ai-async-newt.md`, summarised in "Post-review work" below). The first GitHub CI run failed on web/synth; fixed and pushed, run #3 is fully green (baseline tag `baseline-2026-10-09`). Backend for steps 1-4 (sandboxes, meta/hybrid profile, tracing + JSON logs, ops endpoint) is committed locally; agents are writing tests (T, T2, T3) and the web side (F: sandbox header, profile-aware banner and limits, /operations page). **9 Oct 17:30: API 2,073 tests at 98.73%, web 581 tests at 98.1%, MCP 361, e2e 114/115 on the rebuilt image (the 1 = the known rare React #418 console error), smoke OK. Ready to push (P1-P3, P7, P8 in one push).** **User actions:** push when told; create the Hugging Face Space; record the video; submit.
@@ -14,12 +14,12 @@ Rule: milestones are listed up front. Low-level subtasks are added only when a m
 **Deadline:** submit by 12 Oct 2026. Aim for the morning of the 12th.
 
 ## Submission checklist (missing ANY item means elimination; run the `submission-check` skill)
-- [ ] Fully functional build by 12 Oct
-- [~] `docs/TECHNICAL_DESIGN.md`: overview + **track**, architecture/flow diagrams, setup & deployment, code explanations & assumptions (PDF export at M5)
-- [ ] YouTube demo link (public or unlisted), playable logged-out
-- [ ] Code on **public** personal GitHub with docs + video link; no access requests needed
-- [~] Comprehensive unit tests: CI coverage gates (api ≥ 85%, web ≥ 80% lines)
-- [ ] Hosted link, working logged-out (no-login demo personas)
+- [~] Fully functional build by 12 Oct: built and verified (CI green, smoke OK); last check is on the hosted URL once the Space exists
+- [~] `docs/TECHNICAL_DESIGN.md`: overview + **track**, architecture/flow diagrams, setup & deployment, code explanations & assumptions (PDF rebuilt; **left:** look at the diagrams in the rendered PDF, final test counts)
+- [ ] YouTube demo link (public or unlisted), playable logged-out **(user: after we discuss the video)**
+- [~] Code on **public** personal GitHub with docs + video link; no access requests needed (pushed, CI visible; **user:** confirm the repo opens logged-out, add the video link)
+- [x] Comprehensive unit tests: CI coverage gates enforced and green (api 98.7%, web 98.1%, three MCP servers ≥ 90%)
+- [ ] Hosted link, working logged-out (no-login demo personas) **(user: create the Hugging Face Space, `deploy/hf-space/DEPLOY.md`)**
 
 ## M0 Setup (7–8 Oct) [x]
 - [x] Repo init (`claimpilot/` subfolder, ADR-008), layout, plan copied to `docs/PLAN.md`
@@ -31,9 +31,9 @@ Rule: milestones are listed up front. Low-level subtasks are added only when a m
 - [x] `ci.yml` (api, web, OpenAPI and TS drift, Docker build + boot probe, gitleaks), pre-commit, `.env.example`
 - [x] Full stack boots: api/worker/postgres/redis healthy, readyz green over the compose network, web 200 (after switching to self-hosted fonts, ADR-012)
 - [x] **User action:** Jev + Anthropic API keys in `.env`; public repo pushed (github.com/Shubham-Kanade/claimpilot)
-- [~] First CI run failed: web typecheck (`LayoutProps` needs `next typegen`) and the gitleaks-action wrapper (a local full-history scan finds no leaks). Both fixed; verify on next push
+- [x] First CI run failed (web typecheck, gitleaks-action wrapper); both fixed, CI green since run #3
 - [x] Second email (8 Oct) folded in: ADR-010, TDD skeleton, `submission-check` skill, coverage gates in CI (+ entrypoint and page tests)
-- [ ] Deferred: `evals.yml` (lands with the eval harness in M1) and `cd.yml` (M4, with hosting)
+- [x] `evals.yml` (manual, paid) written in M1; `cd.yml` written in M4 (first real run happens when `v1.1.0` is tagged)
 
 ## M1 Data & extraction (8 Oct) [x]
 - [x] M1.0 Model registry: **Claude Haiku 5.5** added (Models API + pricing page verified), Haiku 4.5 kept as a baseline, Sonnet cache-read price fixed, long-context tier + batch pricing (ADR-011)
@@ -43,15 +43,15 @@ Rule: milestones are listed up front. Low-level subtasks are added only when a m
 - [x] M1.4 Extraction: versioned prompt + `messages.parse(ExtractedReceipt)`, image downscale, Redis content-hash cache, injection-safe framing; Haiku→Sonnet escalation on unsure critical fields. Worker job moves to M2 (needs Storage + claims)
 - [x] M1.5 Eval harness: metrics, Pareto, dataset loader, runner with cost estimate + `--max-usd` (sync, ADR-013), `evals.yml` (manual, paid)
 - [x] M1.6 First bake-off (dev 20, $0.093): Haiku 5.5 alone = 100% critical / 95% field / 100% injection recall at $0.42 per 1k receipts; cascade 10× cost for +1.9 pp → Haiku chosen (ADR-018). Wire schema fix first (ADR-017)
-- [ ] M1.7 OCR word boxes for click-to-verify (may slide to M3)
-- [ ] M1.8 TDD §3–4 + §7 numbers updated
+- [x] M1.7 Click-to-verify boxes: done with a vision-model localisation call (`extraction/locate.py`, route `locate`), not OCR; 14 of 15 demo documents have boxes
+- [x] M1.8 TDD §3–4 + §7 numbers updated (final counts refreshed again at the end)
 
-## M2 Intelligence (8–9 Oct) [~]
+## M2 Intelligence (8–9 Oct) [x]
 Contract frozen first (ADR-020), then four parallel streams. **Owners are workstreams, not people.**
 - [x] M2.0 Contract: `domain.claims`, extended `Finding`, golden dataset + roster, `evals.golden`; Jev API verified, TLS via OS trust store (ADR-019)
 - [x] Trust: GST/arithmetic/GSTIN checks with evidence-carrying `Finding`s (16 tests)
 - [x] **A. MCP:** `services/mcp-finance` + `services/mcp-corp` (MCP streamable HTTP, seed data, Dockerfiles, compose) and the API-side client bridge `claimpilot.mcp` (typed clients, role-scoped Claude tool bridge, port adapters). 86 + 130 server tests (100% cov each) + 168 API-side
-- [~] **B. Trust:** pHash + field-fingerprint duplicates, EXIF/metadata forensics, C2PA / AI-generated signals, prompt-injection heuristics, `TrustReport` score *(agent)*
+- [x] **B. Trust:** pHash + field-fingerprint duplicates, EXIF/metadata forensics, C2PA / AI-generated signals, prompt-injection heuristics, `TrustReport` score *(agent)*
 - [x] **C. Policy + claims:** `policy/` (clause-cited rules in `config/policy.yaml`, calibrated on the golden set: 0/80 false positives, 4/4 over-policy caught), `claims/` grouping into trip/period/event/allowance (F1 1.000), state machine, one-combined-question generation, routing. 608 tests, 99% cov
 - [x] **D. Decisions:** `DecisionEngine` protocol, `JevEngine` (retries, truststore), `LLMEngine` (Haiku 5.5, flat schema), `CascadeEngine`; Jev-vs-LLM benchmark incl. held-out seed (ADR-021). 40 tests, 99% cov. Jev = LLM accuracy at 3× speed and cost
 - [x] **E. Pipeline:** Storage (atomic local volume), tables + Alembic 0002 with a drift test, typed events + SSE bus (resume, keep-alive), repository, claim actions (answer / reply / submit with explicit confirmation + idempotency / approver decision with required reason), `DbDuplicateIndex`, `process_batch` (3 phases, per-document failure isolation, idempotent), Arq worker + wiring, `/v1` API (20 endpoints) + OpenAPI contract, CORS. 1,353 API tests at 95% coverage (all modules currently on disk)
@@ -59,22 +59,22 @@ Contract frozen first (ADR-020), then four parallel streams. **Owners are workst
 - [x] E3. Demo data: the coherent pile (`data/synth/demo`, 15 receipts), 31 recordings made in Docker (ADR-029; prompts extract_v3 and decide_v2), replay verified in the one-container image. Remaining: the web app's sample pack switches to the pile (F)
 - [x] E4. Wiring tests (`wiring.py`, worker lifecycle, lifespan) with patched Redis/Arq/MCP
 - [x] E5. Answers re-run policy: `pipeline/finalize.py` (`refinalize` keeps the pipeline's category questions and every answer, recomputes findings and the route), so a client-dinner headcount answer can flip `auto_approve` / `finance_review`. 11 unit + 3 API tests
-- [ ] M1.7 Click-to-verify boxes: `ProcessedDocument.boxes` contract exists; filling it (vision-model localisation, evaluated on dev) is optional polish
-## M3 Experience (8–10 Oct) [~]
+- [x] Click-to-verify boxes filled (see M1.7)
+## M3 Experience (8–10 Oct) [x]
 - [x] **F. Web app** (done, committed e47e0ae): persona switcher, upload + camera, live SSE progress, claim review with assistant chat, click-to-verify, submit dialog, approvals, impact meter; mock API + Playwright E2E + axe
 ★ PWA drop zone + camera · streaming progress (SSE) · claim cards · click-to-verify · chat agent with question flow + approval gate · Playwright E2E
 
-## M4 Standouts & ship (11 Oct) [~]
+## M4 Standouts & ship (11 Oct) [~] (code done; hosting and video are the user's)
 - [x] Hosting decided with the user: **Hugging Face Space, one container** (ADR-030). Free, no card, no model spend (answers replayed)
 - [x] Backend for the demo: `RUNTIME=embedded` (in-process batches, in-memory events, SQLite WAL), `DEMO_MODE` (`POST /v1/demo/reset`, plain message for unrecorded receipts), `DUPLICATE_SCOPE=employee`, numbered replies parsed without a model. 1,625 API tests at 98.65%
-- [~] `deploy/hf-space/`: Dockerfile (clones GitHub at build, or `--build-arg SOURCE=fetch-local`), Caddyfile, supervisor `start.py`, Space README, DEPLOY.md. Local build and run in progress; then add a CI job that builds it and runs `scripts/smoke.py` in replay mode (catches recordings that stop matching on another machine)
-- [~] `cd.yml` written (GHCR images on a `v*` tag; optional Space rebuild with repo variable `HF_SPACE` + secret `HF_TOKEN`); not yet exercised
+- [x] `deploy/hf-space/`: Dockerfile (clones GitHub at build, or `--build-arg SOURCE=fetch-local`), Caddyfile, supervisor `start.py`, Space README, DEPLOY.md. Local build and run in progress; then add a CI job that builds it and runs `scripts/smoke.py` in replay mode (catches recordings that stop matching on another machine)
+- [x] `cd.yml` written (GHCR images on a `v*` tag; optional Space rebuild with repo variable `HF_SPACE` + secret `HF_TOKEN`); exercised when `v1.1.0` is tagged
 - [x] Web (F): relative API base `/api`, demo banner, Start over, default persona DEMO-ASHA; Playwright e2e job in `ci.yml`
 - [x] Demo pile (G): `data/synth/demo` (14-15 receipts for DEMO-ASHA incl. 4 adversarial), offline expectation test; switch the web sample pack to it; record cassettes in Docker with `infra/compose.record.yml` (prompt v2); commit `services/api/replay`
 - [x] Final bake-off on the 80-receipt test split (done, $0.23 incl. second opinion) to replace the dev numbers in the TDD; Jev-vs-LLM slide
-- [x] ☆ ClaimPilot MCP server (ADR-032) · [ ] A2A not built (future work) · approver polish done (only if time remains; never at the cost of the checklist)
+- [x] ☆ ClaimPilot MCP server (ADR-032) · A2A not built (decided: future work) · approver polish done (only if time remains; never at the cost of the checklist)
 
-## M5 Submit (12 Oct AM) [ ]
+## M5 Submit (12 Oct AM) [~]
 ★ polish · 3–4 min demo video on YouTube (public or unlisted) · finish the TDD + PDF · README with metrics + links · `submission-check` · submit
 
 **Every milestone:** append its TDD sections · keep coverage gates green · reviewer agent pass before commit
@@ -82,12 +82,12 @@ Contract frozen first (ADR-020), then four parallel streams. **Owners are workst
 ## Post-review work (9-11 Oct) — status
 Legend as above. **Push points** (P0...) are where the user pushes; each leaves `main` green and shippable.
 - [x] **Step 0 CI fixes** (P0 pushed, run #3 on `3bc2977`: all 9 jobs green incl. demo 17 min and docker; tag `baseline-2026-10-09` = rollback point). Known, harmless: 2 annotations from a pytest `PytestUnhandledThreadExceptionWarning` (an earlier test leaves an aiosqlite connection undisposed; surfaces in `test_runtime_checks.py`); Node 20 action deprecation warnings
-- [~] **Step 1 B1 sandboxes** (P1+P2, one push when both halves are green): backend [x] committed (`b80d896`: ORM + Alembic 0003, repo/API/pipeline/dup index/locks/reset/stats per sandbox, ledger sandbox+batch_id); `smoke.py` fresh sandbox [x]; backend tests (agent T: isolation, hash-invariance, repository, migration) [x]; web sandbox header, StartOver copy, mock CORS, e2e `isolation.spec.ts`, record-demo script (agent F) [x] (`fdc03dd`; the video itself is not re-recorded)
-- [~] **Step 2 A1, A2, B2, A4** (P3): backend [x] (`4929ec0`: meta has llm_record, daily_llm_budget_usd, max_batch_files, max_upload_mb; hybrid profile keeps paced replay; start.py copies recordings to /data when LLM_RECORD=1; friendly "budget used up" message), MCP reads limits from meta [x] (`a99a1bb`); web banner/drop-zone/limits from meta + mock meta (agent F) [x]; DEPLOY.md profiles [x]
-- [~] **Step 3 D1-D2** (P7): backend [x] (`228c512`: Alembic 0004, request-id middleware, JSON logs, trace/batch/document/claim ids on every ledger row); tests (agent T2) [x] (found and fixed: 500 responses lacked X-Request-ID)
-- [~] **Step 4 D3** (P8): `GET /v1/ops/llm` [x] (`436235c`); tests (agent T3) [x]; `/operations` page + mock route (agent F) [x]
+- [x] **Step 1 B1 sandboxes** (P1+P2, one push when both halves are green): backend [x] committed (`b80d896`: ORM + Alembic 0003, repo/API/pipeline/dup index/locks/reset/stats per sandbox, ledger sandbox+batch_id); `smoke.py` fresh sandbox [x]; backend tests (agent T: isolation, hash-invariance, repository, migration) [x]; web sandbox header, StartOver copy, mock CORS, e2e `isolation.spec.ts`, record-demo script (agent F) [x] (`fdc03dd`; the video itself is not re-recorded)
+- [x] **Step 2 A1, A2, B2, A4** (P3): backend [x] (`4929ec0`: meta has llm_record, daily_llm_budget_usd, max_batch_files, max_upload_mb; hybrid profile keeps paced replay; start.py copies recordings to /data when LLM_RECORD=1; friendly "budget used up" message), MCP reads limits from meta [x] (`a99a1bb`); web banner/drop-zone/limits from meta + mock meta (agent F) [x]; DEPLOY.md profiles [x]
+- [x] **Step 3 D1-D2** (P7): backend [x] (`228c512`: Alembic 0004, request-id middleware, JSON logs, trace/batch/document/claim ids on every ledger row); tests (agent T2) [x] (found and fixed: 500 responses lacked X-Request-ID)
+- [x] **Step 4 D3** (P8): `GET /v1/ops/llm` [x] (`436235c`); tests (agent T3) [x]; `/operations` page + mock route (agent F) [x]
 - [x] **Step 5 docs G1-G4**: README, DEMO_SCRIPT (full-stack segments), demo-pile README, TDD wording and sections, ADR-033..036, DEPLOY.md
-- [ ] **Step 6** optional: dormant `POST /v1/auth/token` (only if time is left)
+- [-] **Step 6** dormant `POST /v1/auth/token`: **skipped by the user's decision (9 Oct)**; the production auth design is ADR-033
 - [ ] **Step 7 A5 + G5**: hybrid-mode test run (under $0.05), PDF render check, counts, `submission-check`, clean-clone build, tag `v1.1.0`. **The demo video is NOT re-recorded (or recorded) by Claude on its own: discuss with the user first** (what to show, which stack, who records)
 - Deferred until the user nods: E1/E2 (Jev recording and ledger), F1 (finance dashboard). Not doing: C1 login, A3, OpenTelemetry/Langfuse, MCP token mode.
 - **Cut order if behind:** step 6, then D3 down to tables, then D3, then A5 to a manual check. Never cut B1, step 2 or the docs.
