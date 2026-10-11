@@ -45,6 +45,7 @@ Notes for the hybrid profile:
 - `DAILY_LLM_BUDGET_USD` caps live spend over any rolling 24 hours for **all** visitors together; when it is used up, uploads get a plain "budget used up" message while the samples keep working. A receipt costs about $0.003 (about $0.04 for the whole sample pile if nothing were recorded), so $1 is roughly 300 receipts.
 - New recordings are saved to `/data/replay` (a copy of the image's recordings is made on start); the disk is ephemeral, so they vanish on restart. That is harmless.
 - The banner, the upload box and the cost labels change by themselves (they read `/v1/meta`); the banner tells visitors that their own receipts go to Anthropic's API and asks for synthetic or non-personal receipts only.
+- This profile was tested end to end on 11 Oct (ADR-036): samples replay at $0, an unseen receipt costs about a tenth of a cent, repeats replay, and the cap holds.
 - Jev (System One) is not used in either profile: its calls cannot be recorded (ADR-029), so the demo decides with Claude.
 - The demo clock stays pinned to 12 Oct 2026 in both profiles (`DEMO_TODAY`).
 
