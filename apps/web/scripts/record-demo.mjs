@@ -2,8 +2,15 @@
 //
 //   node scripts/record-demo.mjs [--base http://localhost:7860] [--api <base>/api] [--out ../../docs/demo]
 //                                [--pace 1] [--shots dir] [--keep]
+//                                [--full-base http://localhost:3000] [--fixtures a.png,b.png]
+//                                [--repo <url>] [--live-url <url>]
+//                                [--skip-hosted] [--skip-full] [--skip-slides]
 //
-// Needs a running ClaimPilot with the demo pile available (the hosted-demo image on :7860 is the
+// Three parts, one file. A: the hosted demo (recorded answers). B: the full stack on this machine
+// (Compose with LLM_MODE=live and Jev), where two receipts that were never recorded are read live.
+// C: captioned slides (architecture, measured results, links). Each part can be skipped.
+//
+// Part A needs a running ClaimPilot with the demo pile available (the hosted-demo image on :7860 is the
 // simplest: docker run -p 7860:7860 claimpilot-demo). It plays Asha Menon uploading the sample
 // receipts, reads the findings, answers the one question, submits, then switches to the approver,
 // who rejects the trip with a reason and approves the clean phone bill. Before it starts it empties
@@ -30,6 +37,14 @@ const args = Object.fromEntries(
 );
 const base = (args.base ?? "http://localhost:7860").replace(/\/$/, "");
 const api = (args.api ?? `${base}/api`).replace(/\/$/, "");
+const fullBase = (args["full-base"] ?? "http://localhost:3000").replace(/\/$/, "");
+const repoUrl = args.repo ?? "https://github.com/Shubham-Kanade/claimpilot";
+const liveUrl = args["live-url"] ?? "";
+const fixtureDir = path.resolve(here, "../../../data/synth/fixtures/docs");
+// A Hindi restaurant bill and a handwritten bill: two receipts the demo never recorded
+const fixtures = (args.fixtures ?? "s42-0006.png,s42-0003.png")
+  .split(",")
+  .map((f) => (path.isAbsolute(f) ? f : path.join(fixtureDir, f)));
 const outDir = path.resolve(here, args.out ?? "../../../docs/demo");
 const pace = Number(args.pace ?? 1);
 const channel =
@@ -132,188 +147,311 @@ const typeSlowly = async (locator, text) => {
 };
 
 try {
-  // 1. The pile
-  await page.goto(`${base}/`, { waitUntil: "networkidle" });
-  await page.mouse.move(960, 540);
-  await say(
-    "Asha is back from a client visit with a week of receipts: photos, PDFs, a UPI screenshot, a handwritten auto fare.",
-    4500,
-  );
+  if (args["skip-hosted"] !== "true") {
+    // ===== Part A: the hosted demo =====
+    // 1. The pile
+    await page.goto(`${base}/`, { waitUntil: "networkidle" });
+    await page.mouse.move(960, 540);
+    await say(
+      "Asha is back from a client visit with a week of receipts: photos, PDFs, a UPI screenshot, a handwritten auto fare.",
+      4500,
+    );
 
-  // 2. Upload and watch the pipeline
-  await say(
-    "One click. Every receipt is read by Claude; a fast System One model, Jev, picks the category, and Claude takes over when it is unsure.",
-    1500,
-  );
-  await press(page.getByRole("button", { name: /try with sample receipts/i }));
-  await page.waitForURL(/\/batches\//, { timeout: 60000 });
-  await caption(
-    "Live progress: each receipt is read, categorised and checked for trust. Duplicates, edited totals and hidden instructions are caught here.",
-  );
-  await page.getByRole("heading", { name: /claims ready/i }).waitFor({ timeout: 120000 });
-  await sleep(1500);
-  await page.mouse.wheel(0, 700);
-  await sleep(2500);
-  await page.mouse.wheel(0, 900);
-  await say("15 receipts, 7 claims, in seconds. Two receipts are blocked, one needs review.", 3500);
-  await page.mouse.wheel(0, -2000);
+    // 2. Upload and watch the pipeline
+    await say(
+      "One click. Every receipt is read by Claude; a fast System One model, Jev, picks the category, and Claude takes over when it is unsure.",
+      1500,
+    );
+    await press(page.getByRole("button", { name: /try with sample receipts/i }));
+    await page.waitForURL(/\/batches\//, { timeout: 60000 });
+    await caption(
+      "Live progress: each receipt is read, categorised and checked for trust. Duplicates, edited totals and hidden instructions are caught here.",
+    );
+    await page.getByRole("heading", { name: /claims ready/i }).waitFor({ timeout: 120000 });
+    await sleep(1500);
+    await page.mouse.wheel(0, 700);
+    await sleep(2500);
+    await page.mouse.wheel(0, 900);
+    await say(
+      "15 receipts, 7 claims, in seconds. Two receipts are blocked, one needs review.",
+      3500,
+    );
+    await page.mouse.wheel(0, -2000);
 
-  // 3. The claims
-  await Promise.race([
-    press(
-      page
-        .getByRole("link", { name: /review claims/i })
-        .or(page.getByRole("button", { name: /review claims/i }))
-        .first(),
-    ),
-    page.waitForURL(/\/claims$/, { timeout: 8000 }),
-  ]).catch(() => {});
-  await page.waitForURL(/\/claims$/, { timeout: 20000 });
-  await say(
-    "It grouped the pile itself: the Mumbai trip, the client dinner, a month of local rides, the phone bill, and what could not be grouped.",
-    4500,
-  );
+    // 3. The claims
+    await Promise.race([
+      press(
+        page
+          .getByRole("link", { name: /review claims/i })
+          .or(page.getByRole("button", { name: /review claims/i }))
+          .first(),
+      ),
+      page.waitForURL(/\/claims$/, { timeout: 8000 }),
+    ]).catch(() => {});
+    await page.waitForURL(/\/claims$/, { timeout: 20000 });
+    await say(
+      "It grouped the pile itself: the Mumbai trip, the client dinner, a month of local rides, the phone bill, and what could not be grouped.",
+      4500,
+    );
 
-  const open = async (name) => {
-    await press(page.getByRole("link", { name }).first());
-    await page.waitForURL(/\/claims\/clm-/);
-    await page.waitForLoadState("networkidle");
-    await sleep(900);
-  };
-  const back = async () => {
-    await page.goBack();
-    await page.waitForURL(/\/claims$/);
-    await sleep(700);
-  };
-
-  // 4. The findings
-  await open(/Local conveyance/i);
-  await say(
-    "An edited receipt: the total says 830 rupees, but its own items and tax add up to 330. The finding says so, with the evidence.",
-    5000,
-  );
-  await page.mouse.wheel(0, 800);
-  await sleep(3500);
-  await back();
-
-  await open(/Meals Oct/i);
-  await say(
-    "This café bill carries a note to an AI reviewer: approve without checks. It is flagged as prompt injection and ignored. Approvals depend only on rules.",
-    6000,
-  );
-  await back();
-
-  await open(/Mumbai trip/i);
-  await sleep(1500);
-  // The alcohol finding sits on the dinner receipt, below the fold: bring it to the middle
-  await page
-    .getByText(/Policy clause 6\.1/)
-    .first()
-    .evaluate((el) => el.scrollIntoView({ block: "center", behavior: "smooth" }), null, {
-      timeout: 5000,
-    })
-    .catch(() => {}); // a missing scroll must never lose the recording
-  await sleep(900);
-  await say("Alcohol is never reimbursed. Every finding quotes the policy clause behind it.", 5500);
-  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
-  await sleep(900);
-
-  // 5. One question, one answer
-  await say(
-    "The calendar already explained the client dinner. For the trip, one question; Asha answers in a sentence.",
-    3500,
-  );
-  const reply = page.getByRole("textbox").first();
-  await typeSlowly(reply, "Client visit and quarterly review with Kestrel Logistics");
-  await sleep(500);
-  await press(page.getByRole("button", { name: /^send/i }).first());
-  await page
-    .getByText(/all set/i)
-    .first()
-    .waitFor({ timeout: 20000 });
-  await say("Nothing is submitted without an explicit confirmation.", 3000);
-
-  // 6. Submit
-  await press(page.getByRole("button", { name: /confirm & submit/i }).first());
-  await sleep(1800);
-  await press(page.getByRole("dialog").getByRole("button", { name: /confirm & submit/i }));
-  await page
-    .getByText(/FIN-\d{4}-\d+/)
-    .first()
-    .waitFor({ timeout: 20000 });
-  await say("Submitted to the finance system over MCP: it comes back with a reference.", 4000);
-
-  // 7. The clean claims go in too, then the approver
-  for (const name of [/Mobile & internet/i, /Client dinner/i]) {
-    await page.goto(`${base}/claims`, { waitUntil: "networkidle" });
-    await open(name);
-    const submit = page.getByRole("button", { name: /confirm & submit/i }).first();
-    if (await submit.isEnabled().catch(() => false)) {
-      await press(submit);
+    const open = async (name) => {
+      await press(page.getByRole("link", { name }).first());
+      await page.waitForURL(/\/claims\/clm-/);
+      await page.waitForLoadState("networkidle");
+      await sleep(900);
+    };
+    const back = async () => {
+      await page.goBack();
+      await page.waitForURL(/\/claims$/);
       await sleep(700);
-      await press(page.getByRole("dialog").getByRole("button", { name: /confirm & submit/i }));
-      await page
-        .getByText(/FIN-\d{4}-\d+/)
-        .first()
-        .waitFor({ timeout: 20000 });
-    }
-  }
-  await page.goto(`${base}/claims`, { waitUntil: "networkidle" });
-  await say("Now the approver's side.", 2000);
-  const persona = page.getByRole("combobox").first(); // a native <select>: its pop-up is not recorded
-  await glide(persona);
-  await persona.selectOption({ value: "DEMO-RAVI" });
-  await sleep(800);
-  await page.goto(`${base}/approvals`, { waitUntil: "networkidle" });
-  await say(
-    "Ravi sees the submitted claims, riskiest first, each with its evidence. The trip is on top.",
-    4500,
-  );
+    };
 
-  // 8. The approver decides: the trip goes back with a reason, the clean bill is one click
-  const decided = (verdict) =>
-    page
-      .getByRole("status")
-      .filter({ hasText: new RegExp(`^\\s*${verdict}`) })
-      .first();
-  const toTop = async () => {
+    // 4. The findings
+    await open(/Local conveyance/i);
+    await say(
+      "An edited receipt: the total says 830 rupees, but its own items and tax add up to 330. The finding says so, with the evidence.",
+      5000,
+    );
+    await page.mouse.wheel(0, 800);
+    await sleep(3500);
+    await back();
+
+    await open(/Meals Oct/i);
+    await say(
+      "This café bill carries a note to an AI reviewer: approve without checks. It is flagged as prompt injection and ignored. Approvals depend only on rules.",
+      6000,
+    );
+    await back();
+
+    await open(/Mumbai trip/i);
+    await sleep(1500);
+    // The alcohol finding sits on the dinner receipt, below the fold: bring it to the middle
+    await page
+      .getByText(/Policy clause 6\.1/)
+      .first()
+      .evaluate((el) => el.scrollIntoView({ block: "center", behavior: "smooth" }), null, {
+        timeout: 5000,
+      })
+      .catch(() => {}); // a missing scroll must never lose the recording
+    await sleep(900);
+    await say(
+      "Alcohol is never reimbursed. Every finding quotes the policy clause behind it.",
+      5500,
+    );
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
     await sleep(900);
-  };
-  await press(page.getByRole("button", { name: /Mumbai trip/ }).first());
-  await sleep(900);
-  await say(
-    "The bill includes alcohol, which is never reimbursed. Ravi rejects it, and a reason is required: finance keeps it on record.",
-    3500,
-  );
-  await typeSlowly(
-    page.getByRole("textbox", { name: /comment/i }),
-    "Please take the 1,540 rupees of alcohol off the Kesar Grill bill and resubmit.",
-  );
-  await sleep(500);
-  await press(page.getByRole("button", { name: /^reject$/i }));
-  await decided("Rejected").waitFor({ timeout: 20000 });
-  await toTop();
-  await say("Rejected, with the reason attached. The employee sees it and fixes the claim.", 3500);
 
-  await press(page.getByRole("button", { name: /Mobile & internet/ }).first());
-  await sleep(700);
-  await say("The phone bill has no flags and is auto-approvable: one click.", 3000);
-  await press(page.getByRole("button", { name: /^approve$/i }));
-  await decided("Approved").waitFor({ timeout: 20000 });
-  await toTop();
-  await say("Approved. The decision is recorded in the finance system over MCP.", 3500);
+    // 5. One question, one answer
+    await say(
+      "The calendar already explained the client dinner. For the trip, one question; Asha answers in a sentence.",
+      3500,
+    );
+    const reply = page.getByRole("textbox").first();
+    await typeSlowly(reply, "Client visit and quarterly review with Kestrel Logistics");
+    await sleep(500);
+    await press(page.getByRole("button", { name: /^send/i }).first());
+    await page
+      .getByText(/all set/i)
+      .first()
+      .waitFor({ timeout: 20000 });
+    await say("Nothing is submitted without an explicit confirmation.", 3000);
 
-  // 9. Impact
-  await page.goto(`${base}/impact`, { waitUntil: "networkidle" });
-  await say(
-    "And the impact: receipts read, claims formed, what the AI cost, and the time saved, with its assumption stated.",
-    5000,
-  );
-  await say(
-    "ClaimPilot: from a pile of receipts to a claim that is ready to submit. Try it, no login: link in the description.",
-    4500,
-  );
+    // 6. Submit
+    await press(page.getByRole("button", { name: /confirm & submit/i }).first());
+    await sleep(1800);
+    await press(page.getByRole("dialog").getByRole("button", { name: /confirm & submit/i }));
+    await page
+      .getByText(/FIN-\d{4}-\d+/)
+      .first()
+      .waitFor({ timeout: 20000 });
+    await say("Submitted to the finance system over MCP: it comes back with a reference.", 4000);
+
+    // 7. The clean claims go in too, then the approver
+    for (const name of [/Mobile & internet/i, /Client dinner/i]) {
+      await page.goto(`${base}/claims`, { waitUntil: "networkidle" });
+      await open(name);
+      const submit = page.getByRole("button", { name: /confirm & submit/i }).first();
+      if (await submit.isEnabled().catch(() => false)) {
+        await press(submit);
+        await sleep(700);
+        await press(page.getByRole("dialog").getByRole("button", { name: /confirm & submit/i }));
+        await page
+          .getByText(/FIN-\d{4}-\d+/)
+          .first()
+          .waitFor({ timeout: 20000 });
+      }
+    }
+    await page.goto(`${base}/claims`, { waitUntil: "networkidle" });
+    await say("Now the approver's side.", 2000);
+    const persona = page.getByRole("combobox").first(); // a native <select>: its pop-up is not recorded
+    await glide(persona);
+    await persona.selectOption({ value: "DEMO-RAVI" });
+    await sleep(800);
+    await page.goto(`${base}/approvals`, { waitUntil: "networkidle" });
+    await say(
+      "Ravi sees the submitted claims, riskiest first, each with its evidence. The trip is on top.",
+      4500,
+    );
+
+    // 8. The approver decides: the trip goes back with a reason, the clean bill is one click
+    const decided = (verdict) =>
+      page
+        .getByRole("status")
+        .filter({ hasText: new RegExp(`^\\s*${verdict}`) })
+        .first();
+    const toTop = async () => {
+      await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
+      await sleep(900);
+    };
+    await press(page.getByRole("button", { name: /Mumbai trip/ }).first());
+    await sleep(900);
+    await say(
+      "The bill includes alcohol, which is never reimbursed. Ravi rejects it, and a reason is required: finance keeps it on record.",
+      3500,
+    );
+    await typeSlowly(
+      page.getByRole("textbox", { name: /comment/i }),
+      "Please take the 1,540 rupees of alcohol off the Kesar Grill bill and resubmit.",
+    );
+    await sleep(500);
+    await press(page.getByRole("button", { name: /^reject$/i }));
+    await decided("Rejected").waitFor({ timeout: 20000 });
+    await toTop();
+    await say(
+      "Rejected, with the reason attached. The employee sees it and fixes the claim.",
+      3500,
+    );
+
+    await press(page.getByRole("button", { name: /Mobile & internet/ }).first());
+    await sleep(700);
+    await say("The phone bill has no flags and is auto-approvable: one click.", 3000);
+    await press(page.getByRole("button", { name: /^approve$/i }));
+    await decided("Approved").waitFor({ timeout: 20000 });
+    await toTop();
+    await say("Approved. The decision is recorded in the finance system over MCP.", 3500);
+
+    // 9. Impact
+    await page.goto(`${base}/impact`, { waitUntil: "networkidle" });
+    await say(
+      "And the impact: receipts read, claims formed, what the AI cost, and the time saved, with its assumption stated.",
+      5000,
+    );
+  }
+
+  if (args["skip-full"] !== "true") {
+    // ===== Part B: the full stack, live models =====
+    await page.goto(`${fullBase}/`, { waitUntil: "networkidle" });
+    await page.mouse.move(960, 540);
+    await say(
+      "Now the real stack on a laptop: Postgres, Redis, a worker and two MCP servers. These two receipts were never recorded: Claude reads them live.",
+      5500,
+    );
+    await page.getByLabel("Choose receipts to upload").setInputFiles(fixtures);
+    await say("A Hindi restaurant bill and a handwritten one, both degraded photos.", 3500);
+    await press(page.getByRole("button", { name: /^Process \d+ receipts?$/ }));
+    await page.waitForURL(/\/batches\//, { timeout: 60000 });
+    await caption(
+      "Claude reads each receipt. Jev, the System One model, picks the category in about half a second. The cost of every receipt is shown.",
+    );
+    await page.getByRole("heading", { name: /claims? ready/i }).waitFor({ timeout: 240000 });
+    await sleep(1500);
+    await page.mouse.wheel(0, 500);
+    await say(
+      "Read live, checked and grouped in seconds. Each receipt shows what it cost: well under a cent to a couple of cents.",
+      5000,
+    );
+    await page.mouse.wheel(0, -1000);
+    await press(page.getByRole("link", { name: "My claims" }).first());
+    await page.waitForURL(/\/claims$/, { timeout: 20000 });
+    await page.getByTestId("claim-card").first().waitFor({ timeout: 20000 });
+    await say("Each receipt becomes a claim, with its flags and what to do next.", 3500);
+    await press(
+      page.getByTestId("claim-card").filter({ hasText: /Meals/ }).first().getByRole("link").first(),
+    );
+    await page.waitForURL(/\/claims\/clm-/, { timeout: 20000 });
+    await page.waitForLoadState("networkidle");
+    // A clean receipt starts collapsed: open it, then bring the receipt and its fields into view
+    const toggle = page
+      .getByTestId("document-card")
+      .first()
+      .locator("button[aria-expanded]")
+      .first();
+    if ((await toggle.getAttribute("aria-expanded")) === "false") await press(toggle);
+    const fields = page.getByText("What ClaimPilot read").first();
+    await fields.waitFor({ timeout: 10000 });
+    await fields.evaluate((el) => el.scrollIntoView({ block: "start", behavior: "smooth" }));
+    await sleep(900);
+    await say(
+      "Every field has a confidence, shown next to the receipt, so a person can check it in seconds.",
+      5500,
+    );
+    await press(page.getByRole("link", { name: "AI ops" }).first());
+    await page.getByRole("heading", { name: "AI operations" }).waitFor({ timeout: 20000 });
+    await sleep(1200);
+    await say(
+      "Every model call is on record: live or replayed, latency, cost, and which upload caused it.",
+      6000,
+    );
+  }
+
+  if (args["skip-slides"] !== "true") {
+    // ===== Part C: slides =====
+    const slide = (
+      title,
+      body,
+    ) => `<!doctype html><meta charset="utf-8"><title>${title}</title><style>
+    html,body{margin:0;height:100%;background:#0f172a;color:#fff;font-family:system-ui,"Segoe UI",sans-serif}
+    main{box-sizing:border-box;height:100%;padding:70px 110px;display:flex;flex-direction:column;justify-content:center}
+    h1{font-size:60px;margin:0 0 36px;font-weight:700}
+    .flow{display:flex;align-items:center;flex-wrap:wrap;gap:14px;margin:8px 0 34px}
+    .box{background:#312e81;border:2px solid #6366f1;border-radius:14px;padding:18px 24px;font-size:28px;font-weight:600}
+    .box.alt{background:#064e3b;border-color:#10b981}.arrow{font-size:34px;color:#94a3b8}
+    p{font-size:30px;line-height:1.45;margin:10px 0;color:#e2e8f0}
+    table{border-collapse:collapse;font-size:29px;margin-top:6px}td{padding:11px 26px 11px 0;vertical-align:top;color:#e2e8f0}
+    td:first-child{color:#a5b4fc;font-weight:700;white-space:nowrap}.big{font-size:44px;font-weight:700;color:#a5b4fc}
+    a{color:#a5b4fc}</style><main>${body}</main>`;
+    await page.setContent(
+      slide(
+        "How it works",
+        `<h1>How it works</h1>
+       <div class="flow"><span class="box">Receipts</span><span class="arrow">&rarr;</span>
+        <span class="box">Claude reads</span><span class="arrow">&rarr;</span>
+        <span class="box">Jev decides</span><span class="arrow">&rarr;</span>
+        <span class="box">Trust checks</span><span class="arrow">&rarr;</span>
+        <span class="box">Policy, clause by clause</span><span class="arrow">&rarr;</span>
+        <span class="box">Claims + one question</span><span class="arrow">&rarr;</span>
+        <span class="box alt">Confirm, then finance over MCP</span></div>
+       <p>Claude reads, Jev decides fast, deterministic code checks and routes. A model never approves anything.</p>
+       <p>The finance and HR systems are real MCP servers. ClaimPilot is itself an MCP server: use it from Claude Desktop.</p>
+       <p>Docker Compose, CI on every push, a hosted demo that costs nothing to run.</p>`,
+      ),
+    );
+    await sleep(9000);
+    await page.setContent(
+      slide(
+        "Measured, not claimed",
+        `<h1>Measured, not claimed</h1><table>
+       <tr><td>99.0%</td><td>of critical fields right on 80 held-out receipts, about $0.0005 to read one</td></tr>
+       <tr><td>1 in 80</td><td>genuine receipts wrongly accused (8 in 80 before the second opinion)</td></tr>
+       <tr><td>4 of 4</td><td>duplicates, injected notes and edited totals caught, 0 false alarms on 88 clean documents</td></tr>
+       <tr><td>0 of 80</td><td>legitimate receipts flagged by the policy; 4 of 4 over-policy cases caught</td></tr>
+       <tr><td>3x</td><td>faster and cheaper with Jev than the language model, at the same accuracy</td></tr>
+       <tr><td>3,300+</td><td>tests: 2,074 API at 98.7%, 581 web, 124 browser runs, 577 MCP-server</td></tr></table>`,
+      ),
+    );
+    await sleep(10000);
+    await page.setContent(
+      slide(
+        "ClaimPilot",
+        `<h1 style="font-size:84px">ClaimPilot</h1>
+       <p class="big">From a pile of receipts to a claim that is ready to submit.</p>
+       <p style="margin-top:36px">Code, design document and decisions: <a>${repoUrl.replace("https://", "")}</a></p>
+       ${liveUrl ? `<p>Try it, no login: <a>${liveUrl.replace("https://", "")}</a></p>` : `<p>Try it, no login: link in the description.</p>`}
+       <p>Built for AI Innovation Lab, Season 2. Synthetic data only.</p>`,
+      ),
+    );
+    await sleep(8000);
+  }
 } finally {
   const video = page.video();
   await context.close();

@@ -10,22 +10,36 @@ For the Jev segment run the stack locally with `DECISION_ENGINE=jev` and a key i
 
 ## Two ways to make the video
 
-**1. Let the capture tool drive the browser.** It plays the whole story below (upload, findings,
-the one question, submit, the approver rejecting the trip with a reason and approving the clean
-phone bill, impact), draws a caption on screen for each step and writes a 1920×1080 `.webm`. It
-empties the demo first, so every run starts from the same pile.
+**1. Let the capture tool drive the browser (what the submitted video uses).** One file in three
+parts, with a caption on screen for every step and no voice: **A** the hosted demo (recorded
+answers: upload, findings, the one question, submit, the approver rejecting the trip and
+approving the phone bill, impact), **B** the full stack on this machine with live models (two
+receipts that were never recorded, a Hindi bill and a handwritten bill, read live with Jev and
+Claude, then the claim and the **AI ops** page) and **C** three captioned slides (how it works,
+measured results, links). About 4 minutes at `--pace 1.1`.
 
 ```bash
+# A: the hosted-demo image (same as the Space)
 docker build -f deploy/hf-space/Dockerfile --build-arg SOURCE=fetch-local -t claimpilot-demo .
 docker run -d --name cpdemo -p 7860:7860 claimpilot-demo
-cd apps/web && npm ci && node scripts/record-demo.mjs   # writes docs/demo/claimpilot-demo.webm
+# B: the full stack with live models. Postgres, Redis, MCP servers and web from Compose; the API
+#    and the worker on the host (a container cannot verify Jev's certificate behind a corporate
+#    TLS proxy; the host uses the OS trust store). LLM_MODE=live, DECISION_ENGINE=jev, keys in .env.
+docker compose -f infra/compose.yml up -d postgres redis mcp-finance mcp-corp web
+#   then run `uvicorn claimpilot.main:app` and `arq claimpilot.worker.WorkerSettings` from
+#   services/api with DATABASE_URL, REDIS_URL, MCP_*_URL pointing at 127.0.0.1, and
+#   DEMO_TODAY=2026-07-20 (the two receipts are dated July: it keeps them inside the 90-day window)
+cd apps/web && npm ci && node scripts/record-demo.mjs --pace 1.1   # writes docs/demo/claimpilot-demo.webm
 ```
 
-`--pace 1.4` slows every pause, `--base`/`--api` point it at another stack, `--shots <dir>` also
-saves one screenshot per caption (a quick way to check a change without watching the video). On a
-machine without Edge, `npx playwright install chromium` and set `BROWSER_CHANNEL=chromium`.
-Record your own voice over it with the words in the table, or leave the captions to speak, then
-upload the file to YouTube (Public or Unlisted).
+Flags: `--skip-hosted`, `--skip-full`, `--skip-slides` drop a part; `--fixtures a.png,b.png` picks
+the receipts for part B (default: two from `data/synth/fixtures/docs`); `--live-url <url>` puts the
+live demo's address on the last slide; `--pace 1.4` slows every pause; `--base`/`--full-base`/`--api`
+point at other stacks; `--shots <dir>` also saves one screenshot per caption (a quick way to check a
+change without watching the video). On a machine without Edge, `npx playwright install chromium`
+and set `BROWSER_CHANNEL=chromium`. Truncate Compose's tables between takes
+(`TRUNCATE claims, documents, batches, audit_log, llm_calls CASCADE`), or the re-uploaded receipts
+are flagged as duplicates of the first take. Upload the `.webm` to YouTube (Public or Unlisted).
 
 **2. Record the screen yourself** and follow the table. Use this if you want to show the Jev
 segment or the architecture and test slides in one take.
