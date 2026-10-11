@@ -438,7 +438,7 @@ cd apps/web && npm install && npm run dev
 ```
 
 ### 5.4 Live LLM mode
-Set `ANTHROPIC_API_KEY` and `LLM_MODE=live` in `.env` (and `LLM_RECORD=1` to save the responses so `replay` can serve them for free). Choose models per route with `ROUTE_<NAME>=haiku|sonnet|opus`. For System One set `JEV_API_KEY` and `DECISION_ENGINE=jev`; leave it empty and use `DECISION_ENGINE=llm` to run on Claude alone. `DEMO_TODAY=2026-09-30` pins the clock so the sample receipts are inside the submission window.
+Set `ANTHROPIC_API_KEY` and `LLM_MODE=live` in `.env` (and `LLM_RECORD=1` to save the responses so `replay` can serve them for free). Choose models per route with `ROUTE_<NAME>=haiku|sonnet|opus`. For System One set `JEV_API_KEY` and `DECISION_ENGINE=jev`; leave it empty and use `DECISION_ENGINE=llm` to run on Claude alone. `DEMO_TODAY=2026-10-12` pins the clock so the sample receipts are inside the submission window.
 
 ### 5.5 Configuration reference
 All configuration is environment variables read in one place (`config.py`, 12-factor). See [.env.example](../.env.example) for the full list: LLM mode and keys, decision engine, database, Redis, upload directory and limits, MCP URLs, approver allow-list, CORS origins.
@@ -504,11 +504,11 @@ The layers are listed in [.claude/rules/testing.md](../.claude/rules/testing.md)
 
 | Suite | Tests | Coverage | Gate |
 |---|---|---|---|
-| API (pytest): domain, llm, extraction, decisions, trust, policy, claims, pipeline, API, MCP adapters, wiring | 1,742 | 98.7% | ≥ 85% overall |
-| MCP servers (pytest, one suite each): mock finance, mock corporate systems, ClaimPilot's own | 86 + 130 + 350 | 100% measured | ≥ 90% enforced in CI |
+| API (pytest): domain, llm, extraction, decisions, trust, policy, claims, pipeline, API, sandboxes, observability, MCP adapters, wiring | 2,074 | 98.7% | ≥ 85% overall |
+| MCP servers (pytest, one suite each): mock finance, mock corporate systems, ClaimPilot's own | 86 + 130 + 361 | 100% measured | ≥ 90% enforced in CI |
 | Synthetic data generator (pytest) | 111 | n/a | runs in CI |
-| Web (Vitest + React Testing Library + MSW, incl. a hydration regression test and the mock-API contract test) | 539 | 98.0% lines, 91.3% branches | ≥ 80% lines |
-| E2E (Playwright + axe, desktop and phone, against the real one-container demo) | 110 runs (100 passed, 9 phone-only skipped on desktop, 1 console-error race seen once under heavy load and not reproducible in 22 throttled loads) | n/a | must pass in CI (one retry) |
+| Web (Vitest + React Testing Library + MSW, incl. a hydration regression test and the mock-API contract test) | 581 | 98.1% lines, 91.5% branches | ≥ 80% lines |
+| E2E (Playwright + axe, desktop and phone, against the real one-container demo) | 124 runs (114 passed, 9 phone-only skipped on desktop, 1 console-error race seen twice only under heavy load and not reproducible in 40+ repeats and throttled loads) | n/a | must pass in CI (one retry) |
 | Evals (cost money, manual) | extraction bake-off, System One benchmark, trust, grouping, policy calibration | n/a | thresholds in the `run-evals` skill |
 
 What the tests check that is specific to this system:

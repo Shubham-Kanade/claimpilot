@@ -56,7 +56,9 @@ const css = `
   pre { background: #f6f8fa; border: 1px solid #e1e4e8; border-radius: 6pt; padding: 8pt; overflow: hidden; white-space: pre-wrap; break-inside: avoid; }
   pre code { background: none; padding: 0; }
   pre.mermaid { background: #fff; border: none; text-align: center; white-space: normal; padding: 4pt 0; }
-  pre.mermaid svg { max-width: 100%; height: auto; }
+  /* A tall diagram must shrink to fit one page: left alone it is pushed to the next page, cannot
+     fit there either, and leaves a heading alone on one page and a blank page after it. */
+  pre.mermaid svg { max-width: 100%; max-height: 205mm; height: auto; }
   blockquote { margin: 8pt 0; padding: 2pt 10pt; border-left: 3px solid #8b9bb4; color: #44505f; background: #f7f9fc; }
   a { color: #1f5fbf; text-decoration: none; }
 `;
