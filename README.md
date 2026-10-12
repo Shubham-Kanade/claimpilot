@@ -7,7 +7,7 @@ Built for **AI Innovation Lab, Season 2** (Business Case 1: Expense & Reimbursem
 
 | | |
 |---|---|
-| **Demo video** | _YouTube link: added at submission_ |
+| **Demo video** | [youtu.be/sPyeyGI5BQo](https://youtu.be/sPyeyGI5BQo) (about 5 minutes: the demo flow, live Claude and Jev on the full stack, ClaimPilot inside Claude Desktop over MCP) |
 | **Try it yourself** | [one Docker command, no keys, no cost](#run-it) (a free hosted copy was not possible: Hugging Face Docker Spaces became paid, [ADR-037](docs/DECISIONS.md)) |
 | **Technical design document** | [docs/TECHNICAL_DESIGN.md](docs/TECHNICAL_DESIGN.md) (architecture and flow diagrams, AI design, setup, code walkthrough, assumptions) |
 | **Decisions** | [docs/DECISIONS.md](docs/DECISIONS.md) (36 short ADRs with the evidence behind each choice) |

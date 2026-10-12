@@ -1,7 +1,7 @@
 # ClaimPilot: Technical Design Document
 
 > **Status:** final for the 12 Oct 2026 submission; updated at the end of every milestone.
-> **Demo video:** _YouTube link added at M5_ · **Run it:** one Docker command in the [README](../README.md) (not hosted: Hugging Face Docker Spaces became paid, ADR-037) · **Repo:** https://github.com/Shubham-Kanade/claimpilot
+> **Demo video:** [youtu.be/sPyeyGI5BQo](https://youtu.be/sPyeyGI5BQo) · **Run it:** one Docker command in the [README](../README.md) (not hosted: Hugging Face Docker Spaces became paid, ADR-037) · **Repo:** https://github.com/Shubham-Kanade/claimpilot
 > **Reading guide:** §1 overview and track · §2 architecture and flow diagrams · §3 how the AI works · §5 setup and deployment · §6 code explanations · §8 assumptions. The decision log with the evidence behind each choice is [DECISIONS.md](DECISIONS.md).
 
 ## 1. Project overview
