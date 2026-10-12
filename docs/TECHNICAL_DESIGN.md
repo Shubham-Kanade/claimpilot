@@ -1,7 +1,7 @@
 # ClaimPilot: Technical Design Document
 
 > **Status:** final for the 12 Oct 2026 submission; updated at the end of every milestone.
-> **Demo video:** _YouTube link added at M5_ · **Hosted app:** _URL added at M4_ · **Repo:** https://github.com/Shubham-Kanade/claimpilot
+> **Demo video:** _YouTube link added at M5_ · **Run it:** one Docker command in the [README](../README.md) (not hosted: Hugging Face Docker Spaces became paid, ADR-037) · **Repo:** https://github.com/Shubham-Kanade/claimpilot
 > **Reading guide:** §1 overview and track · §2 architecture and flow diagrams · §3 how the AI works · §5 setup and deployment · §6 code explanations · §8 assumptions. The decision log with the evidence behind each choice is [DECISIONS.md](DECISIONS.md).
 
 ## 1. Project overview
@@ -57,7 +57,7 @@ What the approver sees: a queue ranked by risk, each claim with its evidence (fl
 | Duplicate / tampered / injection receipts caught | ≥ 95% / ≥ 90% / 100% not auto-approved | adversarial eval set (§3.7) |
 | Questions asked per claim | ≤ 1 combined question | claim and pipeline tests (§7) |
 | Cost per receipt | lowest model config on the Pareto frontier that passes the gates | model bake-off + cost ledger (§3.5) |
-| Time from upload to draft claim (15 receipts) | ≤ 60 s | **18.5 s** average per 15-receipt batch in the hosted demo (replay at 0.6× the recorded latency; `scripts/smoke.py` statistics); about 30 s with live models |
+| Time from upload to draft claim (15 receipts) | ≤ 60 s | **18.5 s** average per 15-receipt batch in the demo image (replay at 0.6× the recorded latency; `scripts/smoke.py` statistics); about 30 s with live models |
 
 ## 2. System architecture
 
@@ -233,7 +233,7 @@ flowchart LR
 - **Receipts are untrusted input.** The extraction call has no tools and a prompt that frames receipt text as data. The worst a hostile receipt can do is change what is *extracted* and what System One is asked (an unsure answer becomes a question, never a silent guess), which are then scanned (injection heuristics, a second read), checked (arithmetic, GSTIN, metadata) and can never approve anything: routing, policy verdicts and submission depend only on rules and on the employee's explicit confirmation (ADR-022).
 - **Anything quoted back to a person is sanitised** (`claims/labels.safe_text`): one line, no control characters, quotes normalised, length-capped, so a crafted merchant name cannot smuggle in a line break or a wall of text.
 - **Cost is guarded.** The live LLM client refuses to run unless `LLM_MODE=live`; the default test run ignores `.env`; the eval runner estimates cost first and aborts beyond `--max-usd` (ADR-013, ADR-014).
-- **The demo has no login.** The hosted app uses a persona switcher (an `X-Persona` header naming one of the synthetic employees), which the brief's "no access request" rule requires. It is not authentication, and the persona endpoints are the only thing it protects. Approver rights come from an allow-list in settings (`APPROVER_IDS`).
+- **The demo has no login.** The demo image uses a persona switcher (an `X-Persona` header naming one of the synthetic employees), which the brief's "no access request" rule requires. It is not authentication, and the persona endpoints are the only thing it protects. Approver rights come from an allow-list in settings (`APPROVER_IDS`).
 - **Demo visitors are separated by sandbox** (ADR-034): a random id per browser (`X-Sandbox`) confines every query, the duplicate index, the approvals queue, the stats and "Start over" to that visitor's own copy of the data. It is a capability (knowing the id gives access), not a login.
 - **The mock MCP servers have no authentication** and bind to loopback only (`127.0.0.1` in Compose). They stand in for systems that sit behind a company network; a real deployment would put authentication in front of them.
 - **Secrets** live in `.env` (gitignored) and GitHub secrets; a commit guard hook and gitleaks in CI scan for them. Only synthetic data is in the repository.
@@ -337,7 +337,7 @@ A single cheap read wrongly makes the trust checks complain about one genuine re
 The Pareto selection on field accuracy alone still prefers the single read; the second opinion is the production default because it removes false accusations, which field accuracy does not measure. The cascade costs ten times more for +1.9 points on non-critical fields. The runner scores field accuracy, critical-field accuracy, JSON validity, injection recall, cost and latency, selects the Pareto frontier with the gates applied *before* the frontier, and refuses to start when its token-count estimate exceeds `--max-usd`. Sonnet and Opus were not run, by the project owner's choice, because the cheapest model had already met every gate; they remain one environment variable away. Per-receipt cost on Haiku 5.5 is about $0.0009 in extraction (4.7–6.5K input tokens) plus about $0.00004 for decisions. 🚧 The final numbers on the 80-receipt test split replace this table at M4.
 
 ### 3.6 Replay, caching and the cost ledger
-- **Three LLM modes.** `replay` (the default for development, tests and the hosted demo) answers from recorded responses keyed by the sha256 of the request, at $0. `live` calls the API; with `LLM_RECORD=1` it also saves what it receives. `fake` is a deterministic stub for unit tests.
+- **Three LLM modes.** `replay` (the default for development, tests and the demo image) answers from recorded responses keyed by the sha256 of the request, at $0. `live` calls the API; with `LLM_RECORD=1` it also saves what it receives. `fake` is a deterministic stub for unit tests.
 - **Every call is recorded** in the `llm_calls` table (route, model, tokens, cache reads, dollars, latency), which feeds the impact meter in the UI.
 - **Layers of caching:** Claude prompt caching on the stable prefix; the Redis extraction cache above; Jev decisions are not cached because at $0.04 per 1,000 documents there is nothing to save (ADR-021).
 - **Spend guards:** the live client refuses to start unless `LLM_MODE=live`, the eval runner has a pre-run estimate and a running abort, and `evals.yml` is manual-only.
@@ -414,7 +414,7 @@ Deterministic: the same arguments and seed give identical truths and byte-identi
 
 What is committed: 10 sample receipts (`data/synth/fixtures`, also served as one-click samples by the web app) and the **truth-only golden set** (`data/synth/golden`, 100 documents plus the persona roster, about 0.3 MB), so policy, grouping and decision evals run in CI with no rendering and no spend.
 
-**The demo pile** (`data/synth/demo`, 15 documents, 2.1 MB) tells one story for the video and the hosted demo: Asha Menon (grade L3, based in Pune) comes back from a client visit to Mumbai. Eleven receipts are honest (a client dinner whose guests her calendar already lists, the trip's train tickets, hotel folio, cab and meal, three local rides including a handwritten Hindi auto slip, a mobile bill, and a ₹120 UPI payment that nothing on screen explains) and four are traps that must be caught: the dinner bill photographed twice, a cab receipt whose total was edited from ₹330.96 to ₹830.96, a café bill carrying a printed note to an "AI reviewer", and a Mumbai dinner with beer and whisky. Fed to the real grouping, policy and trust code the pile makes six claims, auto-approves two, routes four to finance review and leaves exactly two questions (the trip's purpose and the UPI payment); an offline test asserts all of it and fails if the pile drifts. It is regenerated deterministically with `uv run generate.py demo`.
+**The demo pile** (`data/synth/demo`, 15 documents, 2.1 MB) tells one story for the video and the demo image: Asha Menon (grade L3, based in Pune) comes back from a client visit to Mumbai. Eleven receipts are honest (a client dinner whose guests her calendar already lists, the trip's train tickets, hotel folio, cab and meal, three local rides including a handwritten Hindi auto slip, a mobile bill, and a ₹120 UPI payment that nothing on screen explains) and four are traps that must be caught: the dinner bill photographed twice, a cab receipt whose total was edited from ₹330.96 to ₹830.96, a café bill carrying a printed note to an "AI reviewer", and a Mumbai dinner with beer and whisky. Fed to the real grouping, policy and trust code the pile makes six claims, auto-approves two, routes four to finance review and leaves exactly two questions (the trip's purpose and the UPI payment); an offline test asserts all of it and fails if the pile drifts. It is regenerated deterministically with `uv run generate.py demo`.
 
 ## 5. Setup & deployment
 
@@ -443,8 +443,14 @@ Set `ANTHROPIC_API_KEY` and `LLM_MODE=live` in `.env` (and `LLM_RECORD=1` to sav
 ### 5.5 Configuration reference
 All configuration is environment variables read in one place (`config.py`, 12-factor). See [.env.example](../.env.example) for the full list: LLM mode and keys, decision engine, database, Redis, upload directory and limits, MCP URLs, approver allow-list, CORS origins.
 
-### 5.6 Hosted demo (Hugging Face Space)
-The public demo is **one container** (ADR-030), built by [deploy/hf-space/Dockerfile](../deploy/hf-space/Dockerfile) and deployed as a Hugging Face Space (free, no login for visitors).
+### 5.6 The one-container demo image (and why it is not hosted)
+The demo is **one container** (ADR-030), built by [deploy/hf-space/Dockerfile](../deploy/hf-space/Dockerfile) and made to be deployable as a Hugging Face Space. It is **not hosted for the submission**: Docker Spaces now need a paid plan, and the free alternatives were poor (on Render's free 0.1-CPU tier the image needed 163 s to wake and 47 s per sample pile), while the rules ask for a link only "if hosted" (ADR-037). Run it locally in one command:
+
+```bash
+docker build -f deploy/hf-space/Dockerfile --build-arg SOURCE=fetch-local -t claimpilot-demo .
+docker run --rm -p 7860:7860 claimpilot-demo        # then open http://localhost:7860
+```
+It takes about 6 minutes to build, about 30 s to start, and needs no keys.
 
 ```mermaid
 flowchart LR
@@ -457,7 +463,7 @@ flowchart LR
   A -. "replay (no network)" .-> R[["recorded model answers<br/>services/api/replay"]]
 ```
 - **What differs from the Compose stack:** SQLite instead of Postgres, an in-memory queue and event bus instead of Redis and a separate worker, model answers replayed from recordings (`LLM_MODE=replay`, each taking 60% of the time the recorded call took so the live progress can be watched: `REPLAY_LATENCY_SCALE`), `DEMO_MODE=1` (a "Start over" button, plain messages), duplicates compared per employee, and a pinned clock. The pipeline code is identical; only `wiring.py` differs.
-- **Deploy:** create a Docker Space and add `Dockerfile` and `README.md` from `deploy/hf-space/`; the build clones this repository. Steps in [deploy/hf-space/DEPLOY.md](../deploy/hf-space/DEPLOY.md). No secrets are needed.
+- **To host it yourself:** create a Docker Space and add `Dockerfile` and `README.md` from `deploy/hf-space/`; the build clones this repository. Steps in [deploy/hf-space/DEPLOY.md](../deploy/hf-space/DEPLOY.md). No secrets are needed.
 - **Verify a deployment:** `uv run --project services/api python scripts/smoke.py --api https://<space>.hf.space/api`.
 - **No login:** the persona switcher picks a synthetic employee or the approver. Each browser works in its own sandbox (ADR-034), so two reviewers never disturb each other. State resets when the Space restarts or when a visitor presses *Start over* (which clears only that visitor's sandbox).
 - **Two profiles, one image (ADR-036).** *Recorded* (default): `LLM_MODE=replay`, free, only the 15 sample receipts can be read. *Hybrid live*: `LLM_MODE=live`, `LLM_RECORD=1`, the Anthropic key as a Space secret and `DAILY_LLM_BUDGET_USD`; recorded requests still replay free, receipts a visitor uploads are read live by Claude, and the daily cap is shared by all visitors. The banner, upload box, cost labels and upload limits follow `/v1/meta`. Steps in [DEPLOY.md](../deploy/hf-space/DEPLOY.md).
@@ -533,7 +539,7 @@ docker run -d -p 7860:7860 claimpilot-demo && cd apps/web && npm run e2e   # bro
 - The mock MCP servers are **unauthenticated** and bind to loopback; a real deployment would authenticate them.
 - All receipts are **synthetic**, brands are fictional, and the policy belongs to a fictional company. Results on real-world receipts may differ; the extraction numbers are on a small synthetic dev split (20) and the category numbers on 100- and 80-document sets, with the held-out figure quoted.
 - **Jev** is a recent early-access model. When it is unavailable or unsure, the LLM adapter answers the same typed questions, and below the confidence gate the employee is asked.
-- **Demo personas replace SSO** in the hosted demo so reviewers need no access request. The persona header is not authentication, and the sandbox id is a capability, not a login. The production design is in §2.8 (ADR-033).
+- **Demo personas replace SSO** in the demo image so reviewers need no access request. The persona header is not authentication, and the sandbox id is a capability, not a login. The production design is in §2.8 (ADR-033).
 - **The AI-operations page is system-wide** for its totals (all visitors' calls) but shows failures and trace details only for the visitor's own sandbox. The ledger is in the demo's ephemeral database, so its figures restart with the Space.
 - The demo clock can be pinned (`DEMO_TODAY`) so the sample receipts stay inside the policy's submission window.
 - The auto-approval limit (₹10,000) and the confidence gate (0.7) are configuration choices, not tuned on real finance data.

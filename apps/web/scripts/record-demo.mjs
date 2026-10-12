@@ -423,7 +423,7 @@ try {
         <span class="box alt">Confirm, then finance over MCP</span></div>
        <p>Claude reads, Jev decides fast, deterministic code checks and routes. A model never approves anything.</p>
        <p>The finance and HR systems are real MCP servers. ClaimPilot is itself an MCP server: use it from Claude Desktop.</p>
-       <p>Docker Compose, CI on every push, a hosted demo that costs nothing to run.</p>`,
+       <p>Docker Compose, CI on every push, and a one-command demo image that costs nothing to run.</p>`,
       ),
     );
     await sleep(9000);
@@ -446,7 +446,7 @@ try {
         `<h1 style="font-size:84px">ClaimPilot</h1>
        <p class="big">From a pile of receipts to a claim that is ready to submit.</p>
        <p style="margin-top:36px">Code, design document and decisions: <a>${repoUrl.replace("https://", "")}</a></p>
-       ${liveUrl ? `<p>Try it, no login: <a>${liveUrl.replace("https://", "")}</a></p>` : `<p>Try it, no login: link in the description.</p>`}
+       ${liveUrl ? `<p>Try it, no login: <a>${liveUrl.replace("https://", "")}</a></p>` : `<p>Run it yourself in minutes: one Docker command, no keys needed. See the README.</p>`}
        <p>Built for AI Innovation Lab, Season 2. Synthetic data only.</p>`,
       ),
     );

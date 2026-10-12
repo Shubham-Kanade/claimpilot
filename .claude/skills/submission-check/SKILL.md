@@ -31,7 +31,8 @@ All four parts the organisers require must be present and filled in, with no ðŸš
 - [ ] The link is in the README and the TDD header.
 
 ## 5. Hosting (when hosted)
-The demo is a Hugging Face Space built from `deploy/hf-space` (ADR-030).
+**Not hosted (ADR-037):** the rules ask for a link only "if hosted", and Hugging Face Docker Spaces became paid. Check instead that the README says how to run the demo image in one command and why it is not hosted, and tick the items below only if a Space (or other host) exists.
+The demo is a Hugging Face Space built from `deploy/hf-space` (ADR-030) when hosted.
 - [ ] The Space URL loads **logged out**, with no login or access request (demo personas instead).
 - [ ] `https://<space>.hf.space/api/readyz` is green and `uv run --project services/api python scripts/smoke.py --api https://<space>.hf.space/api` prints `SMOKE OK` (it replays the recordings: every model answer must hit).
 - [ ] No API key is configured on the Space (replay only, so a visitor can never spend money); the Space is public.

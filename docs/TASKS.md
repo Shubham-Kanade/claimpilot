@@ -3,7 +3,7 @@
 Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` skipped on purpose · `[!]` blocked · ★ must · ☆ stretch (cut first)
 Rule: milestones are listed up front. Low-level subtasks are added only when a milestone starts.
 
-**Current focus (11 Oct, evening):** the build is finished, verified and CI-green; what remains is the video clips, hosting and submission. **Done by Claude:** sandboxes, hosting profiles, tracing/logs, AI-ops page, ADR-033..036, hybrid profile tested live (about $0.002), PDF checked page by page, final counts (API 2,074 at 98.7%, web 581 at 98.1%, MCP 577, e2e 124 runs), secret scan clean, clean-clone image build + smoke, and **the captured demo video** (`docs/demo/claimpilot-demo.webm`, 3 min 59 s, git-ignored: hosted demo + full stack with live Claude and Jev + 3 slides). **Next, in order:** (1) the user pushes the 5 local commits; (2) video clips: decide with Claude whether ClaimPilot-in-Claude-Desktop over MCP is feasible on the user's machine (fallback: MCP Inspector in the browser, captioned by the capture tool), record the two silent clips (MCP in Claude, `docker compose ps` + a green CI run), join with the captured video in Clipchamp, upload to YouTube; (3) the user creates the Hugging Face Space (`deploy/hf-space/DEPLOY.md`, recorded profile recommended); (4) put the Space and YouTube links in the README table and the TDD header (Claude can re-render the last slide with `--live-url`), push; (5) the user confirms the repo and the Space open logged-out; (6) submit by the morning of 12 Oct; Claude tags `v1.1.0` when the links are in.
+**Current focus (12 Oct, midday):** everything is built and verified; **hosting is skipped on purpose** (ADR-037: Hugging Face Docker Spaces became paid, the free alternatives were poor, the rules ask for a link only "if hosted"); the demo image runs with one Docker command (README). **Video:** the captured video (hosted-demo flow, full stack with live Claude + Jev, 3 slides) and the user's Claude Desktop MCP clip are merged by the user (`Video Project.mp4`, 5:17); Claude replaced the closing slides that mentioned a hosted demo (`Video Project - final.mp4`, same folder as the original; originals untouched). **Left, in order:** (1) the user checks `Video Project - final.mp4` and uploads it to YouTube (Unlisted or Public), (2) Claude puts the YouTube link in the README table and the TDD header and rebuilds the PDF, (3) the user pushes everything and checks the repo and the YouTube link in a private window, (4) Claude tags `v1.1.0` (publishes the demo image to GHCR), (5) submit.
 
 ### Resume notes (read first after a restart)
 - **Windows restarts abruptly.** Everything is on disk; agents' transcripts survive. Resume a stopped agent with SendMessage to its id. Commit coherent chunks often.
@@ -14,12 +14,12 @@ Rule: milestones are listed up front. Low-level subtasks are added only when a m
 **Deadline:** submit by 12 Oct 2026. Aim for the morning of the 12th.
 
 ## Submission checklist (missing ANY item means elimination; run the `submission-check` skill)
-- [~] Fully functional build by 12 Oct: built and verified (CI green, smoke OK); last check is on the hosted URL once the Space exists
+- [x] Fully functional build by 12 Oct: built and verified (CI green, smoke OK, demo image tested in CI and from a clean clone)
 - [~] `docs/TECHNICAL_DESIGN.md`: overview + **track**, architecture/flow diagrams, setup & deployment, code explanations & assumptions (PDF rebuilt; **left:** look at the diagrams in the rendered PDF, final test counts)
-- [ ] YouTube demo link (public or unlisted), playable logged-out **(user: after we discuss the video)**
-- [~] Code on **public** personal GitHub with docs + video link; no access requests needed (pushed, CI visible; **user:** confirm the repo opens logged-out, add the video link)
+- [~] YouTube demo link (public or unlisted), playable logged-out: video made (`Video Project - final.mp4`); **user: upload, then check in a private window**
+- [~] Code on **public** personal GitHub with docs + video link; no access requests needed (pushed, CI visible; **user:** confirm the repo opens logged-out; Claude adds the video link)
 - [x] Comprehensive unit tests: CI coverage gates enforced and green (api 98.7%, web 98.1%, three MCP servers ≥ 90%)
-- [ ] Hosted link, working logged-out (no-login demo personas) **(user: create the Hugging Face Space, `deploy/hf-space/DEPLOY.md`)**
+- [-] Hosted link: **skipped on purpose** (ADR-037; the rules say "if hosted"). README: one-command demo image; the video shows the parts the image cannot
 
 ## M0 Setup (7–8 Oct) [x]
 - [x] Repo init (`claimpilot/` subfolder, ADR-008), layout, plan copied to `docs/PLAN.md`

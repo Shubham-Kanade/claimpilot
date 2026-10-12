@@ -82,7 +82,7 @@ all). Use your own machine and your own keys, with synthetic receipts only.
 | 2:55 | Impact page | "Documents, claims, what the AI cost, minutes saved." |
 | 3:05 | Architecture slide (README diagram) | "Under the hood: Claude reads, Jev decides, deterministic code checks and routes. The mock finance and corporate systems are real MCP servers. Models are chosen by a bake-off on cost, accuracy and speed: Haiku 5.5 reads a receipt for about five hundredths of a cent." |
 | 3:25 | Test and metrics slide | "More than sixteen hundred tests at ninety-eight percent coverage, a typed contract between backend and frontend, CI on every push, and a design document with every decision and its evidence." |
-| 3:40 | Live-demo and repo links | "Try it yourself, no login: link below." |
+| 3:40 | Repo link and the run command | "Run it yourself in minutes: one Docker command, no keys. The link is below." |
 
 Tips: keep the mouse slow; pause on each flagged receipt for two seconds; do not read numbers aloud
 that are on screen. If a take goes wrong, **Start over** resets the demo in one click.

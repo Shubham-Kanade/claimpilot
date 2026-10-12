@@ -1,5 +1,7 @@
 # Deploying the demo to a Hugging Face Space
 
+> **Note (12 Oct 2026):** Hugging Face now requires a **PRO plan (about $9 a month)** for Docker Spaces; only static Spaces are free. The ClaimPilot submission is therefore **not hosted** (ADR-037) and the image is run locally instead. This guide still works if you have a paid plan; "CPU basic (free)" below means the free hardware tier, available on a PRO account.
+
 The Space is built from two files in this folder (`Dockerfile`, `README.md`). The Dockerfile clones
 the public GitHub repository at build time, so GitHub stays the single source of truth and the Space
 needs no copy of the code. Nothing here costs money: the free CPU Space is enough, and the demo
